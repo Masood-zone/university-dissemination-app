@@ -66,6 +66,11 @@ export async function GET(request: Request) {
     ]);
 
     const currentSemester =
+      (activeSession?.currentSemester
+        ? activeSession.semesters.find(
+            (s) => s.name === activeSession.currentSemester,
+          )
+        : null) ??
       activeSession?.semesters
         ?.filter((s) => {
           if (!s.startDate || !s.endDate) return false;

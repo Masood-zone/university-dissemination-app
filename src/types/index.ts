@@ -1,5 +1,6 @@
 import {
   Role,
+  SemesterName,
   AnnouncementCategory,
   AnnouncementStatus,
   NotificationType,
@@ -289,6 +290,119 @@ export interface AdminOverviewQuickAction {
 export interface AdminOverviewData {
   stats: AdminOverviewStatCard[];
   quickActions: AdminOverviewQuickAction[];
+}
+
+// ============================================================================
+// DEPARTMENT MANAGEMENT TYPES
+// ============================================================================
+
+export interface DepartmentSummary {
+  id: string;
+  name: string;
+  code: string;
+  description?: string | null;
+  headOfDept?: string | null;
+  contact?: string | null;
+  programmesCount: number;
+  studentsCount: number;
+}
+
+export interface DepartmentInfoResponse {
+  stats: {
+    totalDepartments: number;
+    totalProgrammes: number;
+    totalStudents: number;
+  };
+  departments: DepartmentSummary[];
+}
+
+export interface DepartmentHeadCandidate {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string | null;
+  departmentId?: string | null;
+}
+
+export interface UpdateDepartmentHodInput {
+  departmentId: string;
+  headUserId: string | null;
+}
+
+export interface CreateDepartmentInput {
+  name: string;
+  code: string;
+  description?: string;
+  headOfDept?: string;
+  contact?: string;
+}
+
+// ============================================================================
+// ACADEMIC SESSIONS TYPES
+// ============================================================================
+
+export interface AcademicSessionSemester {
+  id: string;
+  name: SemesterName;
+  startDate?: string | null;
+  endDate?: string | null;
+}
+
+export interface AcademicSessionSummary {
+  id: string;
+  name: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  isActive: boolean;
+  currentSemester?: SemesterName | null;
+  semesters: AcademicSessionSemester[];
+}
+
+export interface AcademicSessionsOverviewResponse {
+  sessions: AcademicSessionSummary[];
+  activeSession: AcademicSessionSummary | null;
+  activeSemesterName: SemesterName | null;
+}
+
+export interface CreateAcademicSessionInput {
+  name: string;
+  startDate?: string;
+  endDate?: string;
+  isActive?: boolean;
+  currentSemester?: SemesterName;
+  semesters?: Array<{
+    name: SemesterName;
+    enabled?: boolean;
+    startDate?: string;
+    endDate?: string;
+  }>;
+}
+
+export interface UpdateAcademicSessionInput {
+  id: string;
+  name?: string;
+  startDate?: string;
+  endDate?: string;
+  isActive?: boolean;
+  currentSemester?: SemesterName | null;
+}
+
+export interface DeleteAcademicSessionInput {
+  id: string;
+}
+
+export interface UpsertSessionSemesterInput {
+  sessionId: string;
+  name: SemesterName;
+  enabled: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface SetCurrentSemesterInput {
+  sessionId: string;
+  semesterName: SemesterName;
 }
 
 // ============================================================================

@@ -36,9 +36,42 @@ async function hashBetterAuthPassword(password: string): Promise<string> {
   return `${salt}:${key.toString("hex")}`;
 }
 
+async function ensureCredentialAccount(userId: string, plainPassword: string) {
+  const hashedPassword = await hashBetterAuthPassword(plainPassword);
+
+  const existingCredentialAccount = await prisma.account.findFirst({
+    where: { userId, providerId: "credential" },
+    select: { id: true },
+  });
+
+  if (existingCredentialAccount) {
+    await prisma.account.update({
+      where: { id: existingCredentialAccount.id },
+      data: {
+        accountId: userId,
+        password: hashedPassword,
+      },
+    });
+    return;
+  }
+
+  await prisma.account.create({
+    data: {
+      id: randomUUID(),
+      userId,
+      providerId: "credential",
+      accountId: userId,
+      password: hashedPassword,
+    },
+  });
+}
+
 async function main() {
   const email = process.env.SEED_ADMIN_EMAIL ?? "admin@aamusted.edu.gh";
   const plainPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin@123";
+
+  const deptAdminPassword =
+    process.env.SEED_DEPT_ADMIN_PASSWORD ?? "DeptAdmin@123";
 
   // Minimal profile fields required by schema
   const firstName = process.env.SEED_ADMIN_FIRST_NAME ?? "System";
@@ -149,31 +182,69 @@ async function main() {
     });
 
     // Ensure the Better Auth credential account exists and matches expected format.
-    const hashedPassword = await hashBetterAuthPassword(plainPassword);
+    await ensureCredentialAccount(user.id, plainPassword);
 
-    const existingCredentialAccount = await prisma.account.findFirst({
-      where: { userId: user.id, providerId: "credential" },
-      select: { id: true },
+    console.log("Seeding department admins (no departments assigned)...");
+
+    const deptAdmins = Array.from({ length: 5 }, (_, idx) => {
+      const n = idx + 1;
+      const deptEmail =
+        process.env[`SEED_DEPT_ADMIN_${n}_EMAIL`] ??
+        `deptadmin${n}@aamusted.edu.gh`;
+      const first =
+        process.env[`SEED_DEPT_ADMIN_${n}_FIRST_NAME`] ?? "Department";
+      const last =
+        process.env[`SEED_DEPT_ADMIN_${n}_LAST_NAME`] ?? `Admin ${n}`;
+      const staffId =
+        process.env[`SEED_DEPT_ADMIN_${n}_STAFF_ID`] ??
+        `DA-${String(n).padStart(3, "0")}`;
+
+      return {
+        email: deptEmail,
+        firstName: first,
+        lastName: last,
+        name: `${first} ${last}`,
+        staffId,
+      };
     });
 
-    if (existingCredentialAccount) {
-      await prisma.account.update({
-        where: { id: existingCredentialAccount.id },
-        data: {
-          accountId: user.id,
-          password: hashedPassword,
-        },
-      });
-    } else {
-      await prisma.account.create({
-        data: {
+    for (const deptAdmin of deptAdmins) {
+      const deptUser = await prisma.user.upsert({
+        where: { email: deptAdmin.email },
+        create: {
           id: randomUUID(),
-          userId: user.id,
-          providerId: "credential",
-          accountId: user.id,
-          password: hashedPassword,
+          name: deptAdmin.name,
+          email: deptAdmin.email,
+          emailVerified: true,
+          firstName: deptAdmin.firstName,
+          lastName: deptAdmin.lastName,
+          role: Role.DEPARTMENT_ADMIN,
+          isActive: true,
+          departmentId: null,
+        },
+        update: {
+          name: deptAdmin.name,
+          emailVerified: true,
+          firstName: deptAdmin.firstName,
+          lastName: deptAdmin.lastName,
+          role: Role.DEPARTMENT_ADMIN,
+          isActive: true,
+          departmentId: null,
         },
       });
+
+      await prisma.departmentAdminProfile.upsert({
+        where: { userId: deptUser.id },
+        create: {
+          userId: deptUser.id,
+          staffId: deptAdmin.staffId,
+        },
+        update: {
+          staffId: deptAdmin.staffId,
+        },
+      });
+
+      await ensureCredentialAccount(deptUser.id, deptAdminPassword);
     }
 
     console.log("Seed complete:");
@@ -182,6 +253,16 @@ async function main() {
     console.log(`- UserId: ${user.id}`);
     console.log("- Role: ADMIN");
     console.log("- System Administrator template assigned");
+    console.log(
+      "- Department admins: 5 created/updated (no departments assigned)",
+    );
+    console.log(
+      `- Dept admin password (shared): ${deptAdminPassword} (override via SEED_DEPT_ADMIN_PASSWORD)`,
+    );
+    console.log("- Dept admin emails:");
+    for (const deptAdmin of deptAdmins) {
+      console.log(`  - ${deptAdmin.email} (${deptAdmin.staffId})`);
+    }
   } catch (error) {
     console.error("Seed failed:", error);
     throw error;
