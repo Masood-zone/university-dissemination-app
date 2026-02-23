@@ -41,6 +41,30 @@ export function getInitials(name: string): string {
   return `${first}${last}`.toUpperCase();
 }
 
+export function formatCompactNumber(value: number): string {
+  return new Intl.NumberFormat("en", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+export function formatGhs(value: number): string {
+  if (!Number.isFinite(value) || value <= 0) return "₵0";
+  return `₵${formatCompactNumber(value)}`;
+}
+
+export function formatStudentCount(value: number): string {
+  return new Intl.NumberFormat("en").format(value);
+}
+
+export function formatEndsIn(endDate: Date | null | undefined): string {
+  if (!endDate) return "No end date set";
+  const now = Date.now();
+  const diffMs = endDate.getTime() - now;
+  const days = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
+  return `Ends in ${days} days`;
+}
+
 // ============================================================================
 // DATE UTILITIES
 // ============================================================================

@@ -269,6 +269,29 @@ export interface AdminDashboard {
 }
 
 // ============================================================================
+// ADMIN OVERVIEW (DASHBOARD OVERVIEW PAGE)
+// ============================================================================
+
+export interface AdminOverviewStatCard {
+  label: string;
+  value: string;
+  note: string;
+  icon: string;
+}
+
+export interface AdminOverviewQuickAction {
+  title: string;
+  description: string;
+  href: string;
+  icon: string;
+}
+
+export interface AdminOverviewData {
+  stats: AdminOverviewStatCard[];
+  quickActions: AdminOverviewQuickAction[];
+}
+
+// ============================================================================
 // PERMISSION TYPES
 // ============================================================================
 
