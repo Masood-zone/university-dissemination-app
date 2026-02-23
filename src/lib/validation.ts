@@ -387,6 +387,41 @@ export const departmentSchema = z.object({
   contact: z.string().max(120).optional(),
 });
 
+const emptyToUndefined = (v: unknown) => {
+  if (v === "" || v === null || v === undefined) return undefined;
+  return v;
+};
+
+const optionalPositiveInt = z.preprocess(
+  emptyToUndefined,
+  z.coerce.number().int().positive(),
+);
+
+const semesterInt = z.preprocess(
+  emptyToUndefined,
+  z.coerce.number().int().min(1).max(20),
+);
+
+export const programmeSchema = z.object({
+  name: z.string().min(2).max(200),
+  code: z.string().min(2).max(20),
+  departmentId: z.string().min(1),
+  awardType: z.enum(["UNDERGRADUATE", "POSTGRADUATE", "DIPLOMA"]),
+  durationYears: optionalPositiveInt.optional(),
+  totalSemesters: optionalPositiveInt.optional(),
+  minCredits: optionalPositiveInt.optional(),
+});
+
+export const programmeCourseSchema = z.object({
+  programmeId: z.string().min(1),
+  code: z.string().min(2).max(20),
+  title: z.string().min(2).max(200),
+  description: z.string().max(2000).optional(),
+  credits: z.coerce.number().int().min(0).max(60),
+  semester: semesterInt.default(1),
+  prerequisites: z.array(z.string().min(1)).optional().default([]),
+});
+
 export const courseSchema = z.object({
   code: z.string().min(2).max(20),
   title: z.string().min(2).max(200),
@@ -430,6 +465,8 @@ export type CourseOfferingInput = z.input<typeof courseOfferingSchema>;
 export type CourseAssignmentInput = z.input<typeof courseAssignmentSchema>;
 export type EnrollmentInput = z.input<typeof enrollmentSchema>;
 export type DepartmentInput = z.input<typeof departmentSchema>;
+export type ProgrammeInput = z.input<typeof programmeSchema>;
+export type ProgrammeCourseInput = z.input<typeof programmeCourseSchema>;
 export type CourseInput = z.input<typeof courseSchema>;
 export type AcademicCalendarEventInput = z.input<
   typeof academicCalendarEventSchema

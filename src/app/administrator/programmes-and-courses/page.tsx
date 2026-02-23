@@ -12,58 +12,21 @@ import {
 } from "@/components/admin/programmes-and-courses/ProgrammeTypeTabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getApiErrorLabel } from "@/lib/api-client-error";
+import { useGetProgrammes } from "@/services/admin/programmes-and-courses/programmes";
 import type { ProgrammeListItem } from "@/types";
-
-const mockProgrammes: ProgrammeListItem[] = [
-  {
-    id: "p-1",
-    name: "BSc. Information Technology Education",
-    code: "BSc-ITE",
-    departmentName: "Information Technology Education",
-    awardType: "UNDERGRADUATE",
-    awardTypeLabel: "Degree",
-    durationLabel: "4 Years",
-    activeCourses: 42,
-  },
-  {
-    id: "p-2",
-    name: "B.Ed. Mathematics Education",
-    code: "BEd-MAT",
-    departmentName: "Mathematical Sciences",
-    awardType: "UNDERGRADUATE",
-    awardTypeLabel: "Degree",
-    durationLabel: "4 Years",
-    activeCourses: 38,
-  },
-  {
-    id: "p-3",
-    name: "Diploma in Fashion Design",
-    code: "DIP-FDT",
-    departmentName: "Fashion Design & Textiles",
-    awardType: "DIPLOMA",
-    awardTypeLabel: "Diploma",
-    durationLabel: "2 Years",
-    activeCourses: 18,
-  },
-  {
-    id: "p-4",
-    name: "M.Phil Electrical Engineering",
-    code: "MPH-ELE",
-    departmentName: "Electrical Engineering",
-    awardType: "POSTGRADUATE",
-    awardTypeLabel: "Masters",
-    durationLabel: "2 Years",
-    activeCourses: 12,
-  },
-];
 
 export default function ProgrammesAndCoursesPage() {
   const [query, setQuery] = React.useState("");
   const [filter, setFilter] = React.useState<ProgrammeTypeFilter>("ALL");
 
+  const programmesQuery = useGetProgrammes();
+  const programmes = programmesQuery.data ?? [];
+
   const rows = React.useMemo(() => {
     const q = query.trim().toLowerCase();
-    return mockProgrammes.filter((p) => {
+    return programmes.filter((p) => {
       if (filter !== "ALL" && p.awardType !== filter) return false;
       if (!q) return true;
       return (
@@ -72,7 +35,7 @@ export default function ProgrammesAndCoursesPage() {
         p.departmentName.toLowerCase().includes(q)
       );
     });
-  }, [query, filter]);
+  }, [query, filter, programmes]);
 
   return (
     <section className="space-y-6">
@@ -117,7 +80,25 @@ export default function ProgrammesAndCoursesPage() {
         </p>
       </div>
 
-      <ProgrammeTable programmes={rows} />
+      {programmesQuery.isLoading ? (
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="space-y-4">
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        </div>
+      ) : programmesQuery.isError ? (
+        <div className="rounded-2xl border border-border bg-card p-6">
+          <p className="text-sm font-semibold">Unable to load programmes</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {getApiErrorLabel(programmesQuery.error).message}
+          </p>
+        </div>
+      ) : (
+        <ProgrammeTable programmes={rows as ProgrammeListItem[]} />
+      )}
     </section>
   );
 }

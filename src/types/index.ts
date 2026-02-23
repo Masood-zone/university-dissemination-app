@@ -4,6 +4,7 @@ import {
   AnnouncementCategory,
   AnnouncementStatus,
   NotificationType,
+  ProgrammeAwardType,
 } from "@prisma/client";
 
 // ============================================================================
@@ -122,10 +123,50 @@ export interface ProgrammeListItem {
   name: string;
   code: string;
   departmentName: string;
-  awardType: "UNDERGRADUATE" | "POSTGRADUATE" | "DIPLOMA";
+  awardType: ProgrammeAwardType;
   awardTypeLabel: string;
   durationLabel: string;
   activeCourses: number;
+}
+
+export interface CreateProgrammeInput {
+  name: string;
+  code: string;
+  departmentId: string;
+  awardType: ProgrammeAwardType;
+  durationYears?: number;
+  totalSemesters?: number;
+  minCredits?: number;
+}
+
+export interface ProgrammeSummary {
+  id: string;
+  name: string;
+  code: string;
+  departmentId: string;
+  departmentName: string;
+  awardType: ProgrammeAwardType;
+  awardTypeLabel: string;
+  durationYears?: number;
+  durationLabel: string;
+  totalSemesters?: number;
+  minCredits?: number;
+}
+
+export interface ProgrammeDetailsResponse {
+  programme: ProgrammeSummary;
+  coursesCount: number;
+  prerequisiteOptions: Array<{ code: string; title: string }>;
+}
+
+export interface CreateProgrammeCourseInput {
+  programmeId: string;
+  title: string;
+  code: string;
+  credits: number;
+  description?: string;
+  semester?: number;
+  prerequisites?: string[];
 }
 
 export interface TimetableEntry {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import * as React from "react";
 
@@ -12,22 +12,47 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-
-const mockPrereqs = [
-  { code: "ITEC 101", title: "Fundamentals of IT" },
-  { code: "MATH 151", title: "College Algebra" },
-  { code: "ITEC 102", title: "Intro to Web Tech" },
-];
+import { getApiErrorLabel } from "@/lib/api-client-error";
+import {
+  useCreateProgrammeCourse,
+  useGetProgrammeDetails,
+} from "@/services/admin/programmes-and-courses/programmes";
 
 export default function AddCoursePage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const programmeId = searchParams.get("programmeId");
+
+  const programmeQuery = useGetProgrammeDetails(programmeId);
+  const createCourse = useCreateProgrammeCourse();
 
   const [title, setTitle] = React.useState("");
   const [code, setCode] = React.useState("");
   const [credits, setCredits] = React.useState("3");
   const [description, setDescription] = React.useState("");
   const [prereq, setPrereq] = React.useState<string | null>(null);
+
+  const prerequisites = prereq ? [prereq] : [];
+  const creditsNum = Number.parseInt(credits, 10);
+
+  const submit = async () => {
+    if (!programmeId) return;
+    await createCourse.mutateAsync({
+      programmeId,
+      title,
+      code,
+      credits: Number.isFinite(creditsNum) ? creditsNum : 0,
+      description: description || undefined,
+      prerequisites,
+      semester: 1,
+    });
+
+    router.push("/administrator/programmes-and-courses");
+  };
+
+  const programmeName = programmeQuery.data?.programme.name;
+  const coursesCount = programmeQuery.data?.coursesCount;
+  const prereqOptions = programmeQuery.data?.prerequisiteOptions ?? [];
 
   return (
     <section className="space-y-6">
@@ -50,7 +75,12 @@ export default function AddCoursePage() {
           <Button asChild variant="outline">
             <Link href="/administrator/programmes-and-courses">Cancel</Link>
           </Button>
-          <Button className="gap-2" type="button">
+          <Button
+            className="gap-2"
+            type="button"
+            onClick={submit}
+            disabled={!programmeId || createCourse.isPending}
+          >
             <MaterialSymbol icon="save" className="text-[18px]" />
             Save Course
           </Button>
@@ -62,7 +92,7 @@ export default function AddCoursePage() {
           <div>
             <p className="text-xs text-muted-foreground">
               Programmes <span className="mx-1">›</span>{" "}
-              {programmeId ?? "BSc. Programme"}
+              {programmeName ?? programmeId ?? "Programme"}
               <span className="mx-1">›</span>
               <span className="text-primary font-semibold">New Course</span>
             </p>
@@ -161,7 +191,7 @@ export default function AddCoursePage() {
                 <Input placeholder="Search course" />
               </div>
               <div className="mt-4 space-y-2">
-                {mockPrereqs.map((c) => {
+                {prereqOptions.map((c) => {
                   const isSelected = prereq === c.code;
                   return (
                     <button
@@ -234,22 +264,51 @@ export default function AddCoursePage() {
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
               Target Programme
             </p>
-            <p className="mt-2 text-sm font-semibold">
-              BSc. Information Technology
-            </p>
+            <p className="mt-2 text-sm font-semibold">{programmeName ?? "—"}</p>
             <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
               <span>Current Courses:</span>
-              <span className="font-semibold text-foreground">42</span>
+              <span className="font-semibold text-foreground">
+                {typeof coursesCount === "number" ? coursesCount : "—"}
+              </span>
             </div>
           </div>
 
-          <Button className="w-full gap-2" type="button">
+          <Button
+            className="w-full gap-2"
+            type="button"
+            onClick={submit}
+            disabled={!programmeId || createCourse.isPending}
+          >
             <MaterialSymbol icon="upload" className="text-[18px]" />
             Create Course
           </Button>
           <p className="text-[11px] text-muted-foreground text-center">
             Preview reflects student portal visibility.
           </p>
+
+          {!programmeId ? (
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <p className="text-sm font-semibold">Missing programme</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Open this page from a programme row so it includes
+                ?programmeId=....
+              </p>
+            </div>
+          ) : programmeQuery.isError ? (
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <p className="text-sm font-semibold">Unable to load programme</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {getApiErrorLabel(programmeQuery.error).message}
+              </p>
+            </div>
+          ) : createCourse.isError ? (
+            <div className="rounded-2xl border border-border bg-card p-5">
+              <p className="text-sm font-semibold">Create failed</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {getApiErrorLabel(createCourse.error).message}
+              </p>
+            </div>
+          ) : null}
         </aside>
       </div>
     </section>

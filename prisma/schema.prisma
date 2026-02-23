@@ -87,6 +87,12 @@ enum PaymentTransactionStatus {
   CANCELLED
 }
 
+enum ProgrammeAwardType {
+  UNDERGRADUATE
+  POSTGRADUATE
+  DIPLOMA
+}
+
 // ============================================================================
 // AUTH (Better Auth) - MAINTAINED MODELS
 // ============================================================================
@@ -257,7 +263,10 @@ model Programme {
   name          String
   code          String
   description   String?
+  awardType     ProgrammeAwardType @default(UNDERGRADUATE)
   durationYears Int?
+  totalSemesters Int?
+  minCredits    Int?
   isActive      Boolean  @default(true)
   department    Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   departmentId  String

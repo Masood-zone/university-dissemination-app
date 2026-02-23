@@ -11,8 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { getApiErrorLabel } from "@/lib/api-client-error";
+import { useGetDepartmentInfo } from "@/services/admin/department-management/department";
+import { useCreateProgramme } from "@/services/admin/programmes-and-courses/programmes";
+import type { ProgrammeListItem } from "@/types";
 
-type AwardType = "UNDERGRADUATE" | "POSTGRADUATE" | "DIPLOMA";
+type AwardType = ProgrammeListItem["awardType"];
 
 const steps = [
   { title: "Basic Information", subtitle: "Name, code & award type" },
@@ -21,25 +25,31 @@ const steps = [
   { title: "Review & Publish", subtitle: "Final verification" },
 ];
 
-const mockDepartments = [
-  "Information Technology Education",
-  "Mathematical Sciences",
-  "Business Education",
-  "Fashion Design & Textiles",
-  "Electrical Engineering",
-];
-
 export default function AddProgrammePage() {
   const router = useRouter();
   const [step, setStep] = React.useState(1);
 
+  const departmentsQuery = useGetDepartmentInfo();
+  const createProgramme = useCreateProgramme();
+
   const [name, setName] = React.useState("");
   const [code, setCode] = React.useState("");
   const [awardType, setAwardType] = React.useState<AwardType>("UNDERGRADUATE");
-  const [department, setDepartment] = React.useState(mockDepartments[0] ?? "");
+  const [departmentId, setDepartmentId] = React.useState("");
   const [numSemesters, setNumSemesters] = React.useState("8");
   const [minCredits, setMinCredits] = React.useState("120");
   const [durationYears, setDurationYears] = React.useState("4");
+
+  const departments = departmentsQuery.data?.departments ?? [];
+  const selectedDepartment = React.useMemo(() => {
+    return departments.find((d) => d.id === departmentId) ?? null;
+  }, [departments, departmentId]);
+
+  React.useEffect(() => {
+    if (departmentId) return;
+    const first = departments[0];
+    if (first) setDepartmentId(first.id);
+  }, [departments, departmentId]);
 
   const canNext = step < 4;
   const canPrev = step > 1;
@@ -50,8 +60,26 @@ export default function AddProgrammePage() {
   const prev = () => {
     if (canPrev) setStep((s) => s - 1);
   };
-  const submit = () => {
-    // mock only for now
+
+  const submit = async () => {
+    const durationYearsNum = Number.parseInt(durationYears, 10);
+    const totalSemestersNum = Number.parseInt(numSemesters, 10);
+    const minCreditsNum = Number.parseInt(minCredits, 10);
+
+    await createProgramme.mutateAsync({
+      name,
+      code,
+      awardType,
+      departmentId,
+      durationYears: Number.isFinite(durationYearsNum)
+        ? durationYearsNum
+        : undefined,
+      totalSemesters: Number.isFinite(totalSemestersNum)
+        ? totalSemestersNum
+        : undefined,
+      minCredits: Number.isFinite(minCreditsNum) ? minCreditsNum : undefined,
+    });
+
     router.push("/administrator/programmes-and-courses");
   };
 
@@ -144,12 +172,13 @@ export default function AddProgrammePage() {
                   </label>
                   <Select
                     className="mt-2"
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
+                    value={departmentId}
+                    onChange={(e) => setDepartmentId(e.target.value)}
+                    disabled={departmentsQuery.isLoading}
                   >
-                    {mockDepartments.map((d) => (
-                      <option key={d} value={d}>
-                        {d}
+                    {departments.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
                       </option>
                     ))}
                   </Select>
@@ -198,7 +227,7 @@ export default function AddProgrammePage() {
                 <div className="rounded-xl border border-border bg-muted/40 p-4">
                   <p className="text-sm font-medium">Selected department</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {department || "—"}
+                    {selectedDepartment?.name || "—"}
                   </p>
                 </div>
               </div>
@@ -261,7 +290,9 @@ export default function AddProgrammePage() {
                       <p className="text-xs font-semibold text-muted-foreground">
                         Department
                       </p>
-                      <p className="font-semibold">{department || "—"}</p>
+                      <p className="font-semibold">
+                        {selectedDepartment?.name || "—"}
+                      </p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground">
@@ -311,13 +342,32 @@ export default function AddProgrammePage() {
                   />
                 </Button>
               ) : (
-                <Button type="button" onClick={submit} className="gap-2">
+                <Button
+                  type="button"
+                  onClick={submit}
+                  className="gap-2"
+                  disabled={
+                    createProgramme.isPending ||
+                    !name.trim() ||
+                    !code.trim() ||
+                    !departmentId
+                  }
+                >
                   Create Programme
                   <MaterialSymbol icon="check" className="text-[18px]" />
                 </Button>
               )}
             </div>
           </div>
+
+          {createProgramme.isError ? (
+            <div className="mt-4 rounded-xl border border-border bg-muted/40 p-4">
+              <p className="text-sm font-semibold">Create failed</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {getApiErrorLabel(createProgramme.error).message}
+              </p>
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

@@ -16,7 +16,7 @@ const departmentKeys = {
 
 async function getDepartmentInfo(): Promise<DepartmentInfoResponse> {
   const response = await api.get<ApiResponse<DepartmentInfoResponse>>(
-    "/administrators/departments/get-department-info",
+    "/administrator/departments/get-department-info",
   );
 
   if (!response.data.success || !response.data.data) {
@@ -30,7 +30,7 @@ async function getDepartmentInfo(): Promise<DepartmentInfoResponse> {
 
 async function getDepartmentHeads(): Promise<DepartmentHeadCandidate[]> {
   const response = await api.get<ApiResponse<DepartmentHeadCandidate[]>>(
-    "/administrators/departments/get-department-heads",
+    "/administrator/departments/get-department-heads",
   );
 
   if (!response.data.success || !response.data.data) {
@@ -44,7 +44,7 @@ async function updateDepartmentHod(
   input: UpdateDepartmentHodInput,
 ): Promise<DepartmentSummary> {
   const response = await api.patch<ApiResponse<DepartmentSummary>>(
-    "/administrators/departments/update-hod",
+    "/administrator/departments/update-hod",
     input,
   );
 
@@ -61,7 +61,7 @@ async function createDepartment(
   input: CreateDepartmentInput,
 ): Promise<DepartmentSummary> {
   const response = await api.post<ApiResponse<DepartmentSummary>>(
-    "/administrators/departments/create-department",
+    "/administrator/departments/create-department",
     input,
   );
 

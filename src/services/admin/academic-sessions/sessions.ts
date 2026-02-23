@@ -22,7 +22,7 @@ async function getSessions(): Promise<AcademicSessionsOverviewResponse> {
   try {
     const response = await api.get<
       ApiResponse<AcademicSessionsOverviewResponse>
-    >("/administrators/academic-sessions/get-sessions");
+    >("/administrator/academic-sessions/get-sessions");
 
     if (!response.data.success || !response.data.data) {
       throw new Error(response.data.message || "Failed to load sessions");
@@ -39,7 +39,7 @@ async function createSession(
 ): Promise<AcademicSessionSummary> {
   try {
     const response = await api.post<ApiResponse<AcademicSessionSummary>>(
-      "/administrators/academic-sessions/create-session",
+      "/administrator/academic-sessions/create-session",
       input,
     );
 
@@ -58,7 +58,7 @@ async function updateSession(
 ): Promise<AcademicSessionSummary> {
   try {
     const response = await api.patch<ApiResponse<AcademicSessionSummary>>(
-      "/administrators/academic-sessions/update-session",
+      "/administrator/academic-sessions/update-session",
       input,
     );
 
@@ -77,7 +77,7 @@ async function deleteSession(
 ): Promise<{ id: string }> {
   try {
     const response = await api.delete<ApiResponse<{ id: string }>>(
-      "/administrators/academic-sessions/delete-session",
+      "/administrator/academic-sessions/delete-session",
       { data: input },
     );
 
@@ -97,7 +97,7 @@ async function upsertSemester(
   try {
     const response = await api.patch<
       ApiResponse<AcademicSessionSemester | null>
-    >("/administrators/academic-sessions/upsert-semester", input);
+    >("/administrator/academic-sessions/upsert-semester", input);
 
     if (!response.data.success) {
       throw new Error(response.data.message || "Failed to update semester");
@@ -114,7 +114,7 @@ async function setCurrentSemester(
 ): Promise<AcademicSessionSummary> {
   try {
     const response = await api.patch<ApiResponse<AcademicSessionSummary>>(
-      "/administrators/academic-sessions/set-current-semester",
+      "/administrator/academic-sessions/set-current-semester",
       input,
     );
 
