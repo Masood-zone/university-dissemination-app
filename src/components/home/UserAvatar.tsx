@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import {
   DropdownMenu,
@@ -16,17 +16,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { userLogout } from "@/services/auth/user-auth";
-
-function getInitials(name: string): string {
-  const cleaned = name.trim();
-  if (!cleaned) return "U";
-
-  const parts = cleaned.split(/\s+/).filter(Boolean);
-  const first = parts[0]?.[0] ?? "U";
-  const last = parts.length > 1 ? parts[parts.length - 1]?.[0] : "";
-
-  return `${first}${last}`.toUpperCase();
-}
 
 function avatarSvgDataUri(label: string): string {
   const initials = getInitials(label);
