@@ -4,6 +4,7 @@ type TeamMember = {
   name: string;
   indexNumber: string;
   role: string;
+  profile?: string;
 };
 
 function getInitials(name: string): string {
@@ -28,7 +29,7 @@ function avatarSvgDataUri(label: string): string {
       <stop offset="1" stop-color="#0f172a"/>
     </linearGradient>
   </defs>
-  <rect width="128" height="128" rx="64" fill="url(#g)"/>
+  <rect width="128" height="128" rx="24" fill="url(#g)"/>
   <text x="64" y="78" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" fill="#ffffff" font-weight="700">${initials}</text>
 </svg>`;
 
@@ -51,6 +52,7 @@ export function TeamSection() {
       name: "Theophilus King Asare",
       indexNumber: "5201040297",
       role: "Developer",
+      profile: "/king.jpeg",
     },
     {
       name: "Asare Edmund Bediako",
@@ -79,18 +81,21 @@ export function TeamSection() {
               key={m.indexNumber + m.name}
               className="rounded-2xl border border-border bg-card p-6 shadow-sm"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex flex-col items-center text-center">
                 <Image
-                  src={avatarSvgDataUri(m.name)}
+                  src={m.profile ?? avatarSvgDataUri(m.name)}
                   alt={m.name}
-                  width={56}
-                  height={56}
-                  className="h-14 w-14 rounded-full object-cover"
+                  width={144}
+                  height={144}
+                  className="h-36 w-36 rounded-2xl object-cover"
                   unoptimized
                 />
-                <div className="min-w-0">
-                  <p className="truncate text-base font-bold">{m.name}</p>
-                  <p className="text-sm text-muted-foreground">{m.role}</p>
+
+                <div className="mt-4">
+                  <p className="text-base font-bold leading-snug wrap-break-word">
+                    {m.name}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{m.role}</p>
                 </div>
               </div>
 
