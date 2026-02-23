@@ -104,6 +104,8 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
+    console.error("[api][academic-sessions][create-session]", error);
+
     if (error instanceof Response) {
       return NextResponse.json(
         {
@@ -138,6 +140,30 @@ export async function POST(request: Request) {
           { status: 409 },
         );
       }
+
+      if (error.code === "P2021") {
+        return NextResponse.json(
+          {
+            success: false,
+            message:
+              "Database is missing required tables. Run Prisma migrations.",
+            code: "DATABASE_NOT_MIGRATED",
+          } satisfies ApiResponse<never>,
+          { status: 500 },
+        );
+      }
+    }
+
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Database connection failed. Check DB config and run migrations.",
+          code: "DATABASE_CONNECTION_FAILED",
+        } satisfies ApiResponse<never>,
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(

@@ -355,7 +355,7 @@ export const paginationSchema = z.object({
 // ============================================================================
 
 export const academicSessionSchema = z.object({
-  name: z.string().min(4).max(20), // e.g. "2025/2026"
+  name: z.string().min(4).max(120), // e.g. "2025/2026 Academic Year"
   startDate: z.coerce.date().optional(),
   endDate: z.coerce.date().optional(),
   isActive: z.boolean().optional(),

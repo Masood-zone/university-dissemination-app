@@ -4,34 +4,19 @@ import * as React from "react";
 
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { DatePicker } from "@/components/ui/date-picker";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AcademicSessionDialog,
+  type AcademicSessionDialogMode,
+} from "@/components/admin/academic-sessions/AcademicSessionDialog";
 import { cn } from "@/lib/utils";
 import {
-  useCreateAcademicSession,
   useGetAcademicSessions,
   useSetCurrentSemester,
   useUpdateAcademicSession,
-  useUpsertSessionSemester,
 } from "@/services/admin/academic-sessions/sessions";
 import type { AcademicSessionSummary } from "@/types";
-
-type SemesterFormRow = {
-  name: "FIRST" | "SECOND";
-  enabled: boolean;
-  startDate?: Date;
-  endDate?: Date;
-};
 
 function StatusPill({ isActive }: { isActive: boolean }) {
   return (
@@ -52,9 +37,7 @@ export default function AcademicSessionsPage() {
   const [query, setQuery] = React.useState("");
   const { data: sessionsData, isLoading: sessionsLoading } =
     useGetAcademicSessions();
-  const createSession = useCreateAcademicSession();
   const updateSession = useUpdateAcademicSession();
-  const upsertSemester = useUpsertSessionSemester();
   const setCurrentSemesterMutation = useSetCurrentSemester();
 
   const sessions = React.useMemo(
@@ -92,22 +75,14 @@ export default function AcademicSessionsPage() {
   }, [query, sessions]);
 
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [dialogMode, setDialogMode] = React.useState<"create" | "edit">(
-    "create",
-  );
-  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [dialogMode, setDialogMode] =
+    React.useState<AcademicSessionDialogMode>("create");
+  const [editingSession, setEditingSession] =
+    React.useState<AcademicSessionSummary | null>(null);
 
-  const [sessionName, setSessionName] = React.useState("");
-  const [sessionStart, setSessionStart] = React.useState<Date | undefined>();
-  const [sessionEnd, setSessionEnd] = React.useState<Date | undefined>();
-  const [setActive, setSetActive] = React.useState(true);
-  const [semesterRows, setSemesterRows] = React.useState<SemesterFormRow[]>([
-    { name: "FIRST", enabled: true },
-    { name: "SECOND", enabled: true },
-  ]);
-
-  const [currentSemester, setCurrentSemester] =
-    React.useState<SemesterFormRow["name"]>("FIRST");
+  const [currentSemester, setCurrentSemester] = React.useState<
+    "FIRST" | "SECOND"
+  >("FIRST");
 
   React.useEffect(() => {
     if (activeSemesterName === "FIRST" || activeSemesterName === "SECOND") {
@@ -117,48 +92,13 @@ export default function AcademicSessionsPage() {
 
   const openCreate = () => {
     setDialogMode("create");
-    setEditingId(null);
-    setSessionName("");
-    setSessionStart(undefined);
-    setSessionEnd(undefined);
-    setSetActive(true);
-    setCurrentSemester("FIRST");
-    setSemesterRows([
-      { name: "FIRST", enabled: true },
-      { name: "SECOND", enabled: true },
-    ]);
+    setEditingSession(null);
     setDialogOpen(true);
   };
 
   const openEdit = (row: AcademicSessionSummary) => {
     setDialogMode("edit");
-    setEditingId(row.id);
-    setSessionName(row.name);
-    setSessionStart(row.startDate ? new Date(row.startDate) : undefined);
-    setSessionEnd(row.endDate ? new Date(row.endDate) : undefined);
-    setSetActive(row.isActive);
-
-    const first = row.semesters.find((s) => s.name === "FIRST");
-    const second = row.semesters.find((s) => s.name === "SECOND");
-
-    setSemesterRows([
-      {
-        name: "FIRST",
-        enabled: Boolean(first),
-        startDate: first?.startDate ? new Date(first.startDate) : undefined,
-        endDate: first?.endDate ? new Date(first.endDate) : undefined,
-      },
-      {
-        name: "SECOND",
-        enabled: Boolean(second),
-        startDate: second?.startDate ? new Date(second.startDate) : undefined,
-        endDate: second?.endDate ? new Date(second.endDate) : undefined,
-      },
-    ]);
-
-    if (row.currentSemester === "FIRST" || row.currentSemester === "SECOND") {
-      setCurrentSemester(row.currentSemester);
-    }
+    setEditingSession(row);
     setDialogOpen(true);
   };
 
@@ -172,53 +112,6 @@ export default function AcademicSessionsPage() {
           ? (session.currentSemester ?? "FIRST")
           : undefined,
       });
-    } catch {
-      // handled by mutation error state
-    }
-  };
-
-  const saveDialog = async () => {
-    if (!sessionName.trim()) return;
-
-    try {
-      if (dialogMode === "create") {
-        await createSession.mutateAsync({
-          name: sessionName.trim(),
-          startDate: sessionStart?.toISOString(),
-          endDate: sessionEnd?.toISOString(),
-          isActive: setActive,
-          currentSemester: setActive ? currentSemester : undefined,
-          semesters: semesterRows.map((s) => ({
-            name: s.name,
-            enabled: s.enabled,
-            startDate: s.startDate?.toISOString(),
-            endDate: s.endDate?.toISOString(),
-          })),
-        });
-      } else if (dialogMode === "edit" && editingId) {
-        await updateSession.mutateAsync({
-          id: editingId,
-          name: sessionName.trim(),
-          startDate: sessionStart?.toISOString(),
-          endDate: sessionEnd?.toISOString(),
-          isActive: setActive,
-          currentSemester: setActive ? currentSemester : undefined,
-        });
-
-        await Promise.all(
-          semesterRows.map((s) =>
-            upsertSemester.mutateAsync({
-              sessionId: editingId,
-              name: s.name,
-              enabled: s.enabled,
-              startDate: s.startDate?.toISOString(),
-              endDate: s.endDate?.toISOString(),
-            }),
-          ),
-        );
-      }
-
-      setDialogOpen(false);
     } catch {
       // handled by mutation error state
     }
@@ -457,162 +350,12 @@ export default function AcademicSessionsPage() {
         </aside>
       </div>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {dialogMode === "create" ? "Create New Session" : "Edit Session"}
-            </DialogTitle>
-            <DialogDescription>
-              Configure the academic session and its semesters.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <label className="text-sm font-medium">Session name</label>
-              <Input
-                className="mt-2"
-                value={sessionName}
-                onChange={(e) => setSessionName(e.target.value)}
-                placeholder="e.g. 2024/2025"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">Start date</label>
-              <div className="mt-2">
-                <DatePicker
-                  value={sessionStart}
-                  onChange={setSessionStart}
-                  placeholder="Pick start date"
-                  buttonClassName="w-full"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium">End date</label>
-              <div className="mt-2">
-                <DatePicker
-                  value={sessionEnd}
-                  onChange={setSessionEnd}
-                  placeholder="Pick end date"
-                  buttonClassName="w-full"
-                />
-              </div>
-            </div>
-
-            <div className="sm:col-span-2 flex items-center justify-between rounded-lg border border-border bg-muted/40 p-3">
-              <div>
-                <p className="text-sm font-semibold">Set session active</p>
-                <p className="text-xs text-muted-foreground">
-                  Only one academic session can be active.
-                </p>
-              </div>
-              <Switch checked={setActive} onCheckedChange={setSetActive} />
-            </div>
-          </div>
-
-          <div className="mt-2 rounded-xl border border-border">
-            <div className="border-b border-border px-4 py-3">
-              <p className="text-sm font-semibold">Semesters setup</p>
-              <p className="text-xs text-muted-foreground">
-                Enable semesters and set their dates.
-              </p>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    <th className="px-4 py-3">Include</th>
-                    <th className="px-4 py-3">Semester</th>
-                    <th className="px-4 py-3">Start date</th>
-                    <th className="px-4 py-3">End date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {semesterRows.map((sem) => (
-                    <tr key={sem.name} className="align-top">
-                      <td className="px-4 py-4">
-                        <Checkbox
-                          checked={sem.enabled}
-                          onCheckedChange={(v) =>
-                            setSemesterRows((prev) =>
-                              prev.map((r) =>
-                                r.name === sem.name
-                                  ? { ...r, enabled: Boolean(v) }
-                                  : r,
-                              ),
-                            )
-                          }
-                          aria-label={`Include ${sem.name} semester`}
-                        />
-                      </td>
-                      <td className="px-4 py-4">
-                        <p className="text-sm font-semibold">
-                          {sem.name === "FIRST"
-                            ? "First Semester"
-                            : "Second Semester"}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {sem.name}
-                        </p>
-                      </td>
-                      <td className="px-4 py-4">
-                        <DatePicker
-                          value={sem.startDate}
-                          onChange={(d) =>
-                            setSemesterRows((prev) =>
-                              prev.map((r) =>
-                                r.name === sem.name
-                                  ? { ...r, startDate: d }
-                                  : r,
-                              ),
-                            )
-                          }
-                          placeholder="Start"
-                          buttonClassName="w-full"
-                          disabled={!sem.enabled}
-                        />
-                      </td>
-                      <td className="px-4 py-4">
-                        <DatePicker
-                          value={sem.endDate}
-                          onChange={(d) =>
-                            setSemesterRows((prev) =>
-                              prev.map((r) =>
-                                r.name === sem.name ? { ...r, endDate: d } : r,
-                              ),
-                            )
-                          }
-                          placeholder="End"
-                          buttonClassName="w-full"
-                          disabled={!sem.enabled}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => setDialogOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="button" onClick={saveDialog}>
-              {dialogMode === "create" ? "Create Session" : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AcademicSessionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        mode={dialogMode}
+        session={editingSession}
+      />
     </section>
   );
 }
