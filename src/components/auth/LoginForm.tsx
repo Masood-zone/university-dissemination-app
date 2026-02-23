@@ -40,6 +40,8 @@ export function LoginForm() {
     }
   };
 
+  const isSubmitting = form.formState.isSubmitting;
+
   return (
     <div className="w-full max-w-md mx-auto bg-card text-card-foreground rounded-2xl shadow-2xl relative z-10 border border-border overflow-hidden">
       <div className="pt-10 pb-6 px-8 flex flex-col items-center text-center">
@@ -154,16 +156,21 @@ export function LoginForm() {
 
           <div>
             <button
-              className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-semibold rounded-md text-primary-foreground bg-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 hover:cursor-pointer cursor-pointer"
+              className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-semibold rounded-md text-primary-foreground bg-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
               type="submit"
+              disabled={isSubmitting}
+              aria-busy={isSubmitting}
             >
               <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                 <MaterialSymbol
-                  icon="login"
-                  className="opacity-80 group-hover:opacity-100 transition-opacity text-[20px]"
+                  icon={isSubmitting ? "progress_activity" : "login"}
+                  className={
+                    "opacity-80 group-hover:opacity-100 transition-opacity text-[20px] " +
+                    (isSubmitting ? "animate-spin" : "")
+                  }
                 />
               </span>
-              Log In
+              {isSubmitting ? "Logging in..." : "Log In"}
             </button>
           </div>
         </form>
