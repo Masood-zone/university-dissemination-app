@@ -36,3 +36,7 @@ export async function resetPassword(newPassword: string, token: string) {
 
   return { data, error };
 }
+
+export async function userLogout() {
+  await authClient.signOut();
+}

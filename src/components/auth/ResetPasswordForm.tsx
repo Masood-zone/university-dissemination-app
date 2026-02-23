@@ -171,7 +171,7 @@ export function ResetPasswordForm() {
           </div>
 
           <button
-            className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-semibold rounded-md text-primary-foreground bg-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60"
+            className="group relative w-full flex justify-center py-2.5 px-4 border border-transparent text-sm font-semibold rounded-md text-primary-foreground bg-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-60 cursor-pointer"
             type="submit"
           >
             <span className="absolute left-0 inset-y-0 flex items-center pl-3">
@@ -184,12 +184,6 @@ export function ResetPasswordForm() {
           </button>
 
           <div className="flex items-center justify-between text-sm">
-            <Link
-              className="font-semibold text-primary hover:underline"
-              href="/verify-otp"
-            >
-              Verify OTP/token
-            </Link>
             <Link
               className="font-semibold text-primary hover:underline"
               href="/login"

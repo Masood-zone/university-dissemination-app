@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "db:seed": "tsx scripts/seed.ts",
+    "db:seed": "tsx src/scripts/seed.ts",
     "lint": "eslint"
   },
   "dependencies": {
@@ -34,6 +34,7 @@
     "remark-gfm": "^4.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
+    "tsx": "^4.21.0",
     "zod": "^4.3.6",
     "zustand": "^5.0.11"
   },

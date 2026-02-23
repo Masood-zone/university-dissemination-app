@@ -2,9 +2,20 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
+import { MaterialSymbol } from "@/components/common/MaterialSymbol";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { userLogout } from "@/services/auth/user-auth";
 
 function getInitials(name: string): string {
   const cleaned = name.trim();
@@ -36,6 +47,7 @@ function avatarSvgDataUri(label: string): string {
 }
 
 export function UserAvatar({ className }: { className?: string }) {
+  const router = useRouter();
   const {
     data: session,
     isPending,
@@ -76,27 +88,80 @@ export function UserAvatar({ className }: { className?: string }) {
     );
   }
 
+  const onLogout = async () => {
+    await userLogout();
+    router.refresh();
+    router.push("/");
+  };
+
   return (
-    <Link
-      href="/dashboard"
-      className={cn(
-        "inline-flex items-center gap-2 rounded-full border border-border bg-background px-2 py-1.5 hover:bg-accent",
-        className,
-      )}
-      aria-label="Open dashboard"
-      title={name}
-    >
-      <Image
-        src={imageSrc}
-        alt={name}
-        width={28}
-        height={28}
-        className="h-7 w-7 rounded-full object-cover"
-        unoptimized
-      />
-      <span className="hidden sm:inline text-sm font-semibold max-w-48 truncate">
-        {name}
-      </span>
-    </Link>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "inline-flex items-center gap-2 rounded-full border border-border bg-background px-2 py-1.5 hover:bg-accent",
+            className,
+          )}
+          aria-label="Open user menu"
+          title={name}
+        >
+          <Image
+            src={imageSrc}
+            alt={name}
+            width={28}
+            height={28}
+            className="h-7 w-7 rounded-full object-cover"
+            unoptimized
+          />
+          <span className="hidden sm:inline text-sm font-semibold max-w-48 truncate">
+            {name}
+          </span>
+          <MaterialSymbol
+            icon="expand_more"
+            className="hidden sm:inline text-[18px] text-muted-foreground"
+          />
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel className="space-y-0.5">
+          <div className="text-sm font-semibold truncate">{name}</div>
+          {typeof user?.email === "string" ? (
+            <div className="text-xs font-normal text-muted-foreground truncate">
+              {user.email}
+            </div>
+          ) : null}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href="/dashboard">
+            <MaterialSymbol icon="dashboard" className="text-[18px]" />
+            Dashboard
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href="/profile">
+            <MaterialSymbol icon="person" className="text-[18px]" />
+            Profile
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem
+          variant="destructive"
+          className="cursor-pointer"
+          onSelect={(e) => {
+            e.preventDefault();
+            void onLogout();
+          }}
+        >
+          <MaterialSymbol icon="logout" className="text-[18px]" />
+          Logout
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
