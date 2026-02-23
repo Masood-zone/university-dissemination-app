@@ -1,9 +1,9 @@
 export function StatsSection() {
   const stats = [
-    { value: "25k+", label: "Students Enrolled" },
-    { value: "150+", label: "Academic Programs" },
-    { value: "12", label: "Integrated Systems" },
-    { value: "98%", label: "Graduate Employment" },
+    { value: "8", label: "Core modules integrated" },
+    { value: "4", label: "Roles supported" },
+    { value: "Real-time", label: "Push + in-app alerts" },
+    { value: "RBAC", label: "Secure access control" },
   ] as const;
 
   return (

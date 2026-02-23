@@ -16,17 +16,17 @@ export function HeroSection() {
         <div className="grid items-center gap-10 lg:grid-cols-12">
           <div className="text-center lg:col-span-7 lg:text-left">
             <span className="inline-flex items-center rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Digital Transformation Era
+              Smart Information Dissemination System
             </span>
             <h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
-              Advancing TVET and <br />
-              <span className="text-primary">Creative Education</span>
+              Timely, Targeted, and Secure <br />
+              <span className="text-primary">Campus Information</span>
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-relaxed text-muted-foreground">
-              The Akenten Appiah-Menka University of Skills Training and
-              Entrepreneurial Development (AAMUSTED) provides a comprehensive
-              ecosystem for academic excellence, digital records, and
-              institutional growth.
+              A centralized platform that delivers announcements, academic
+              updates, administrative services, and campus life information in
+              real time — with personalized dashboards and role-based access for
+              students, lecturers, and administrators.
             </p>
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
@@ -34,13 +34,13 @@ export function HeroSection() {
                 href="/login"
                 className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-4 text-base font-bold text-primary-foreground shadow-sm hover:opacity-90 md:text-lg"
               >
-                Student Portal Login
+                Sign In
               </Link>
               <Link
-                href="#"
+                href="#research"
                 className="inline-flex items-center justify-center rounded-md border border-border bg-background px-8 py-4 text-base font-bold text-foreground hover:bg-accent md:text-lg"
               >
-                Explore Courses
+                View Core Modules
               </Link>
             </div>
           </div>
@@ -60,7 +60,7 @@ export function HeroSection() {
                   />
                 </div>
                 <p className="mt-6 text-xs font-mono text-muted-foreground">
-                  Data-Driven Academic Ecosystem v2.0
+                  Centralized communication • web & mobile responsive
                 </p>
               </div>
             </div>

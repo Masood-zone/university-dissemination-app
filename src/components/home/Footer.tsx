@@ -30,9 +30,10 @@ export function Footer() {
               </div>
             </div>
             <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
-              Akenten Appiah-Menka University of Skills Training and
-              Entrepreneurial Development. Championing TVET and Creative Arts
-              Education in Ghana.
+              A centralized communication platform for timely announcements,
+              academic information, administrative services, campus life
+              updates, and direct student-staff messaging — with role-based
+              access and user preference customization.
             </p>
           </div>
 
@@ -41,23 +42,23 @@ export function Footer() {
               <p className="text-sm font-bold">Quick Links</p>
               <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
                 <li>
-                  <Link className="hover:underline" href="#">
-                    Apply Now
+                  <Link className="hover:underline" href="#research">
+                    Core Modules
                   </Link>
                 </li>
                 <li>
-                  <Link className="hover:underline" href="#">
-                    Academic Calendar
+                  <Link className="hover:underline" href="#academics">
+                    Notifications & Dashboards
                   </Link>
                 </li>
                 <li>
-                  <Link className="hover:underline" href="#">
-                    Library (E-Resources)
+                  <Link className="hover:underline" href="#e-resources">
+                    Resources
                   </Link>
                 </li>
                 <li>
-                  <Link className="hover:underline" href="#">
-                    Fees & Financial Aid
+                  <Link className="hover:underline" href="/login">
+                    Sign In
                   </Link>
                 </li>
               </ul>

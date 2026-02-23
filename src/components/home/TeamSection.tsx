@@ -64,11 +64,11 @@ export function TeamSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-3xl font-extrabold">
-              Information Dissemination
-            </h2>
+            <h2 className="text-3xl font-extrabold">About the Project</h2>
             <p className="mt-2 text-muted-foreground">
-              Meet the team members who came together to develop this app.
+              This Smart Information Dissemination System centralizes academic,
+              administrative, and campus-life communication into a secure,
+              personalized platform.
             </p>
           </div>
         </div>

@@ -6,27 +6,27 @@ export function FeaturesSection() {
   const cards = [
     {
       icon: "school",
-      title: "Student Dashboard",
+      title: "Academic Information",
       description:
-        "Access course registration, academic records, timetable, and fee status in a unified interface.",
-      cta: "Launch Dashboard",
-      href: "/student",
+        "Access admissions info, timetables, room locations, examination schedules, and the academic calendar in one place.",
+      cta: "Sign in to access",
+      href: "/login",
     },
     {
-      icon: "assignment_ind",
-      title: "Lecturer Portal",
+      icon: "notifications",
+      title: "Announcements & Notifications",
       description:
-        "Manage course assignments, upload learning materials, and record marks with our database-driven UI.",
-      cta: "Login Portal",
-      href: "/lecturer",
+        "Receive targeted updates (old affairs, current affairs, departmental) with search and archives — plus notification preferences.",
+      cta: "See how it works",
+      href: "#academics",
     },
     {
       icon: "admin_panel_settings",
-      title: "Admin Console",
+      title: "Administrative & Campus Services",
       description:
-        "Complete oversight of institutional data, permissions, and departmental administration.",
-      cta: "Secure Access",
-      href: "/administrator",
+        "Check fee and registration status, access digital student ID, and view campus life info like events, maps, library resources, and transport schedules.",
+      cta: "Explore modules",
+      href: "#e-resources",
     },
   ] as const;
 
@@ -35,10 +35,10 @@ export function FeaturesSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h2 className="text-3xl font-extrabold sm:text-4xl">
-            Unified ERP Environment
+            Core Modules of SIDS
           </h2>
           <p className="mt-4 text-xl text-muted-foreground">
-            Role-based access tailored for every member of our community.
+            Built to reduce missed information and improve campus communication.
           </p>
         </div>
 
