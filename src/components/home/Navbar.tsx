@@ -7,10 +7,12 @@ import { ThemeToggle } from "@/components/home/ThemeToggle";
 import { UserAvatar } from "@/components/home/UserAvatar";
 
 const navLinks = [
-  { label: "Admissions", href: "#" },
-  { label: "Academics", href: "#" },
-  { label: "Research", href: "#" },
-  { label: "E-Resources", href: "#" },
+  { label: "Admissions", href: "#admissions" },
+  { label: "Academics", href: "#academics" },
+  { label: "Research", href: "#research" },
+  { label: "E-Resources", href: "#e-resources" },
+  { label: "About Us", href: "#about-us" },
+  { label: "Contact", href: "#contact" },
 ] as const;
 
 export function Navbar() {
@@ -52,7 +54,7 @@ export function Navbar() {
           <ThemeToggle />
           <UserAvatar />
           <Link
-            href="#"
+            href="#admissions"
             className="hidden sm:inline-flex items-center rounded-md bg-destructive px-5 py-2.5 text-sm font-bold text-destructive-foreground hover:opacity-90"
           >
             Enroll Now

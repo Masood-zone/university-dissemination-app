@@ -1,11 +1,13 @@
-import { LoginForm } from "@/components/auth/LoginForm";
+import { Suspense } from "react";
+
+import { ResetPasswordForm } from "@/components/auth/ResetPasswordForm";
 
 export const metadata = {
-  title: "Login",
-  description: "Sign in to AAMUSTED Information Dissemination System",
+  title: "Reset Password",
+  description: "Set a new password",
 };
 
-export default function LoginPage() {
+export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-4 bg-background relative overflow-hidden">
       <div className="fixed inset-0 -z-10">
@@ -14,7 +16,9 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 w-full">
-        <LoginForm />
+        <Suspense fallback={null}>
+          <ResetPasswordForm />
+        </Suspense>
       </div>
 
       <div className="relative z-10 mt-8 text-center text-xs text-muted-foreground">

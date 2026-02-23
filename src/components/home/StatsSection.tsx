@@ -7,7 +7,10 @@ export function StatsSection() {
   ] as const;
 
   return (
-    <section className="bg-primary py-12 text-primary-foreground">
+    <section
+      id="academics"
+      className="bg-primary py-12 text-primary-foreground scroll-mt-24"
+    >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {stats.map((s) => (

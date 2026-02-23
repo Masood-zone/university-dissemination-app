@@ -3,7 +3,10 @@ import Link from "next/link";
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden pt-32 pb-20 lg:pt-48 lg:pb-32">
+    <section
+      id="admissions"
+      className="relative overflow-hidden scroll-mt-24 pt-32 pb-20 lg:pt-48 lg:pb-32"
+    >
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-linear-to-br from-background via-background to-muted" />
         <div className="absolute inset-0 opacity-20 dark:opacity-35 bg-[radial-gradient(circle_at_30%_20%,hsl(var(--primary))_0%,transparent_45%),radial-gradient(circle_at_80%_60%,hsl(var(--destructive))_0%,transparent_45%)]" />

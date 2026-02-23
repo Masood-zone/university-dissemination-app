@@ -45,10 +45,7 @@ export function UserAvatar({ className }: { className?: string }) {
   if (isPending) {
     return (
       <div
-        className={cn(
-          "h-9 w-9 rounded-full bg-muted animate-pulse",
-          className,
-        )}
+        className={cn("h-9 w-9 rounded-full bg-muted animate-pulse", className)}
         aria-label="Loading session"
       />
     );

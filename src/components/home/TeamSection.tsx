@@ -60,11 +60,13 @@ export function TeamSection() {
   ];
 
   return (
-    <section className="bg-muted/40 py-24">
+    <section id="about-us" className="bg-muted/40 py-24 scroll-mt-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
-            <h2 className="text-3xl font-extrabold">Information Dissemination</h2>
+            <h2 className="text-3xl font-extrabold">
+              Information Dissemination
+            </h2>
             <p className="mt-2 text-muted-foreground">
               Meet the team members who came together to develop this app.
             </p>

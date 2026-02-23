@@ -18,3 +18,21 @@ export async function userLogin(
   );
   return { data, error };
 }
+
+export async function requestPasswordReset(email: string, redirectTo?: string) {
+  const { data, error } = await authClient.requestPasswordReset({
+    email,
+    redirectTo,
+  });
+
+  return { data, error };
+}
+
+export async function resetPassword(newPassword: string, token: string) {
+  const { data, error } = await authClient.resetPassword({
+    newPassword,
+    token,
+  });
+
+  return { data, error };
+}
