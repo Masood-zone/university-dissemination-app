@@ -28,6 +28,11 @@ const navItems: NavItem[] = [
     icon: "school",
   },
   {
+    label: "Programmes & Courses",
+    href: "/administrator/programmes-and-courses",
+    icon: "menu_book",
+  },
+  {
     label: "Departments",
     href: "/administrator/department-management",
     icon: "business",
@@ -82,8 +87,8 @@ export default function AdminLayoutShell({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [mobileNavOpen]);
 
-  const topNavItems = navItems.slice(0, 5);
-  const reportNavItems = navItems.slice(5);
+  const topNavItems = navItems.slice(0, -2);
+  const reportNavItems = navItems.slice(-2);
 
   const navLinkClass = (active: boolean) =>
     cn(

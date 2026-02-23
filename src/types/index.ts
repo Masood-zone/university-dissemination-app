@@ -117,6 +117,17 @@ export interface CourseData {
   capacity?: number;
 }
 
+export interface ProgrammeListItem {
+  id: string;
+  name: string;
+  code: string;
+  departmentName: string;
+  awardType: "UNDERGRADUATE" | "POSTGRADUATE" | "DIPLOMA";
+  awardTypeLabel: string;
+  durationLabel: string;
+  activeCourses: number;
+}
+
 export interface TimetableEntry {
   id: string;
   course: CourseData;
