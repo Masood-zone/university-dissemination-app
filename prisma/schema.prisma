@@ -59,6 +59,34 @@ enum PaymentStatus {
   CANCELLED
 }
 
+enum ApplicationStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  SHORTLISTED
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ApplicationDocumentType {
+  PASSPORT_PHOTO
+  TRANSCRIPT
+  CERTIFICATE
+  ID_DOCUMENT
+  BIRTH_CERTIFICATE
+  OTHER
+}
+
+enum PaymentTransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REVERSED
+  REFUNDED
+  CANCELLED
+}
+
 // ============================================================================
 // AUTH (Better Auth) - MAINTAINED MODELS
 // ============================================================================
@@ -98,6 +126,10 @@ model User {
   permissions            Permission[]
   lecturerAssignments    CourseAssignment[] @relation("LecturerAssignments")
   enrollments            Enrollment[]
+  applications           Application[] @relation("Applicant")
+  applicationStatusChanges ApplicationStatusHistory[] @relation("StatusChangedBy")
+  roleTemplateAssignments UserRoleTemplate[]
+  auditLogs              AuditLog[] @relation("AuditActor")
 
   @@unique([email])
   @@index([departmentId])
@@ -211,11 +243,33 @@ model Department {
   updatedAt   DateTime @updatedAt
 
   users           User[]
+  programmes      Programme[]
   announcements   Announcement[]
   courses         Course[]
   courseOfferings CourseOffering[]
+  applications    Application[]
 
   @@index([code])
+}
+
+model Programme {
+  id            String   @id @default(cuid())
+  name          String
+  code          String
+  description   String?
+  durationYears Int?
+  isActive      Boolean  @default(true)
+  department    Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  departmentId  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  courses      Course[]
+  applications Application[]
+
+  @@unique([departmentId, code])
+  @@index([departmentId])
+  @@index([isActive])
 }
 
 // ============================================================================
@@ -233,6 +287,7 @@ model AcademicSession {
 
   semesters Semester[]
   offerings CourseOffering[]
+  applications Application[]
 
   @@index([isActive])
 }
@@ -301,6 +356,8 @@ model Course {
   credits       Int
   department    Department @relation(fields: [departmentId], references: [id])
   departmentId  String
+  programme     Programme? @relation(fields: [programmeId], references: [id], onDelete: SetNull)
+  programmeId   String?
   semester      Int
   capacity      Int?
   level         Int?
@@ -312,6 +369,81 @@ model Course {
 
   @@unique([code, departmentId])
   @@index([departmentId])
+  @@index([programmeId])
+}
+
+// ============================================================================
+// ADMISSIONS & APPLICATIONS
+// ============================================================================
+
+model Application {
+  id                 String            @id @default(cuid())
+  applicationNo      String            @unique
+  status             ApplicationStatus @default(DRAFT)
+  applicantFirstName String
+  applicantLastName  String
+  applicantEmail     String
+  applicantPhone     String?
+  applicant          User?             @relation("Applicant", fields: [applicantId], references: [id], onDelete: SetNull)
+  applicantId        String?
+  department         Department        @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  departmentId       String
+  programme          Programme         @relation(fields: [programmeId], references: [id], onDelete: Restrict)
+  programmeId        String
+  session            AcademicSession?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  sessionId          String?
+  notes              String?
+  submittedAt        DateTime?
+  reviewedAt         DateTime?
+  decidedAt          DateTime?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  documents     ApplicationDocument[]
+  statusHistory ApplicationStatusHistory[]
+
+  @@index([status])
+  @@index([applicantId])
+  @@index([departmentId])
+  @@index([programmeId])
+  @@index([sessionId])
+  @@index([submittedAt])
+}
+
+model ApplicationDocument {
+  id          String                  @id @default(cuid())
+  application Application             @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String
+  type        ApplicationDocumentType
+  fileName    String
+  fileUrl     String
+  mimeType    String?
+  sizeBytes   Int?
+  isVerified  Boolean                 @default(false)
+  verifiedAt  DateTime?
+  uploadedAt  DateTime                @default(now())
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  @@index([applicationId])
+  @@index([type])
+  @@index([isVerified])
+}
+
+model ApplicationStatusHistory {
+  id          String            @id @default(cuid())
+  application Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String
+  fromStatus  ApplicationStatus?
+  toStatus    ApplicationStatus
+  changedBy   User?             @relation("StatusChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+  changedById String?
+  note        String?
+  createdAt   DateTime          @default(now())
+
+  @@index([applicationId])
+  @@index([changedById])
+  @@index([createdAt])
 }
 
 model CourseOffering {
@@ -480,14 +612,98 @@ model Fee {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  transactions PaymentTransaction[]
+
   @@index([studentId])
   @@index([status])
   @@index([academicYear])
 }
 
+model PaymentTransaction {
+  id              String                   @id @default(cuid())
+  reference       String                   @unique
+  fee             Fee?                     @relation(fields: [feeId], references: [id], onDelete: SetNull)
+  feeId           String?
+  studentId       String
+  amount          Float
+  currency        String                   @default("GHS")
+  paymentMethod   String
+  provider        String?
+  providerRef     String?
+  status          PaymentTransactionStatus @default(PENDING)
+  paidAt          DateTime?
+  metadata        String?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  @@index([feeId])
+  @@index([studentId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  actorId    String?
+  action     String
+  resource   String
+  resourceId String?
+  details    String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+}
+
 // ============================================================================
 // RBAC - PERMISSIONS
 // ============================================================================
+
+model RoleTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  role        Role
+  description String?
+  isSystem    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  permissions RoleTemplatePermission[]
+  assignments UserRoleTemplate[]
+
+  @@index([role])
+}
+
+model RoleTemplatePermission {
+  id          String       @id @default(cuid())
+  template    RoleTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId  String
+  action      String
+  resource    String
+  granted     Boolean      @default(true)
+
+  @@unique([templateId, action, resource])
+  @@index([templateId])
+}
+
+model UserRoleTemplate {
+  id         String       @id @default(cuid())
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  template   RoleTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId String
+  isPrimary  Boolean      @default(true)
+  assignedAt DateTime     @default(now())
+
+  @@unique([userId, templateId])
+  @@index([userId])
+  @@index([templateId])
+}
 
 model Permission {
   id       String  @id @default(cuid())

@@ -2,6 +2,7 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig } from "axios";
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || "/api",
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
@@ -10,13 +11,6 @@ const axiosInstance: AxiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Add auth token if available
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("auth_token");
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
     return config;
   },
   (error) => {
@@ -31,7 +25,6 @@ axiosInstance.interceptors.response.use(
     // Handle 401 Unauthorized
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
-        localStorage.removeItem("auth_token");
         window.location.href = "/login";
       }
     }

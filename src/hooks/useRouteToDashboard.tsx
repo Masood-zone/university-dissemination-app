@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 
 type Role =
   | "ADMIN"
@@ -15,7 +15,7 @@ export function useRouteToDashboard() {
     (role: Role) => {
       switch (role) {
         case "ADMIN":
-          return router.replace("/administrator/dashboard");
+          return router.replace("/administrator");
         case "DEPARTMENT_ADMIN":
           return router.replace("/department-administrator/dashboard");
         case "LECTURER":

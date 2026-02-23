@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { userLogout } from "@/services/auth/user-auth";
+import { useRouteToDashboard } from "@/hooks/useRouteToDashboard";
 
 function avatarSvgDataUri(label: string): string {
   const initials = getInitials(label);
@@ -42,7 +43,7 @@ export function UserAvatar({ className }: { className?: string }) {
     isPending,
     // error,
   } = authClient.useSession();
-
+  const routeToDashboard = useRouteToDashboard();
   if (isPending) {
     return (
       <div
@@ -125,10 +126,10 @@ export function UserAvatar({ className }: { className?: string }) {
         <DropdownMenuSeparator />
 
         <DropdownMenuItem asChild className="cursor-pointer">
-          <Link href="/dashboard">
+          <span onClick={() => routeToDashboard(user?.role as string)}>
             <MaterialSymbol icon="dashboard" className="text-[18px]" />
             Dashboard
-          </Link>
+          </span>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className="cursor-pointer">
           <Link href="/profile">

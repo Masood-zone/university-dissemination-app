@@ -37,20 +37,22 @@ async function hashBetterAuthPassword(password: string): Promise<string> {
 }
 
 async function main() {
-  const email = "kiritokaisel@gmail.com";
-  const plainPassword = "Student@123";
+  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@aamusted.edu.gh";
+  const plainPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin@123";
 
   // Minimal profile fields required by schema
-  const firstName = "Kirito";
-  const lastName = "Kaisel";
+  const firstName = process.env.SEED_ADMIN_FIRST_NAME ?? "System";
+  const lastName = process.env.SEED_ADMIN_LAST_NAME ?? "Administrator";
   const name = `${firstName} ${lastName}`;
 
-  console.log("Seeding single student user...");
+  console.log("Seeding administrator user...");
+
+  const adminTemplatePermissions = [{ action: "*", resource: "*" }] as const;
 
   try {
     await prisma.$connect();
 
-    // Optional: create a default department so the student is fully linked.
+    // Optional: create a default department so admin is linked to a department context.
     const department = await prisma.department.upsert({
       where: { code: "CS" },
       create: {
@@ -73,7 +75,7 @@ async function main() {
         emailVerified: true,
         firstName,
         lastName,
-        role: Role.STUDENT,
+        role: Role.ADMIN,
         isActive: true,
         departmentId: department.id,
       },
@@ -82,9 +84,67 @@ async function main() {
         emailVerified: true,
         firstName,
         lastName,
-        role: Role.STUDENT,
+        role: Role.ADMIN,
         isActive: true,
         departmentId: department.id,
+      },
+    });
+
+    const systemAdminTemplate = await prisma.roleTemplate.upsert({
+      where: { name: "System Administrator" },
+      update: {
+        role: Role.ADMIN,
+        description: "Full system access across all modules",
+        isSystem: true,
+      },
+      create: {
+        name: "System Administrator",
+        role: Role.ADMIN,
+        description: "Full system access across all modules",
+        isSystem: true,
+      },
+    });
+
+    for (const permission of adminTemplatePermissions) {
+      await prisma.roleTemplatePermission.upsert({
+        where: {
+          templateId_action_resource: {
+            templateId: systemAdminTemplate.id,
+            action: permission.action,
+            resource: permission.resource,
+          },
+        },
+        update: {
+          granted: true,
+        },
+        create: {
+          templateId: systemAdminTemplate.id,
+          action: permission.action,
+          resource: permission.resource,
+          granted: true,
+        },
+      });
+    }
+
+    await prisma.userRoleTemplate.updateMany({
+      where: { userId: user.id },
+      data: { isPrimary: false },
+    });
+
+    await prisma.userRoleTemplate.upsert({
+      where: {
+        userId_templateId: {
+          userId: user.id,
+          templateId: systemAdminTemplate.id,
+        },
+      },
+      update: {
+        isPrimary: true,
+      },
+      create: {
+        userId: user.id,
+        templateId: systemAdminTemplate.id,
+        isPrimary: true,
       },
     });
 
@@ -116,29 +176,12 @@ async function main() {
       });
     }
 
-    const emailLocal = email.split("@")[0] ?? "STUDENT";
-    const studentId = `STU-${emailLocal.toUpperCase()}`;
-
-    await prisma.studentProfile.upsert({
-      where: { userId: user.id },
-      create: {
-        userId: user.id,
-        studentId,
-        batch: "2025/2026",
-        enrolledCourses: [],
-      },
-      update: {
-        studentId,
-        batch: "2025/2026",
-        enrolledCourses: [],
-      },
-    });
-
     console.log("Seed complete:");
     console.log(`- Email: ${email}`);
     console.log(`- Password: ${plainPassword}`);
     console.log(`- UserId: ${user.id}`);
-    console.log(`- StudentId: ${studentId}`);
+    console.log("- Role: ADMIN");
+    console.log("- System Administrator template assigned");
   } catch (error) {
     console.error("Seed failed:", error);
     throw error;
