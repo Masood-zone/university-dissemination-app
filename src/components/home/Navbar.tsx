@@ -8,6 +8,7 @@ import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { ThemeToggle } from "@/components/home/ThemeToggle";
 import { UserAvatar } from "@/components/home/UserAvatar";
 import { Button } from "@/components/ui/button";
+import { useSession } from "@/lib/auth-client";
 
 const navLinks = [
   { label: "Overview", href: "#admissions" },
@@ -20,6 +21,8 @@ const navLinks = [
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = useSession();
+  const isLoggedIn = Boolean(session?.user);
 
   useEffect(() => {
     if (!mobileOpen) return;
@@ -77,13 +80,15 @@ export function Navbar() {
 
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeToggle />
-            <UserAvatar />
-            <Link
-              href="/login"
-              className="hidden sm:inline-flex items-center rounded-md bg-destructive px-5 py-2.5 text-sm font-bold text-destructive-foreground hover:opacity-90"
-            >
-              Get Started
-            </Link>
+            {isLoggedIn ? <UserAvatar /> : null}
+            {!isLoggedIn && (
+              <Link
+                href="/login"
+                className="hidden sm:inline-flex items-center rounded-md bg-destructive px-5 py-2.5 text-sm font-bold text-destructive-foreground hover:opacity-90"
+              >
+                Login To Portal
+              </Link>
+            )}
 
             <Button
               type="button"
@@ -176,13 +181,15 @@ export function Navbar() {
               </ul>
 
               <div className="mt-6">
-                <Link
-                  href="/login"
-                  onClick={() => setMobileOpen(false)}
-                  className="inline-flex w-full items-center justify-center rounded-md bg-destructive px-4 py-3 text-sm font-bold text-destructive-foreground hover:opacity-90"
-                >
-                  Get Started
-                </Link>
+                {!isLoggedIn && (
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="inline-flex w-full items-center justify-center rounded-md bg-destructive px-4 py-3 text-sm font-bold text-destructive-foreground hover:opacity-90"
+                  >
+                    Login To Portal
+                  </Link>
+                )}
               </div>
             </nav>
           </div>
