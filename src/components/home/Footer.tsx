@@ -1,0 +1,91 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+
+import { UserAvatar } from "@/components/home/UserAvatar";
+
+export function Footer() {
+  return (
+    <footer className="border-t border-border bg-background py-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
+          <div className="max-w-md">
+            <div className="flex items-center gap-3">
+              <Image
+                src="/logo.png"
+                alt="AAMUSTED Logo"
+                width={64}
+                height={64}
+                className="h-16 w-16 object-contain"
+              />
+              <div className="leading-none">
+                <p className="text-lg font-extrabold">AAMUSTED</p>
+                <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Information Dissemination System
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+              Akenten Appiah-Menka University of Skills Training and
+              Entrepreneurial Development. Championing TVET and Creative Arts
+              Education in Ghana.
+            </p>
+          </div>
+
+          <div className="grid gap-8 sm:grid-cols-2">
+            <div>
+              <p className="text-sm font-bold">Quick Links</p>
+              <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
+                <li>
+                  <Link className="hover:underline" href="#">
+                    Apply Now
+                  </Link>
+                </li>
+                <li>
+                  <Link className="hover:underline" href="#">
+                    Academic Calendar
+                  </Link>
+                </li>
+                <li>
+                  <Link className="hover:underline" href="#">
+                    Library (E-Resources)
+                  </Link>
+                </li>
+                <li>
+                  <Link className="hover:underline" href="#">
+                    Fees & Financial Aid
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <p className="text-sm font-bold">Session</p>
+              <div className="mt-4">
+                <UserAvatar />
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Signed-in users see their avatar here.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground md:flex-row">
+          <p>© 2026 AAMUSTED Information Dissemination System.</p>
+          <div className="flex items-center gap-6">
+            <Link className="hover:underline" href="#">
+              Privacy Policy
+            </Link>
+            <Link className="hover:underline" href="#">
+              Terms of Service
+            </Link>
+            <Link className="hover:underline" href="#">
+              Cookie Policy
+            </Link>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
