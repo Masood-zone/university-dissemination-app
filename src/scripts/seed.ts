@@ -1,15 +1,34 @@
 import "dotenv/config";
 
 import { PrismaClient, Role } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { Pool } from "pg";
 import { randomBytes, randomUUID, scrypt } from "node:crypto";
 import { promisify } from "node:util";
 
+const directUrl = process.env.DIRECT_URL;
 const accelerateUrl = process.env.ACCELERATE_URL ?? process.env.DATABASE_URL;
 
-const prisma = new PrismaClient({
-  accelerateUrl: accelerateUrl || undefined,
-  log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
-});
+const prisma = (() => {
+  const logLevels =
+    process.env.NODE_ENV === "development"
+      ? (["error", "warn"] as const)
+      : (["error"] as const);
+
+  if (directUrl && !directUrl.startsWith("prisma+")) {
+    const pool = new Pool({ connectionString: directUrl });
+    const adapter = new PrismaPg(pool);
+    return new PrismaClient({ adapter, log: [...logLevels] });
+  }
+
+  if (!accelerateUrl) {
+    throw new Error(
+      "Missing database configuration. Set DIRECT_URL or DATABASE_URL/ACCELERATE_URL.",
+    );
+  }
+
+  return new PrismaClient({ accelerateUrl, log: [...logLevels] });
+})();
 
 const scryptAsync = promisify(scrypt) as (
   password: string,

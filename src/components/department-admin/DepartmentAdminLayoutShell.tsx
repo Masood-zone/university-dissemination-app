@@ -24,7 +24,7 @@ const defaultDepartmentAdminNavItems: NavItem[] = [
   },
   {
     label: "Profile",
-    href: "/profile",
+    href: "/department-admin/profile",
     icon: "person",
   },
   {

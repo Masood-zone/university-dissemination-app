@@ -44,7 +44,7 @@ const defaultAdminNavItems: NavItem[] = [
   },
   {
     label: "Profile",
-    href: "/profile",
+    href: "/administrator/profile",
     icon: "person",
   },
 ];

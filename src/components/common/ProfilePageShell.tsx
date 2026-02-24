@@ -1,5 +1,7 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,11 +53,13 @@ export function ProfilePageShell({
   loading,
   error,
   data,
+  actions,
 }: {
   title: string;
   loading: boolean;
   error: string | null;
   data: ProfileCardData | null;
+  actions?: ReactNode;
 }) {
   return (
     <section className="space-y-6">
@@ -121,16 +125,20 @@ export function ProfilePageShell({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <Button type="button" disabled>
-              <MaterialSymbol icon="edit" className="text-[18px]" />
-              Edit Profile
-            </Button>
-            <Button type="button" variant="outline" disabled>
-              <MaterialSymbol icon="lock" className="text-[18px]" />
-              Change Password
-            </Button>
-          </div>
+          {actions ? (
+            actions
+          ) : (
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button type="button" disabled>
+                <MaterialSymbol icon="edit" className="text-[18px]" />
+                Edit Profile
+              </Button>
+              <Button type="button" variant="outline" disabled>
+                <MaterialSymbol icon="lock" className="text-[18px]" />
+                Change Password
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 

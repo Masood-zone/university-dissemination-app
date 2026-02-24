@@ -27,7 +27,7 @@ const studentNavSections: NavSection[] = [
       },
       {
         label: "Profile",
-        href: "/profile",
+        href: "/student/profile",
         icon: "person",
       },
       // { label: "Grades & CGPA", href: "/student/grades", icon: "grade" },

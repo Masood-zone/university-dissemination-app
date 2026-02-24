@@ -12,12 +12,18 @@ export type RequiredBetterAuthSession = NonNullable<BetterAuthSession>;
 export async function requireSession(
   request: Request,
 ): Promise<RequiredBetterAuthSession> {
-  const session = await auth.api.getSession({ headers: request.headers });
-  if (!session) {
+  try {
+    const session = await auth.api.getSession({ headers: request.headers });
+    if (!session) {
+      throw new Response("Unauthorized", { status: 401 });
+    }
+
+    return session;
+  } catch (error) {
+    if (error instanceof Response) throw error;
+    console.error("Failed to load auth session", error);
     throw new Response("Unauthorized", { status: 401 });
   }
-
-  return session;
 }
 
 export async function requireAdmin(

@@ -286,17 +286,11 @@ function EditStaffUserForm({
         )}
       </div>
 
-      <DialogFooter className="gap-2 sm:gap-0">
-        <DialogClose asChild>
-          <Button type="button" variant="secondary" disabled={disabled}>
-            Close
-          </Button>
-        </DialogClose>
-
+      <DialogFooter className="gap-3 sm:gap-0">
         <div className="flex items-center gap-2">
           <Button
             type="button"
-            variant="destructive"
+            variant="outline"
             disabled={disabled || data.isActive === false}
             onClick={onDeactivate}
           >

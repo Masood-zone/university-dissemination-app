@@ -77,9 +77,17 @@ export function useDepartmentAdminCourseOfferings(
   });
 }
 
-async function fetchCourses(): Promise<DepartmentAdminCourseListResult> {
+export type DepartmentAdminCoursesParams = {
+  programmeId?: string;
+  search?: string;
+};
+
+async function fetchCoursesByParams(
+  params: DepartmentAdminCoursesParams,
+): Promise<DepartmentAdminCourseListResult> {
   const response = await api.get<ApiResponse<DepartmentAdminCourseListResult>>(
     "/department-admin/programmes-and-courses/courses",
+    { params },
   );
 
   if (!response.data.success || !response.data.data) {
@@ -89,10 +97,13 @@ async function fetchCourses(): Promise<DepartmentAdminCourseListResult> {
   return response.data.data;
 }
 
-export function useDepartmentAdminCourses() {
+export function useDepartmentAdminCourses(
+  params: DepartmentAdminCoursesParams,
+) {
   return useQuery({
-    queryKey: ["deptAdminCourses"],
-    queryFn: fetchCourses,
+    queryKey: ["deptAdminCourses", params],
+    queryFn: () => fetchCoursesByParams(params),
+    enabled: Boolean(params.programmeId || params.search),
     staleTime: 30 * 1000,
   });
 }

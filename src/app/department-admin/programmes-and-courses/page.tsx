@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
   useDepartmentAdminCourseOfferings,
+  useDepartmentAdminCourses,
   useDepartmentAdminCreateCourse,
   useDepartmentAdminDeleteCourse,
   useDepartmentAdminLecturers,
@@ -43,11 +44,16 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
   const setOfferingLecturer = useDepartmentAdminSetOfferingLecturer();
 
   const [programmeId, setProgrammeId] = useState<string>("");
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [courseCode, setCourseCode] = useState<string>("");
   const [credits, setCredits] = useState<string>("3");
   const [courseTitle, setCourseTitle] = useState<string>("");
   const [semester, setSemester] = useState<string>("1");
   const [level, setLevel] = useState<string>("100");
+
+  const coursesQuery = useDepartmentAdminCourses({
+    programmeId: programmeId.trim() ? programmeId : undefined,
+  });
 
   const lecturersById = useMemo(() => {
     const map = new Map<string, { loadPercent: number; loadCredits: number }>();
@@ -109,7 +115,7 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
       }
 
       setEditingCourseId(null);
-      setProgrammeId("");
+      setSelectedCourseId("");
       setCourseCode("");
       setCredits("3");
       setCourseTitle("");
@@ -182,12 +188,75 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
                 ) : (
                   <Select
                     value={programmeId}
-                    onChange={(e) => setProgrammeId(e.target.value)}
+                    onChange={(e) => {
+                      const nextProgrammeId = e.target.value;
+                      setProgrammeId(nextProgrammeId);
+                      setSelectedCourseId("");
+                      setEditingCourseId(null);
+                      setCourseCode("");
+                      setCredits("3");
+                      setCourseTitle("");
+                      setSemester("1");
+                      setLevel("100");
+                      codeRef.current?.focus();
+                    }}
                   >
                     <option value="">Select programme</option>
                     {(programmesQuery.data ?? []).map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.name}
+                      </option>
+                    ))}
+                  </Select>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-semibold uppercase text-muted-foreground">
+                  Course (auto-fill)
+                </label>
+                {!programmeId.trim() ? (
+                  <Select value="" disabled>
+                    <option value="">Select a programme first</option>
+                  </Select>
+                ) : coursesQuery.isPending ? (
+                  <Skeleton className="h-9 w-full" />
+                ) : (
+                  <Select
+                    value={selectedCourseId}
+                    onChange={(e) => {
+                      const nextCourseId = e.target.value;
+                      setSelectedCourseId(nextCourseId);
+
+                      if (!nextCourseId) {
+                        setEditingCourseId(null);
+                        setCourseCode("");
+                        setCredits("3");
+                        setCourseTitle("");
+                        setSemester("1");
+                        setLevel("100");
+                        codeRef.current?.focus();
+                        return;
+                      }
+
+                      const row = (coursesQuery.data?.rows ?? []).find(
+                        (c) => c.id === nextCourseId,
+                      );
+                      if (!row) return;
+
+                      setEditingCourseId(row.id);
+                      setCourseCode(row.code);
+                      setCourseTitle(row.title);
+                      setCredits(String(row.credits));
+                      setSemester(String(row.semester));
+                      setLevel(row.level !== null ? String(row.level) : "100");
+                      codeRef.current?.focus();
+                    }}
+                  >
+                    <option value="">Select course to auto-fill</option>
+                    {(coursesQuery.data?.rows ?? []).map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.code} — {c.title}
                       </option>
                     ))}
                   </Select>
@@ -267,7 +336,7 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
                 className="w-full"
                 disabled={createCourse.isPending || updateCourse.isPending}
               >
-                {editingCourseId ? "Update Course" : "Save Draft"}
+                {editingCourseId ? "Add Course" : "Add Course"}
               </Button>
             </form>
           </div>
