@@ -1,10 +1,5 @@
-import AdminPagePlaceholder from "@/components/admin/AdminPagePlaceholder";
+import StudentApplicationsClient from "@/components/admin/student-applications/StudentApplicationsClient";
 
 export default function StudentApplicationsPage() {
-  return (
-    <AdminPagePlaceholder
-      title="Student Applications"
-      description="Application queue, status transitions, and review actions will be implemented here using Application and ApplicationStatusHistory."
-    />
-  );
+  return <StudentApplicationsClient />;
 }

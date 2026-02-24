@@ -4,6 +4,8 @@ import {
   AnnouncementCategory,
   AnnouncementStatus,
   NotificationType,
+  ApplicationStatus,
+  ApplicationDocumentType,
   ProgrammeAwardType,
 } from "@prisma/client";
 
@@ -186,6 +188,69 @@ export interface EnrollmentStatusResult {
   programmeName: string;
 }
 
+// ============================================================================
+// ADMIN: STUDENT APPLICATIONS
+// ============================================================================
+
+export type AdminStudentApplicationListRow = {
+  id: string;
+  applicationNo: string;
+  status: ApplicationStatus;
+  studentName: string;
+  departmentId: string;
+  departmentName: string;
+  programmeId: string;
+  programmeName: string;
+  submittedAt: string;
+  docsCount: number;
+  docsVerifiedCount: number;
+};
+
+export type AdminStudentApplicationsListResult = {
+  total: number;
+  rows: AdminStudentApplicationListRow[];
+};
+
+export type AdminStudentApplicationDocument = {
+  id: string;
+  type: ApplicationDocumentType;
+  fileName: string;
+  fileUrl: string;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  isVerified: boolean;
+  verifiedAt: string | null;
+  uploadedAt: string;
+};
+
+export type AdminStudentApplicationStatusHistoryItem = {
+  id: string;
+  fromStatus: ApplicationStatus | null;
+  toStatus: ApplicationStatus;
+  note: string | null;
+  createdAt: string;
+  changedBy: { id: string; name: string; email: string } | null;
+};
+
+export type AdminStudentApplicationDetail = {
+  id: string;
+  applicationNo: string;
+  status: ApplicationStatus;
+  studentName: string;
+  applicantFirstName: string;
+  applicantLastName: string;
+  applicantEmail: string;
+  applicantPhone: string | null;
+  submittedAt: string;
+  reviewedAt: string | null;
+  decidedAt: string | null;
+  department: { id: string; name: string };
+  programme: { id: string; name: string };
+  notes: string | null;
+  documents: AdminStudentApplicationDocument[];
+  statusHistory: AdminStudentApplicationStatusHistoryItem[];
+};
+
 export interface ProgrammeListItem {
   id: string;
   name: string;
@@ -196,6 +261,68 @@ export interface ProgrammeListItem {
   durationLabel: string;
   activeCourses: number;
 }
+
+export type FinanceAnalytics = {
+  sessionId: string | null;
+  sessionName: string | null;
+  totalRevenue: number;
+  outstandingFees: number;
+  collectionRate: number | null;
+  targetCollectionRate: number;
+};
+
+export type PaymentTransactionStatusFilter =
+  | "ALL"
+  | "PENDING"
+  | "SUCCESS"
+  | "FAILED"
+  | "REVERSED"
+  | "REFUNDED"
+  | "CANCELLED";
+
+export type FinanceTransactionRow = {
+  id: string;
+  reference: string;
+  studentId: string;
+  studentName: string;
+  amount: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+};
+
+export type FinanceTransactionsResult = {
+  rangeDays: number;
+  rows: FinanceTransactionRow[];
+};
+
+export type FinanceProgrammeListItem = {
+  id: string;
+  name: string;
+  code: string;
+  departmentName: string;
+};
+
+export type ProgrammeFeeAllocation = {
+  programmeId: string;
+  sessionId: string;
+  sessionName: string;
+  semester: "FIRST" | "SECOND";
+  tuitionFee: number;
+  libraryFee: number;
+  facilityFee: number;
+  totalFee: number;
+  currency: string;
+  configured: boolean;
+};
+
+export type UpsertProgrammeFeeInput = {
+  programmeId: string;
+  semester: "FIRST" | "SECOND";
+  tuitionFee: number;
+  libraryFee: number;
+  facilityFee: number;
+};
 
 export interface CreateProgrammeInput {
   name: string;

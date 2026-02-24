@@ -295,10 +295,33 @@ model Programme {
 
   courses      Course[]
   applications Application[]
+  programmeFees ProgrammeFee[]
 
   @@unique([departmentId, code])
   @@index([departmentId])
   @@index([isActive])
+}
+
+model ProgrammeFee {
+  id          String       @id @default(cuid())
+  programme   Programme    @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  programmeId String
+  session     AcademicSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId   String
+  semester    SemesterName
+
+  tuitionFee  Float
+  libraryFee  Float
+  facilityFee Float
+  totalFee    Float
+  currency    String       @default("GHS")
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([programmeId, sessionId, semester])
+  @@index([programmeId])
+  @@index([sessionId])
 }
 
 // ============================================================================
@@ -318,6 +341,7 @@ model AcademicSession {
   semesters Semester[]
   offerings CourseOffering[]
   applications Application[]
+  programmeFees ProgrammeFee[]
 
   @@index([isActive])
 }
