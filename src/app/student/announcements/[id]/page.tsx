@@ -215,12 +215,14 @@ export default function StudentAnnouncementDetailPage() {
               </div>
 
               {announcement.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={announcement.imageUrl}
-                  alt="Announcement image"
-                  className="mt-6 h-64 w-full rounded-2xl border border-border object-cover"
-                />
+                <div className="mt-6 overflow-hidden rounded-2xl border border-border bg-card">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={announcement.imageUrl}
+                    alt="Announcement image"
+                    className="h-auto w-full"
+                  />
+                </div>
               ) : null}
 
               {announcement.excerpt ? (
