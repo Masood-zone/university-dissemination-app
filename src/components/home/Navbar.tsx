@@ -185,7 +185,7 @@ export function Navbar() {
                   <Link
                     href="/login"
                     onClick={() => setMobileOpen(false)}
-                    className="inline-flex w-full items-center justify-center rounded-md bg-destructive px-4 py-3 text-sm font-bold text-destructive-foreground hover:opacity-90"
+                    className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-bold text-primary-foreground hover:opacity-90"
                   >
                     Login To Portal
                   </Link>
