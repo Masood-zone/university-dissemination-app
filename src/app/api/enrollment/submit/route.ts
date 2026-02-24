@@ -6,6 +6,7 @@ import { promisify } from "node:util";
 import { prisma } from "@/lib/prisma";
 import { emailService } from "@/lib/email-service";
 import { smsService } from "@/lib/sms-service";
+import { notificationService } from "@/lib/notification-service";
 import type {
   ApiResponse,
   EnrollmentSubmitInput,
@@ -269,8 +270,35 @@ export async function POST(request: Request) {
       select: { id: true },
     });
 
-    // Notifications (non-blocking)
+    // Notifications (store in DB + attempt external delivery)
     const phone = input.personal.phone.trim();
+    const smsTo = smsService.formatPhoneNumber(phone);
+
+    const baseMetadata = {
+      channels: {
+        email: {
+          to: email,
+          subject: `Enrollment Submitted - ${process.env.APP_NAME || "SIDS"}`,
+          status: "PENDING",
+        },
+        sms: {
+          to: smsTo,
+          status: "PENDING",
+        },
+      },
+    } as const;
+
+    const dbNotification = await notificationService.create({
+      userId,
+      type: "ACADEMIC",
+      title: "Enrollment submitted",
+      message: `Your enrollment has been submitted. Application No: ${applicationNo}.`,
+      metadata: baseMetadata,
+    });
+
+    let emailStatus: "SENT" | "FAILED" = "SENT";
+    let smsStatus: "SENT" | "FAILED" = "SENT";
+
     try {
       await emailService.sendStudentEnrollmentSubmittedEmail({
         to: email,
@@ -279,18 +307,27 @@ export async function POST(request: Request) {
         temporaryPassword,
       });
     } catch (error) {
+      emailStatus = "FAILED";
       console.error("Failed to send enrollment email:", error);
     }
 
     try {
       await smsService.sendEnrollmentSubmittedSMS({
-        to: smsService.formatPhoneNumber(phone),
+        to: smsTo,
         applicationNo,
-        temporaryPassword,
       });
     } catch (error) {
+      smsStatus = "FAILED";
       console.error("Failed to send enrollment SMS:", error);
     }
+
+    await notificationService.setMetadata(dbNotification.id, {
+      ...baseMetadata,
+      channels: {
+        email: { ...baseMetadata.channels.email, status: emailStatus },
+        sms: { ...baseMetadata.channels.sms, status: smsStatus },
+      },
+    });
 
     const payload: EnrollmentSubmitResult = {
       applicationNo,

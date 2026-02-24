@@ -14,8 +14,14 @@ const upsertSemesterSchema = z.object({
   sessionId: z.string().min(1),
   name: z.nativeEnum(SemesterName),
   enabled: z.boolean(),
-  startDate: z.coerce.date().optional().nullable(),
-  endDate: z.coerce.date().optional().nullable(),
+  startDate: z.preprocess(
+    (v) => (v === null ? undefined : v),
+    z.string().datetime().optional(),
+  ),
+  endDate: z.preprocess(
+    (v) => (v === null ? undefined : v),
+    z.string().datetime().optional(),
+  ),
 });
 
 function toIso(value: Date | null | undefined) {
@@ -27,8 +33,12 @@ export async function PATCH(request: Request) {
     await requireAdmin(request);
 
     const json = (await request.json()) as unknown;
-    const input =
-      upsertSemesterSchema.parse(json) satisfies UpsertSessionSemesterInput;
+    const input = upsertSemesterSchema.parse(
+      json,
+    ) satisfies UpsertSessionSemesterInput;
+
+    const startDate = input.startDate ? new Date(input.startDate) : undefined;
+    const endDate = input.endDate ? new Date(input.endDate) : undefined;
 
     if (!input.enabled) {
       await prisma.semester.deleteMany({
@@ -46,14 +56,14 @@ export async function PATCH(request: Request) {
         sessionId_name: { sessionId: input.sessionId, name: input.name },
       },
       update: {
-        startDate: input.startDate ?? undefined,
-        endDate: input.endDate ?? undefined,
+        startDate,
+        endDate,
       },
       create: {
         sessionId: input.sessionId,
         name: input.name,
-        startDate: input.startDate ?? undefined,
-        endDate: input.endDate ?? undefined,
+        startDate,
+        endDate,
       },
     });
 

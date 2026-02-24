@@ -136,11 +136,31 @@ model User {
   applicationStatusChanges ApplicationStatusHistory[] @relation("StatusChangedBy")
   roleTemplateAssignments UserRoleTemplate[]
   auditLogs              AuditLog[] @relation("AuditActor")
+  mediaAssets            MediaAsset[]
 
   @@unique([email])
   @@index([departmentId])
   @@index([role])
   @@map("user")
+}
+
+model MediaAsset {
+  id          String   @id @default(cuid())
+  provider    String   @default("CLOUDINARY")
+  publicId    String?
+  url         String
+  secureUrl   String?
+  format      String?
+  width       Int?
+  height      Int?
+  bytes       Int?
+  folder      String?
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  createdById String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdById])
+  @@index([provider])
 }
 
 model Session {
