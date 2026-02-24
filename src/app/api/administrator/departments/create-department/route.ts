@@ -20,7 +20,7 @@ export async function POST(request: Request) {
 
     let headName = input.headOfDept;
     let contact = input.contact;
-    let headUserId: string | null = input.headUserId ?? null;
+    const headUserId: string | null = input.headUserId ?? null;
 
     if (headUserId) {
       const head = await prisma.user.findFirst({

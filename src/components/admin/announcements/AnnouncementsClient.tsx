@@ -260,7 +260,7 @@ export default function AnnouncementsClient() {
                     "h-10 rounded-xl px-3 text-[11px] font-semibold uppercase tracking-wider",
                     status === s
                       ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-accent",
+                      : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground",
                   )}
                   onClick={() => {
                     setStatus(s);

@@ -204,7 +204,7 @@ export default function StudentApplicationsClient() {
                       "h-10 flex-1 rounded-xl px-3 text-xs font-semibold uppercase tracking-wider",
                       status === "ALL"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground hover:bg-accent",
+                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground",
                     )}
                     onClick={() => setStatus("ALL")}
                   >
@@ -217,7 +217,7 @@ export default function StudentApplicationsClient() {
                       "h-10 flex-1 rounded-xl px-3 text-xs font-semibold uppercase tracking-wider",
                       status === "SUBMITTED"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground hover:bg-accent",
+                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground",
                     )}
                     onClick={() => setStatus("SUBMITTED")}
                   >
@@ -229,7 +229,7 @@ export default function StudentApplicationsClient() {
                       "h-10 flex-1 rounded-xl px-3 text-xs font-semibold uppercase tracking-wider",
                       status === "UNDER_REVIEW"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-secondary text-secondary-foreground hover:bg-accent",
+                        : "bg-muted text-muted-foreground hover:bg-accent hover:text-foreground",
                     )}
                     onClick={() => setStatus("UNDER_REVIEW")}
                   >

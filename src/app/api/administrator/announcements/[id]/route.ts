@@ -181,7 +181,7 @@ export async function PATCH(
 
     const before = await prisma.announcement.findUnique({
       where: { id },
-      select: { status: true, publishedAt: true },
+      select: { status: true, publishedAt: true, authorId: true },
     });
 
     if (!before) {
@@ -228,7 +228,7 @@ export async function PATCH(
         category: String(input.category),
         excerpt,
         departmentId: input.departmentId ?? null,
-        authorId: session.user.id,
+        authorId: before.authorId,
         publishedByName,
       }).catch(() => undefined);
     }
