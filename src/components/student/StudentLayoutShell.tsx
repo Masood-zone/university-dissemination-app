@@ -25,6 +25,11 @@ const studentNavSections: NavSection[] = [
         href: "/student/announcements",
         icon: "notifications",
       },
+      {
+        label: "Profile",
+        href: "/profile",
+        icon: "person",
+      },
       // { label: "Grades & CGPA", href: "/student/grades", icon: "grade" },
     ],
   },

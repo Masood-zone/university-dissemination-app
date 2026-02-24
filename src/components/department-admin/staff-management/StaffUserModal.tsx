@@ -71,13 +71,18 @@ export function StaffUserModal({
     return value === "STUDENT" ? "STUDENT" : "LECTURER";
   }, [isEdit, createState.role, detailQuery.data?.role]);
 
+  function handleOpenChange(nextOpen: boolean) {
+    if (!nextOpen) {
+      setCreateState(defaultCreateState);
+      setUpdateState({});
+    }
+    onOpenChange(nextOpen);
+  }
+
   useEffect(() => {
     if (!open) return;
 
-    if (!isEdit) {
-      setCreateState(defaultCreateState);
-      return;
-    }
+    if (!isEdit) return;
 
     const data = detailQuery.data;
     if (!data) return;
@@ -174,7 +179,7 @@ export function StaffUserModal({
   const title = isEdit ? "Update User" : "Add User";
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

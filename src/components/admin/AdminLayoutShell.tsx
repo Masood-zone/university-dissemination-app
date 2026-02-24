@@ -43,9 +43,9 @@ const defaultAdminNavItems: NavItem[] = [
     icon: "payments",
   },
   {
-    label: "Permissions",
-    href: "/administrator/role-based-access",
-    icon: "admin_panel_settings",
+    label: "Profile",
+    href: "/profile",
+    icon: "person",
   },
 ];
 
