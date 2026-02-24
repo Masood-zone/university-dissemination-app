@@ -106,7 +106,7 @@ export function ProfilePageShell({
               )}
             </div>
 
-            <div className="pb-1">
+            <div className="pb-1 bg-secondary-foreground px-1 rounded-t-xl">
               {loading || !data ? (
                 <>
                   <Skeleton className="h-6 w-56" />
