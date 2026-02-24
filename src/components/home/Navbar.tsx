@@ -84,7 +84,7 @@ export function Navbar() {
             {!isLoggedIn && (
               <Link
                 href="/login"
-                className="hidden sm:inline-flex items-center rounded-md bg-destructive px-5 py-2.5 text-sm font-bold text-destructive-foreground hover:opacity-90"
+                className="hidden sm:inline-flex items-center rounded-md bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:opacity-90"
               >
                 Login To Portal
               </Link>
