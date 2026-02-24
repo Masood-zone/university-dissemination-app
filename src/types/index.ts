@@ -118,6 +118,74 @@ export interface CourseData {
   capacity?: number;
 }
 
+// ============================================================================
+// ENROLLMENT TYPES
+// ============================================================================
+
+export interface EnrollmentDepartment {
+  id: string;
+  name: string;
+  code: string;
+  description?: string | null;
+}
+
+export interface EnrollmentProgramme {
+  id: string;
+  name: string;
+  code: string;
+  departmentId: string;
+  awardType: ProgrammeAwardType;
+  awardTypeLabel: string;
+  durationYears?: number | null;
+  totalSemesters?: number | null;
+  durationLabel: string;
+}
+
+export interface EnrollmentCourse {
+  id: string;
+  code: string;
+  title: string;
+  credits: number;
+  semester: number;
+}
+
+export interface EnrollmentSubmitInput {
+  draftId: string;
+  personal: {
+    firstName: string;
+    lastName: string;
+    otherNames: string;
+    email: string;
+    phone: string;
+    dateOfBirth?: string;
+    gender?: string;
+    nationality?: string;
+    address?: string;
+  };
+  academic: {
+    departmentId: string;
+    programmeId: string;
+    sessionId?: string;
+    level?: string;
+  };
+  acceptedDeclaration: boolean;
+}
+
+export interface EnrollmentSubmitResult {
+  applicationNo: string;
+  status: string;
+  accountCreated: boolean;
+  temporaryPassword?: string;
+}
+
+export interface EnrollmentStatusResult {
+  applicationNo: string;
+  status: string;
+  submittedAt?: string | null;
+  departmentName: string;
+  programmeName: string;
+}
+
 export interface ProgrammeListItem {
   id: string;
   name: string;

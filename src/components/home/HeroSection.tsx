@@ -31,10 +31,10 @@ export function HeroSection() {
 
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row lg:justify-start">
               <Link
-                href="/login"
+                href="/enrollment"
                 className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-4 text-base font-bold text-primary-foreground shadow-sm hover:opacity-90 md:text-lg"
               >
-                Sign In
+                Enroll Now
               </Link>
               <Link
                 href="#research"
