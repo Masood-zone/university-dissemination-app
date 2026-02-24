@@ -112,6 +112,8 @@ export type StudentAnnouncementPriorityFilter =
   | "HIGH"
   | "CRITICAL";
 
+export type StudentAnnouncementsScope = "ALL" | "DEPARTMENTAL";
+
 export type StudentAnnouncementsSort = "RECENT" | "OLDEST";
 
 export type StudentAnnouncementListItem = {

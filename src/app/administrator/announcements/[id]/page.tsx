@@ -1,10 +1,9 @@
 import AnnouncementDetailClient from "@/components/admin/announcements/AnnouncementDetailClient";
 
-export default async function AnnouncementDetailPage({
+export default function AnnouncementDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
-  return <AnnouncementDetailClient id={id} />;
+  return <AnnouncementDetailClient id={params.id} />;
 }

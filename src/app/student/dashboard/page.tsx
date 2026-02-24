@@ -75,15 +75,17 @@ export default function StudentDashboardPage() {
     error: analyticsError,
   } = useStudentDashboardAnalytics(isApproved);
 
+  const nextClassStartsAt = analytics?.nextClass?.startsAt ?? null;
+
   const nextClassIn = React.useMemo(() => {
     if (!isApproved) return "--:--";
     if (analyticsLoading) return "--:--";
-    if (!analytics?.nextClass) return "--:--";
+    if (!nextClassStartsAt) return "--:--";
 
-    const startMs = new Date(analytics.nextClass.startsAt).getTime();
+    const startMs = new Date(nextClassStartsAt).getTime();
     const diffMinutes = Math.max(0, Math.floor((startMs - nowMs) / 60000));
     return formatMinutesToHHMM(diffMinutes);
-  }, [analytics?.nextClass?.startsAt, analyticsLoading, isApproved, nowMs]);
+  }, [analyticsLoading, isApproved, nextClassStartsAt, nowMs]);
 
   const nextClassNote = React.useMemo(() => {
     if (!isApproved) return "Schedule unlocks after approval";
@@ -96,9 +98,12 @@ export default function StudentDashboardPage() {
   }, [analytics, analyticsError, analyticsLoading, isApproved]);
 
   const feeLabel = React.useMemo(() => {
-    if (!isApproved) return { title: "Outstanding Fees Alert", note: "Data locked" };
-    if (analyticsLoading) return { title: "Outstanding Fees Alert", note: "Loading fees..." };
-    if (analyticsError) return { title: "Outstanding Fees Alert", note: "Failed to load fees" };
+    if (!isApproved)
+      return { title: "Outstanding Fees Alert", note: "Data locked" };
+    if (analyticsLoading)
+      return { title: "Outstanding Fees Alert", note: "Loading fees..." };
+    if (analyticsError)
+      return { title: "Outstanding Fees Alert", note: "Failed to load fees" };
 
     const outstanding = analytics?.fees.outstandingTotal ?? 0;
     const overdue = analytics?.fees.overdueCount ?? 0;
@@ -109,7 +114,10 @@ export default function StudentDashboardPage() {
     ].filter(Boolean);
     return {
       title: "Outstanding Fees Alert",
-      note: outstanding > 0 ? parts.join(" • ") || "Outstanding fees" : "No outstanding fees",
+      note:
+        outstanding > 0
+          ? parts.join(" • ") || "Outstanding fees"
+          : "No outstanding fees",
     };
   }, [analytics, analyticsError, analyticsLoading, isApproved]);
 
@@ -180,7 +188,9 @@ export default function StudentDashboardPage() {
               </div>
               <div>
                 <p className="text-sm font-semibold">{feeLabel.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground italic">{feeLabel.note}</p>
+                <p className="mt-1 text-xs text-muted-foreground italic">
+                  {feeLabel.note}
+                </p>
               </div>
             </div>
             <div className="mt-5">

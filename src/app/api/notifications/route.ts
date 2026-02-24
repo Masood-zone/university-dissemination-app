@@ -113,7 +113,23 @@ export async function PUT(request: Request) {
     const userId = session.user.id;
 
     const json = (await request.json()) as unknown;
-    const body = json as { notificationId?: string; read?: boolean };
+    const body = json as {
+      notificationId?: string;
+      read?: boolean;
+      markAll?: boolean;
+    };
+
+    if (body.markAll === true) {
+      await prisma.notification.updateMany({
+        where: { userId, isRead: false },
+        data: { isRead: true },
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: { ok: true },
+      } satisfies ApiResponse<{ ok: true }>);
+    }
 
     if (!body.notificationId) {
       return NextResponse.json(

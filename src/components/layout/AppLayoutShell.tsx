@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
+import { NotificationBell } from "@/components/common/NotificationBell";
 import { UserAvatar } from "@/components/home/UserAvatar";
 import { cn } from "@/lib/utils";
 
@@ -176,6 +177,10 @@ export default function AppLayoutShell({
                 <h2 className="font-lexend text-base font-semibold">
                   {headerTitle}
                 </h2>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <NotificationBell />
               </div>
             </div>
           </header>

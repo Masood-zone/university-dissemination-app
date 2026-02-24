@@ -16,8 +16,8 @@ export async function GET(
   try {
     const session = await requireStudent(request);
     const departmentId =
-      (session.user as unknown as { departmentId?: string | null }).departmentId ??
-      null;
+      (session.user as unknown as { departmentId?: string | null })
+        .departmentId ?? null;
 
     const { id } = await params;
     if (!id) {
@@ -76,7 +76,10 @@ export async function GET(
 
     // Increment view count but don't block response if it fails.
     prisma.announcement
-      .update({ where: { id: announcement.id }, data: { viewCount: { increment: 1 } } })
+      .update({
+        where: { id: announcement.id },
+        data: { viewCount: { increment: 1 } },
+      })
       .catch(() => undefined);
 
     const relatedWhere: Prisma.AnnouncementWhereInput = {
@@ -92,7 +95,11 @@ export async function GET(
 
     const related = await prisma.announcement.findMany({
       where: relatedWhere,
-      orderBy: [{ pinned: "desc" }, { priority: "desc" }, { publishedAt: "desc" }],
+      orderBy: [
+        { pinned: "desc" },
+        { priority: "desc" },
+        { publishedAt: "desc" },
+      ],
       take: 6,
       select: {
         id: true,
@@ -120,7 +127,8 @@ export async function GET(
         pinned: announcement.pinned,
         imageUrl: announcement.imageUrl ?? null,
         departmentName: announcement.department?.name ?? null,
-        authorName: `${announcement.author.firstName} ${announcement.author.lastName}`.trim(),
+        authorName:
+          `${announcement.author.firstName} ${announcement.author.lastName}`.trim(),
         publishedAt: toIso(announcement.publishedAt),
         expiresAt: toIso(announcement.expiresAt),
         createdAt: announcement.createdAt.toISOString(),
