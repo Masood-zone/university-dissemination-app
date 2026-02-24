@@ -22,6 +22,109 @@ function toNumber(value: unknown): number | null {
   return null;
 }
 
+function semesterToInt(value: SemesterName): 1 | 2 {
+  return value === "FIRST" ? 1 : 2;
+}
+
+function addDays(date: Date, days: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+async function propagateProgrammeFeeToEnrolledStudents(options: {
+  programmeId: string;
+  programmeFeeId: string;
+  sessionId: string;
+  academicYear: string;
+  semester: SemesterName;
+  amount: number;
+}) {
+  const {
+    programmeId,
+    programmeFeeId,
+    sessionId,
+    academicYear,
+    semester,
+    amount,
+  } = options;
+
+  const semesterRow = await prisma.semester.findUnique({
+    where: { sessionId_name: { sessionId, name: semester } },
+    select: { startDate: true },
+  });
+
+  const dueDate = addDays(semesterRow?.startDate ?? new Date(), 14);
+  const semesterInt = semesterToInt(semester);
+
+  const offerings = await prisma.courseOffering.findMany({
+    where: {
+      sessionId,
+      semester: { name: semester },
+      course: { programmeId },
+    },
+    select: { id: true },
+  });
+
+  const offeringIds = offerings.map((o) => o.id);
+
+  const enrollmentRows = offeringIds.length
+    ? await prisma.enrollment.findMany({
+        where: { offeringId: { in: offeringIds } },
+        select: { studentId: true },
+      })
+    : [];
+
+  const studentIds = Array.from(
+    new Set(enrollmentRows.map((e) => e.studentId)),
+  );
+
+  await prisma.$transaction(async (tx) => {
+    // Cancel pending obligations for students no longer enrolled.
+    await tx.fee.updateMany({
+      where: {
+        programmeFeeId,
+        status: { in: ["PENDING", "OVERDUE"] },
+        ...(studentIds.length ? { studentId: { notIn: studentIds } } : {}),
+      },
+      data: { status: "CANCELLED" },
+    });
+
+    if (!studentIds.length) return;
+
+    // Update existing pending/overdue obligations to the new fee amount.
+    await tx.fee.updateMany({
+      where: {
+        programmeFeeId,
+        studentId: { in: studentIds },
+        status: { in: ["PENDING", "OVERDUE"] },
+      },
+      data: {
+        feeType: "PROGRAMME_FEE",
+        amount,
+        dueDate,
+        semester: semesterInt,
+        academicYear,
+      },
+    });
+
+    // Create missing obligations (skip duplicates thanks to @@unique).
+    await tx.fee.createMany({
+      data: studentIds.map((studentId) => ({
+        studentId,
+        programmeFeeId,
+        feeType: "PROGRAMME_FEE",
+        amount,
+        dueDate,
+        status: "PENDING",
+        semester: semesterInt,
+        academicYear,
+      })),
+      skipDuplicates: true,
+    });
+  });
+}
+
 export async function GET(request: Request) {
   try {
     await requireAdmin(request);
@@ -232,6 +335,7 @@ export async function POST(request: Request) {
         totalFee,
       },
       select: {
+        id: true,
         programmeId: true,
         sessionId: true,
         semester: true,
@@ -241,6 +345,15 @@ export async function POST(request: Request) {
         totalFee: true,
         currency: true,
       },
+    });
+
+    await propagateProgrammeFeeToEnrolledStudents({
+      programmeId: saved.programmeId,
+      programmeFeeId: saved.id,
+      sessionId: saved.sessionId,
+      academicYear: session.name,
+      semester: saved.semester,
+      amount: saved.totalFee,
     });
 
     const payload: ProgrammeFeeAllocation = {

@@ -310,6 +310,8 @@ model ProgrammeFee {
   sessionId   String
   semester    SemesterName
 
+  fees        Fee[]
+
   tuitionFee  Float
   libraryFee  Float
   facilityFee Float
@@ -656,6 +658,8 @@ model Notification {
 model Fee {
   id           String        @id @default(cuid())
   studentId    String
+  programmeFee ProgrammeFee? @relation(fields: [programmeFeeId], references: [id], onDelete: SetNull)
+  programmeFeeId String?
   feeType      String
   amount       Float
   dueDate      DateTime
@@ -669,8 +673,10 @@ model Fee {
   transactions PaymentTransaction[]
 
   @@index([studentId])
+  @@index([programmeFeeId])
   @@index([status])
   @@index([academicYear])
+  @@unique([studentId, programmeFeeId])
 }
 
 model PaymentTransaction {

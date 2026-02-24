@@ -15,7 +15,7 @@ export default function CreateAnnouncementClient() {
   const createMutation = useCreateAnnouncement();
 
   const errorLabel = createMutation.error
-    ? getApiErrorLabel(createMutation.error)
+    ? getApiErrorLabel(createMutation.error).message
     : null;
 
   const submit = async (payload: UpsertAnnouncementInput) => {

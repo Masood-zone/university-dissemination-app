@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/server";
 import { departmentSchema } from "@/lib/validation";
+import { notifyDepartmentAdminAssigned } from "@/lib/department-notifications";
 import type {
   ApiResponse,
   CreateDepartmentInput,
@@ -17,13 +18,42 @@ export async function POST(request: Request) {
     const json = (await request.json()) as unknown;
     const input = departmentSchema.parse(json) satisfies CreateDepartmentInput;
 
+    let headName = input.headOfDept;
+    let contact = input.contact;
+    let headUserId: string | null = input.headUserId ?? null;
+
+    if (headUserId) {
+      const head = await prisma.user.findFirst({
+        where: {
+          id: headUserId,
+          role: "DEPARTMENT_ADMIN",
+          isActive: true,
+        },
+        select: { firstName: true, lastName: true, email: true, phone: true },
+      });
+
+      if (!head) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Selected head is invalid",
+            code: "INVALID_HEAD_SELECTION",
+          } satisfies ApiResponse<never>,
+          { status: 400 },
+        );
+      }
+
+      headName = `${head.firstName} ${head.lastName}`.trim();
+      contact = (head.phone && head.phone.trim()) || head.email;
+    }
+
     const created = await prisma.department.create({
       data: {
         name: input.name,
         code: input.code,
         description: input.description,
-        headOfDept: input.headOfDept,
-        contact: input.contact,
+        headOfDept: headName,
+        contact,
       },
       select: {
         id: true,
@@ -35,6 +65,15 @@ export async function POST(request: Request) {
         _count: { select: { programmes: true } },
       },
     });
+
+    if (headUserId) {
+      notifyDepartmentAdminAssigned({
+        userId: headUserId,
+        departmentId: created.id,
+        departmentName: created.name,
+        kind: "DEPARTMENT_CREATED",
+      }).catch(() => undefined);
+    }
 
     const payload: DepartmentSummary = {
       id: created.id,

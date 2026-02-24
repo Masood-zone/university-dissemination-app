@@ -13,19 +13,29 @@ export async function GET(request: Request) {
       select: { id: true, name: true },
     });
 
-    const [successfulAgg, pendingAgg] = await Promise.all([
+    const activeAcademicYear = activeSession?.name ?? null;
+
+    const [successfulAgg, outstandingAgg] = await Promise.all([
       prisma.paymentTransaction.aggregate({
-        where: { status: "SUCCESS" },
+        where: {
+          status: "SUCCESS",
+          ...(activeAcademicYear
+            ? { fee: { is: { academicYear: activeAcademicYear } } }
+            : {}),
+        },
         _sum: { amount: true },
       }),
-      prisma.paymentTransaction.aggregate({
-        where: { status: "PENDING" },
+      prisma.fee.aggregate({
+        where: {
+          status: { in: ["PENDING", "OVERDUE"] },
+          ...(activeAcademicYear ? { academicYear: activeAcademicYear } : {}),
+        },
         _sum: { amount: true },
       }),
     ]);
 
     const totalRevenue = successfulAgg._sum.amount ?? 0;
-    const outstandingFees = pendingAgg._sum.amount ?? 0;
+    const outstandingFees = outstandingAgg._sum.amount ?? 0;
 
     const denom = totalRevenue + outstandingFees;
     const collectionRate =

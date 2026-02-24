@@ -5,9 +5,8 @@ import { type FormEvent, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { cn } from "@/lib/utils";
-import { getApiErrorLabel } from "@/lib/api-client-error";
+import ImageUpload from "@/components/image-upload";
 import { useGetEnrollmentDepartments } from "@/services/enrollment/enrollment";
-import { useUploadAnnouncementImage } from "@/services/admin/announcements/announcements";
 import type { UpsertAnnouncementInput } from "@/types";
 
 import { AnnouncementMarkdownEditor } from "./AnnouncementMarkdown";
@@ -85,21 +84,17 @@ export function AnnouncementUpsertForm({
   onSubmit: (payload: UpsertAnnouncementInput) => Promise<void> | void;
 }) {
   const departmentsQuery = useGetEnrollmentDepartments();
-  const uploadMutation = useUploadAnnouncementImage();
 
   const mergedInitial = useMemo(
     () => ({ ...DEFAULT_DRAFT, ...initial }),
     [initial],
   );
 
-  const [draft, setDraft] = useState<AnnouncementUpsertDraft>(() => mergedInitial);
+  const [draft, setDraft] = useState<AnnouncementUpsertDraft>(
+    () => mergedInitial,
+  );
 
-  const [file, setFile] = useState<File | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
-
-  const uploadError = uploadMutation.error
-    ? getApiErrorLabel(uploadMutation.error)
-    : null;
 
   const canSchedule = draft.mode === "SCHEDULE";
 
@@ -118,7 +113,9 @@ export function AnnouncementUpsertForm({
     }
 
     if (canSchedule && !draft.publishedAt) {
-      setLocalError("Published date/time is required for scheduled announcements");
+      setLocalError(
+        "Published date/time is required for scheduled announcements",
+      );
       return;
     }
 
@@ -141,32 +138,11 @@ export function AnnouncementUpsertForm({
     await onSubmit(payload);
   };
 
-  const doUpload = async () => {
-    setLocalError(null);
-    if (!file) {
-      setLocalError("Select an image to upload");
-      return;
-    }
-
-    const asset = await uploadMutation.mutateAsync(file);
-    setDraft((prev) => ({
-      ...prev,
-      imageUrl: asset.secureUrl || asset.url,
-    }));
-    setFile(null);
-  };
-
   return (
     <form onSubmit={submit} className="space-y-6">
       {localError ? (
         <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
           {localError}
-        </div>
-      ) : null}
-
-      {uploadError ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-          {uploadError.message}
         </div>
       ) : null}
 
@@ -211,7 +187,9 @@ export function AnnouncementUpsertForm({
           </label>
           <textarea
             value={draft.excerpt}
-            onChange={(e) => setDraft((p) => ({ ...p, excerpt: e.target.value }))}
+            onChange={(e) =>
+              setDraft((p) => ({ ...p, excerpt: e.target.value }))
+            }
             className="mt-2 min-h-24 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
             placeholder="Short summary shown in lists"
           />
@@ -267,7 +245,10 @@ export function AnnouncementUpsertForm({
               onChange={(e) =>
                 setDraft((p) => ({
                   ...p,
-                  priority: Math.max(0, Math.min(3, Number(e.target.value || 0))),
+                  priority: Math.max(
+                    0,
+                    Math.min(3, Number(e.target.value || 0)),
+                  ),
                 }))
               }
               className="mt-2 h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
@@ -345,47 +326,19 @@ export function AnnouncementUpsertForm({
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Image (optional)
             </label>
-            <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                className="w-full text-sm"
+            <div className="mt-2">
+              <ImageUpload
+                folder="announcements"
+                value={draft.imageUrl ? draft.imageUrl : null}
+                onChange={(url) =>
+                  setDraft((p) => ({
+                    ...p,
+                    imageUrl: url || "",
+                  }))
+                }
               />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={doUpload}
-                disabled={!file || uploadMutation.isPending}
-              >
-                {uploadMutation.isPending ? "Uploading..." : "Upload"}
-              </Button>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              Upload to attach a cover image.
-            </p>
           </div>
-
-          {draft.imageUrl ? (
-            <div className="flex items-center gap-2">
-              <a
-                href={draft.imageUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-xs text-primary underline"
-              >
-                View image
-              </a>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setDraft((p) => ({ ...p, imageUrl: "" }))}
-              >
-                Remove
-              </Button>
-            </div>
-          ) : null}
         </div>
       </div>
 
@@ -427,7 +380,8 @@ export function adminDetailToFormInitial(detail: {
   const inferredMode: UpsertAnnouncementInput["mode"] =
     detail.status === "DRAFT"
       ? "DRAFT"
-      : detail.publishedAt && new Date(detail.publishedAt).getTime() > Date.now()
+      : detail.publishedAt &&
+          new Date(detail.publishedAt).getTime() > Date.now()
         ? "SCHEDULE"
         : "PUBLISH_NOW";
 
@@ -435,7 +389,8 @@ export function adminDetailToFormInitial(detail: {
     title: detail.title,
     content: detail.content,
     excerpt: detail.excerpt ?? "",
-    category: (detail.category as AnnouncementUpsertDraft["category"]) || "OTHER",
+    category:
+      (detail.category as AnnouncementUpsertDraft["category"]) || "OTHER",
     priority: detail.priority,
     pinned: detail.pinned,
     departmentId: detail.department?.id ?? "",

@@ -19,6 +19,20 @@ import {
 } from "@/services/admin/programmes-and-courses/programmes";
 
 export default function AddCoursePage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          Loading...
+        </div>
+      }
+    >
+      <AddCoursePageInner />
+    </React.Suspense>
+  );
+}
+
+function AddCoursePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const programmeId = searchParams.get("programmeId");

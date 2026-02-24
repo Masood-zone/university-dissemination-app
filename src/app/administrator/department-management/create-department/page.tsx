@@ -25,6 +25,7 @@ type DepartmentFormState = {
   description: string;
   headOfDept: string;
   contact: string;
+  headUserId: string | null;
 };
 
 export default function CreateDepartmentPage() {
@@ -35,6 +36,7 @@ export default function CreateDepartmentPage() {
     description: "",
     headOfDept: "",
     contact: "",
+    headUserId: null,
   });
 
   const { data: heads, isLoading: headsLoading } = useGetDepartmentHeads();
@@ -51,6 +53,7 @@ export default function CreateDepartmentPage() {
       ...p,
       headOfDept: fullName,
       contact,
+      headUserId: head.id,
     }));
   };
 
@@ -62,6 +65,7 @@ export default function CreateDepartmentPage() {
         description: form.description.trim() || undefined,
         headOfDept: form.headOfDept.trim() || undefined,
         contact: form.contact.trim() || undefined,
+        headUserId: form.headUserId,
       });
       router.push("/administrator/department-management");
     } catch {

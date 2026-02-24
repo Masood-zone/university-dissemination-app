@@ -385,6 +385,7 @@ export const departmentSchema = z.object({
   description: z.string().max(1000).optional(),
   headOfDept: z.string().max(120).optional(),
   contact: z.string().max(120).optional(),
+  headUserId: z.string().min(1).nullable().optional(),
 });
 
 const emptyToUndefined = (v: unknown) => {

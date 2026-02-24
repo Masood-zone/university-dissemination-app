@@ -775,6 +775,7 @@ export interface CreateDepartmentInput {
   description?: string;
   headOfDept?: string;
   contact?: string;
+  headUserId?: string | null;
 }
 
 // ============================================================================

@@ -12,11 +12,11 @@ const defaultAdminNavItems: NavItem[] = [
     href: "/administrator/academic-sessions",
     icon: "event_note",
   },
-  {
-    label: "Student Profiles",
-    href: "/administrator/student-profiles",
-    icon: "school",
-  },
+  // {
+  //   label: "Student Profiles",
+  //   href: "/administrator/student-profiles",
+  //   icon: "school",
+  // },
   {
     label: "Student Applications",
     href: "/administrator/student-applications",
@@ -33,7 +33,7 @@ const defaultAdminNavItems: NavItem[] = [
     icon: "business",
   },
   {
-    label: "Announcements & Communication",
+    label: "Announcements",
     href: "/administrator/announcements",
     icon: "forum",
   },

@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/server";
+import { notifyDepartmentAdminAssigned } from "@/lib/department-notifications";
 import type {
   ApiResponse,
   DepartmentSummary,
@@ -93,6 +94,15 @@ export async function PATCH(request: Request) {
       programmesCount: updated._count.programmes,
       studentsCount,
     };
+
+    if (input.headUserId) {
+      notifyDepartmentAdminAssigned({
+        userId: input.headUserId,
+        departmentId: updated.id,
+        departmentName: updated.name,
+        kind: "HOD_ASSIGNED",
+      }).catch(() => undefined);
+    }
 
     return NextResponse.json({
       success: true,
