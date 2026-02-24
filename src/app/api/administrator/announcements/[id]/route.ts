@@ -6,6 +6,7 @@ import {
 } from "@prisma/client";
 import { z } from "zod";
 
+import { notifyAnnouncementPublished } from "@/lib/announcement-notifications";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/server";
 import type {
@@ -144,8 +145,18 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    await requireAdmin(request);
+    const session = await requireAdmin(request);
     const { id } = await params;
+
+    const sessionUser = session.user as unknown as {
+      name?: string;
+      firstName?: string;
+      lastName?: string;
+    };
+    const publishedByName =
+      sessionUser.name ||
+      `${sessionUser.firstName || ""} ${sessionUser.lastName || ""}`.trim() ||
+      undefined;
 
     const json = (await request.json()) as unknown;
     const input = upsertSchema.parse(json) satisfies UpsertAnnouncementInput;
@@ -168,6 +179,30 @@ export async function PATCH(
         ? input.excerpt
         : excerptFromContent(input.content);
 
+    const before = await prisma.announcement.findUnique({
+      where: { id },
+      select: { status: true, publishedAt: true },
+    });
+
+    if (!before) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Announcement not found",
+          code: "NOT_FOUND",
+        } satisfies ApiResponse<never>,
+        { status: 404 },
+      );
+    }
+
+    const now = new Date();
+    const wasPublishedNow =
+      before.status === AnnouncementStatus.PUBLISHED &&
+      (!before.publishedAt || before.publishedAt.getTime() <= now.getTime());
+    const willBePublishedNow =
+      status === AnnouncementStatus.PUBLISHED &&
+      (!publishedAt || publishedAt.getTime() <= now.getTime());
+
     await prisma.announcement.update({
       where: { id },
       data: {
@@ -185,6 +220,18 @@ export async function PATCH(
       },
       select: { id: true },
     });
+
+    if (!wasPublishedNow && willBePublishedNow) {
+      notifyAnnouncementPublished({
+        announcementId: id,
+        title: input.title,
+        category: String(input.category),
+        excerpt,
+        departmentId: input.departmentId ?? null,
+        authorId: session.user.id,
+        publishedByName,
+      }).catch(() => undefined);
+    }
 
     return NextResponse.json({
       success: true,

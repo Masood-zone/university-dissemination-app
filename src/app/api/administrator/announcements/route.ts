@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import {
   AnnouncementCategory,
   AnnouncementStatus,
-  NotificationType,
   Prisma,
 } from "@prisma/client";
 import { z } from "zod";
 
+import { notifyAnnouncementPublished } from "@/lib/announcement-notifications";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/server";
 import type {
@@ -256,6 +256,16 @@ export async function POST(request: Request) {
     const session = await requireAdmin(request);
     const authorId = session.user.id;
 
+    const sessionUser = session.user as unknown as {
+      name?: string;
+      firstName?: string;
+      lastName?: string;
+    };
+    const publishedByName =
+      sessionUser.name ||
+      `${sessionUser.firstName || ""} ${sessionUser.lastName || ""}`.trim() ||
+      undefined;
+
     const json = (await request.json()) as unknown;
     const input = upsertSchema.parse(json) satisfies UpsertAnnouncementInput;
 
@@ -282,57 +292,35 @@ export async function POST(request: Request) {
       status === AnnouncementStatus.PUBLISHED &&
       (!publishedAt || publishedAt.getTime() <= now.getTime());
 
-    const created = await prisma.$transaction(async (tx) => {
-      const createdAnnouncement = await tx.announcement.create({
-        data: {
-          title: input.title,
-          content: input.content,
-          excerpt,
-          category: input.category,
-          status,
-          authorId,
-          departmentId: input.departmentId ?? null,
-          imageUrl: input.imageUrl ?? null,
-          pinned: Boolean(input.pinned),
-          priority: input.priority,
-          publishedAt,
-          expiresAt,
-        },
-        select: { id: true },
-      });
-
-      if (shouldNotifyNow) {
-        const recipients = await tx.user.findMany({
-          where: { isActive: true, id: { not: authorId } },
-          select: { id: true },
-        });
-
-        if (recipients.length) {
-          const metadata = (() => {
-            try {
-              return JSON.stringify({ kind: "ANNOUNCEMENT_CREATED" });
-            } catch {
-              return null;
-            }
-          })();
-
-          await tx.notification.createMany({
-            data: recipients.map((u) => ({
-              userId: u.id,
-              type: NotificationType.ANNOUNCEMENT,
-              title: input.title,
-              message: excerpt || "A new announcement has been published.",
-              isRead: false,
-              announcementId: createdAnnouncement.id,
-              metadata,
-            })),
-            skipDuplicates: false,
-          });
-        }
-      }
-
-      return createdAnnouncement;
+    const created = await prisma.announcement.create({
+      data: {
+        title: input.title,
+        content: input.content,
+        excerpt,
+        category: input.category,
+        status,
+        authorId,
+        departmentId: input.departmentId ?? null,
+        imageUrl: input.imageUrl ?? null,
+        pinned: Boolean(input.pinned),
+        priority: input.priority,
+        publishedAt,
+        expiresAt,
+      },
+      select: { id: true },
     });
+
+    if (shouldNotifyNow) {
+      notifyAnnouncementPublished({
+        announcementId: created.id,
+        title: input.title,
+        category: String(input.category),
+        excerpt,
+        departmentId: input.departmentId ?? null,
+        authorId,
+        publishedByName,
+      }).catch(() => undefined);
+    }
 
     return NextResponse.json(
       {
