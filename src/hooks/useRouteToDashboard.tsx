@@ -17,7 +17,7 @@ export function useRouteToDashboard() {
         case "ADMIN":
           return router.replace("/administrator");
         case "DEPARTMENT_ADMIN":
-          return router.replace("/department-administrator/dashboard");
+          return router.replace("/department-admin");
         case "LECTURER":
           return router.replace("/lecturer/dashboard");
         case "STUDENT":

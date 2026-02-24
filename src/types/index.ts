@@ -647,6 +647,237 @@ export interface AdminOverviewData {
 }
 
 // ============================================================================
+// DEPARTMENT ADMIN OVERVIEW (DASHBOARD OVERVIEW PAGE)
+// ============================================================================
+
+export type DepartmentAdminOverviewStatCard = {
+  label: string;
+  value: string;
+  note: string;
+  icon: string;
+  badge?: string | null;
+};
+
+export type DepartmentAdminOverviewQuickAction = {
+  title: string;
+  description: string;
+  href: string;
+  icon: string;
+};
+
+export type DepartmentAdminActivityItem = {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+  createdAt: string; // ISO
+};
+
+export type DepartmentAdminCalendarCard = {
+  title: string;
+  description: string;
+  startDate: string; // ISO
+  endDate: string; // ISO
+};
+
+export type DepartmentAdminOverviewData = {
+  stats: DepartmentAdminOverviewStatCard[];
+  activities: DepartmentAdminActivityItem[];
+  quickActions: DepartmentAdminOverviewQuickAction[];
+  calendar: DepartmentAdminCalendarCard | null;
+};
+
+// ============================================================================
+// DEPARTMENT ADMIN - STAFF MANAGEMENT
+// ============================================================================
+
+export type DepartmentAdminStaffRoleFilter = "ALL" | "LECTURER" | "STUDENT";
+
+export type DepartmentAdminStaffStatusFilter =
+  | "ALL"
+  | "ACTIVE"
+  | "DEACTIVATED"
+  | "PENDING_AUTH";
+
+export type DepartmentAdminStaffStats = {
+  totalUsers: number;
+  lecturers: number;
+  students: number;
+  pendingAuth: number;
+};
+
+export type DepartmentAdminStaffListRow = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  role: "LECTURER" | "STUDENT";
+  systemId: string | null;
+  departmentName: string;
+  levelOrMeta: string | null;
+  isActive: boolean;
+  emailVerified: boolean;
+  createdAt: string; // ISO
+};
+
+export type DepartmentAdminStaffListResult = {
+  stats: DepartmentAdminStaffStats;
+  rows: DepartmentAdminStaffListRow[];
+  page: number;
+  pageSize: number;
+  total: number;
+};
+
+export type DepartmentAdminStaffUserDetail = {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone: string | null;
+  role: "LECTURER" | "STUDENT";
+  isActive: boolean;
+  emailVerified: boolean;
+  departmentId: string;
+  departmentName: string;
+
+  lecturerProfile: {
+    employeeId: string;
+    qualification: string;
+    specialization: string;
+    office: string | null;
+  } | null;
+  studentProfile: {
+    studentId: string;
+    batch: string;
+  } | null;
+};
+
+export type DepartmentAdminCreateStaffUserInput = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  role: "LECTURER" | "STUDENT";
+
+  employeeId?: string;
+  qualification?: string;
+  specialization?: string;
+  office?: string;
+
+  studentId?: string;
+  batch?: string;
+};
+
+export type DepartmentAdminUpdateStaffUserInput = {
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  isActive?: boolean;
+  password?: string;
+
+  employeeId?: string;
+  qualification?: string;
+  specialization?: string;
+  office?: string | null;
+
+  studentId?: string;
+  batch?: string;
+};
+
+export type DepartmentAdminBulkImportRow = DepartmentAdminCreateStaffUserInput;
+
+export type DepartmentAdminBulkImportResult = {
+  created: number;
+  updated: number;
+  failed: number;
+  errors: Array<{ row: number; message: string }>;
+};
+
+// ============================================================================
+// DEPARTMENT ADMIN - PROGRAMMES & COURSES
+// ============================================================================
+
+export type DepartmentAdminProgrammeOption = {
+  id: string;
+  name: string;
+  code: string;
+  awardType: string;
+};
+
+export type DepartmentAdminLecturerOption = {
+  id: string;
+  name: string;
+  loadCredits: number;
+  loadPercent: number;
+  overload: boolean;
+};
+
+export type DepartmentAdminCourseOfferingView = "CURRENT" | "ARCHIVES";
+
+export type DepartmentAdminCourseOfferingRow = {
+  offeringId: string;
+  createdAt: string;
+  sessionName: string;
+  sessionIsActive: boolean;
+  semesterName: string;
+
+  courseId: string;
+  courseCode: string;
+  courseTitle: string;
+  credits: number;
+  level: number | null;
+  courseSemester: number;
+  programmeName: string | null;
+
+  lecturerId: string | null;
+  lecturerName: string | null;
+  loadPercent: number;
+};
+
+export type DepartmentAdminCourseOfferingListResult = {
+  departmentName: string;
+  activeSessionName: string | null;
+  view: DepartmentAdminCourseOfferingView;
+  rows: DepartmentAdminCourseOfferingRow[];
+};
+
+export type DepartmentAdminCourseListRow = {
+  id: string;
+  code: string;
+  title: string;
+  credits: number;
+  semester: number;
+  level: number | null;
+  programmeId: string | null;
+  programmeName: string | null;
+  createdAt: string;
+};
+
+export type DepartmentAdminCourseListResult = {
+  rows: DepartmentAdminCourseListRow[];
+};
+
+export type DepartmentAdminCreateCourseInput = {
+  programmeId?: string | null;
+  code: string;
+  title: string;
+  credits: number;
+  semester: number;
+  level?: number | null;
+};
+
+export type DepartmentAdminUpdateCourseInput = {
+  programmeId?: string | null;
+  code?: string;
+  title?: string;
+  credits?: number;
+  semester?: number;
+  level?: number | null;
+};
+
+// ============================================================================
 // ADMIN ANNOUNCEMENTS
 // ============================================================================
 

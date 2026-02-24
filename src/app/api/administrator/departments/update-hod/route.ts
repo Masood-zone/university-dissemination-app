@@ -96,6 +96,13 @@ export async function PATCH(request: Request) {
     };
 
     if (input.headUserId) {
+      prisma.user
+        .update({
+          where: { id: input.headUserId },
+          data: { departmentId: updated.id },
+        })
+        .catch(() => undefined);
+
       notifyDepartmentAdminAssigned({
         userId: input.headUserId,
         departmentId: updated.id,

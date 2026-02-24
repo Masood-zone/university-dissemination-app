@@ -1,5 +1,4 @@
 import { NotificationType, Role } from "@prisma/client";
-
 import { emailService } from "@/lib/email-service";
 import { notificationService } from "@/lib/notification-service";
 import { prisma } from "@/lib/prisma";
