@@ -32,3 +32,17 @@ export async function requireAdmin(
 
   return session;
 }
+
+export async function requireStudent(
+  request: Request,
+): Promise<RequiredBetterAuthSession> {
+  const session = await requireSession(request);
+  const role = (session?.user as unknown as { role?: Role | string } | null)
+    ?.role;
+
+  if (role !== Role.STUDENT && role !== "STUDENT") {
+    throw new Response("Forbidden", { status: 403 });
+  }
+
+  return session;
+}

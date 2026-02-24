@@ -2,7 +2,9 @@
 
 import type { ReactNode } from "react";
 
-import AppLayoutShell, { type NavSection } from "@/components/layout/AppLayoutShell";
+import AppLayoutShell, {
+  type NavSection,
+} from "@/components/layout/AppLayoutShell";
 
 const studentNavSections: NavSection[] = [
   {
@@ -19,11 +21,11 @@ const studentNavSections: NavSection[] = [
         icon: "menu_book",
       },
       {
-        label: "Assignments",
-        href: "/student/assignments",
-        icon: "assignment",
+        label: "Announcements",
+        href: "/student/announcements",
+        icon: "notifications",
       },
-      { label: "Grades & CGPA", href: "/student/grades", icon: "grade" },
+      // { label: "Grades & CGPA", href: "/student/grades", icon: "grade" },
     ],
   },
 ];

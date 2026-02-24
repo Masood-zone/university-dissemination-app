@@ -43,7 +43,7 @@ export async function uploadImageBuffer(args: {
 
   const folder = args.folder || "sids";
 
-  const res = await new Promise<any>((resolve, reject) => {
+  const res = await new Promise<CloudinaryUploadResponse>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder,
@@ -54,7 +54,7 @@ export async function uploadImageBuffer(args: {
       },
       (error, result) => {
         if (error) reject(error);
-        else resolve(result);
+        else resolve(result as unknown as CloudinaryUploadResponse);
       },
     );
 

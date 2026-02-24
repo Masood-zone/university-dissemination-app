@@ -15,6 +15,7 @@ import axios from "axios";
 import { toast } from "sonner";
 import { Notification } from "@/types";
 import { formatDistanceToNow } from "date-fns";
+import type { ApiResponse } from "@/types";
 
 export function NotificationBell() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -24,11 +25,32 @@ export function NotificationBell() {
   async function fetchNotifications() {
     try {
       setIsLoading(true);
-      const response = await axios.get("/api/notifications", {
+      const response = await axios.get<
+        ApiResponse<{
+          notifications: Array<
+            Omit<Notification, "createdAt"> & { createdAt: string | Date }
+          >;
+          unreadCount: number;
+        }>
+      >("/api/notifications", {
         params: { limit: 10 },
       });
-      setNotifications(response.data.notifications);
-      setUnreadCount(response.data.unreadCount);
+
+      if (!response.data.success || !response.data.data) {
+        throw new Error(
+          response.data.message || "Failed to load notifications",
+        );
+      }
+
+      const payload = response.data.data;
+      setNotifications(
+        payload.notifications.map((n) => ({
+          ...n,
+          createdAt:
+            n.createdAt instanceof Date ? n.createdAt : new Date(n.createdAt),
+        })),
+      );
+      setUnreadCount(payload.unreadCount);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
     } finally {
@@ -44,10 +66,19 @@ export function NotificationBell() {
 
   async function markAsRead(notificationId: string) {
     try {
-      await axios.put("/api/notifications", {
-        notificationId,
-        read: true,
-      });
+      const response = await axios.put<ApiResponse<{ ok: true }>>(
+        "/api/notifications",
+        {
+          notificationId,
+          read: true,
+        },
+      );
+
+      if (!response.data.success) {
+        throw new Error(
+          response.data.message || "Failed to update notification",
+        );
+      }
       await fetchNotifications();
     } catch (error) {
       console.error("Failed to mark notification as read:", error);
@@ -57,9 +88,18 @@ export function NotificationBell() {
 
   async function deleteNotification(notificationId: string) {
     try {
-      await axios.delete("/api/notifications", {
-        params: { id: notificationId },
-      });
+      const response = await axios.delete<ApiResponse<{ ok: true }>>(
+        "/api/notifications",
+        {
+          params: { id: notificationId },
+        },
+      );
+
+      if (!response.data.success) {
+        throw new Error(
+          response.data.message || "Failed to delete notification",
+        );
+      }
       await fetchNotifications();
     } catch (error) {
       console.error("Failed to delete notification:", error);

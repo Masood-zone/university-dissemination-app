@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { cn } from "@/lib/utils";
@@ -20,12 +20,7 @@ export default function RejectApplicationModal({
   onClose: () => void;
   onSubmit: (reason: string) => void;
 }) {
-  const [reason, setReason] = useState(initialReason);
-
-  useEffect(() => {
-    if (!open) return;
-    setReason(initialReason);
-  }, [open, initialReason]);
+  const reasonRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -73,8 +68,9 @@ export default function RejectApplicationModal({
             Reason
           </label>
           <textarea
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            key={`${open ? "open" : "closed"}-${initialReason}`}
+            ref={reasonRef}
+            defaultValue={initialReason}
             rows={4}
             className={cn(
               "mt-2 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm",
@@ -101,7 +97,7 @@ export default function RejectApplicationModal({
           <button
             type="button"
             className="inline-flex h-10 items-center justify-center rounded-xl bg-destructive px-4 text-sm font-semibold text-destructive-foreground hover:opacity-90 disabled:opacity-60"
-            onClick={() => onSubmit(reason)}
+            onClick={() => onSubmit(reasonRef.current?.value ?? "")}
             disabled={submitting}
           >
             {submitting ? "Rejecting..." : "Reject"}

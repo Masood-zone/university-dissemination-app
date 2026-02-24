@@ -2,10 +2,18 @@
 
 import * as React from "react";
 import { useGetEnrollmentStatus } from "@/services/enrollment/enrollment";
+import { useStudentDashboardAnalytics } from "@/services/student/dashboard/dashboard";
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { PendingApprovalModal } from "@/components/student/PendingApprovalModal";
 import { authClient } from "@/lib/auth-client";
-import { cn } from "@/lib/utils";
+import { cn, getDayOfWeekName, formatGhs, timeAgo } from "@/lib/utils";
+
+function formatMinutesToHHMM(totalMinutes: number): string {
+  if (!Number.isFinite(totalMinutes) || totalMinutes < 0) return "--:--";
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = Math.floor(totalMinutes % 60);
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
 
 function PlaceholderCard({
   title,
@@ -39,6 +47,17 @@ export default function StudentDashboardPage() {
   const { data, isLoading, isError } = useGetEnrollmentStatus();
   const { data: session } = authClient.useSession();
 
+  const [nowMs, setNowMs] = React.useState<number>(() => Date.now());
+
+  React.useEffect(() => {
+    if (!data) return;
+    if (data.status !== "APPROVED") return;
+
+    setNowMs(Date.now());
+    const t = window.setInterval(() => setNowMs(Date.now()), 60_000);
+    return () => window.clearInterval(t);
+  }, [data]);
+
   const user = (session as unknown as { user?: Record<string, unknown> })?.user;
   const studentName =
     (typeof user?.name === "string" && user.name) ||
@@ -49,6 +68,50 @@ export default function StudentDashboardPage() {
   const status = data?.status ?? (isError ? "UNKNOWN" : "PENDING");
   const isApproved = status === "APPROVED";
   const showPendingModal = !isLoading && !isError && !isApproved;
+
+  const {
+    data: analytics,
+    isLoading: analyticsLoading,
+    error: analyticsError,
+  } = useStudentDashboardAnalytics(isApproved);
+
+  const nextClassIn = React.useMemo(() => {
+    if (!isApproved) return "--:--";
+    if (analyticsLoading) return "--:--";
+    if (!analytics?.nextClass) return "--:--";
+
+    const startMs = new Date(analytics.nextClass.startsAt).getTime();
+    const diffMinutes = Math.max(0, Math.floor((startMs - nowMs) / 60000));
+    return formatMinutesToHHMM(diffMinutes);
+  }, [analytics?.nextClass?.startsAt, analyticsLoading, isApproved, nowMs]);
+
+  const nextClassNote = React.useMemo(() => {
+    if (!isApproved) return "Schedule unlocks after approval";
+    if (analyticsLoading) return "Loading schedule...";
+    if (analyticsError) return "Failed to load schedule";
+    if (!analytics?.nextClass) return "No classes scheduled yet";
+
+    const row = analytics.nextClass;
+    return `${row.courseCode} • ${getDayOfWeekName(row.dayOfWeek)} ${row.startTime} • ${row.location}`;
+  }, [analytics, analyticsError, analyticsLoading, isApproved]);
+
+  const feeLabel = React.useMemo(() => {
+    if (!isApproved) return { title: "Outstanding Fees Alert", note: "Data locked" };
+    if (analyticsLoading) return { title: "Outstanding Fees Alert", note: "Loading fees..." };
+    if (analyticsError) return { title: "Outstanding Fees Alert", note: "Failed to load fees" };
+
+    const outstanding = analytics?.fees.outstandingTotal ?? 0;
+    const overdue = analytics?.fees.overdueCount ?? 0;
+    const pending = analytics?.fees.pendingCount ?? 0;
+    const parts = [
+      overdue ? `${overdue} overdue` : null,
+      pending ? `${pending} pending` : null,
+    ].filter(Boolean);
+    return {
+      title: "Outstanding Fees Alert",
+      note: outstanding > 0 ? parts.join(" • ") || "Outstanding fees" : "No outstanding fees",
+    };
+  }, [analytics, analyticsError, analyticsLoading, isApproved]);
 
   return (
     <div className="relative">
@@ -92,10 +155,10 @@ export default function StudentDashboardPage() {
                   Next Class In
                 </p>
                 <p className="mt-2 font-lexend text-4xl font-extrabold tracking-tight">
-                  --:--
+                  {nextClassIn}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Schedule unlocks after approval
+                  {nextClassNote}
                 </p>
               </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-muted/40">
@@ -116,13 +179,23 @@ export default function StudentDashboardPage() {
                 />
               </div>
               <div>
-                <p className="text-sm font-semibold">Outstanding Fees Alert</p>
-                <p className="mt-1 text-xs text-muted-foreground italic">
-                  Data locked
-                </p>
+                <p className="text-sm font-semibold">{feeLabel.title}</p>
+                <p className="mt-1 text-xs text-muted-foreground italic">{feeLabel.note}</p>
               </div>
             </div>
-            <div className="mt-5 h-9 rounded-xl bg-muted/40" />
+            <div className="mt-5">
+              {!isApproved ? (
+                <div className="h-9 rounded-xl bg-muted/40" />
+              ) : analyticsLoading ? (
+                <div className="h-9 rounded-xl bg-muted/40" />
+              ) : analyticsError ? (
+                <div className="h-9 rounded-xl bg-muted/40" />
+              ) : (
+                <p className="font-lexend text-3xl font-extrabold tracking-tight">
+                  {formatGhs(analytics?.fees.outstandingTotal ?? 0)}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -153,16 +226,90 @@ export default function StudentDashboardPage() {
           <div className="rounded-2xl border border-border bg-card p-6 lg:col-span-2">
             <p className="text-sm font-semibold">Announcements</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Your feed will appear here after approval.
+              {isApproved
+                ? "Latest updates relevant to you."
+                : "Your feed will appear here after approval."}
             </p>
-            <div className="mt-5 h-56 rounded-2xl bg-muted/40" />
+            <div className="mt-5">
+              {!isApproved ? (
+                <div className="h-56 rounded-2xl bg-muted/40" />
+              ) : analyticsLoading ? (
+                <div className="h-56 rounded-2xl bg-muted/40" />
+              ) : analyticsError ? (
+                <div className="h-56 rounded-2xl bg-muted/40" />
+              ) : (analytics?.announcements?.length ?? 0) === 0 ? (
+                <div className="h-56 rounded-2xl border border-dashed border-border flex items-center justify-center text-sm text-muted-foreground">
+                  No announcements yet.
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {(analytics?.announcements ?? []).map((a) => (
+                    <li
+                      key={a.id}
+                      className="rounded-xl border border-border bg-background p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold truncate">
+                            {a.title}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {a.excerpt || a.departmentName || "Announcement"}
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground whitespace-nowrap">
+                          {a.publishedAt ? timeAgo(a.publishedAt) : ""}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
           <div className="rounded-2xl border border-border bg-card p-6">
             <p className="text-sm font-semibold">Upcoming Deadlines</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Deadlines unlock after approval.
+              {isApproved
+                ? "Exams and fee due dates."
+                : "Deadlines unlock after approval."}
             </p>
-            <div className="mt-5 h-56 rounded-2xl bg-muted/40" />
+            <div className="mt-5">
+              {!isApproved ? (
+                <div className="h-56 rounded-2xl bg-muted/40" />
+              ) : analyticsLoading ? (
+                <div className="h-56 rounded-2xl bg-muted/40" />
+              ) : analyticsError ? (
+                <div className="h-56 rounded-2xl bg-muted/40" />
+              ) : (analytics?.deadlines?.length ?? 0) === 0 ? (
+                <div className="h-56 rounded-2xl border border-dashed border-border flex items-center justify-center text-sm text-muted-foreground">
+                  No deadlines found.
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {(analytics?.deadlines ?? []).map((d) => (
+                    <li
+                      key={d.id}
+                      className="rounded-xl border border-border bg-background p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold truncate">
+                            {d.title}
+                          </p>
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {d.subtitle}
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground whitespace-nowrap">
+                          {timeAgo(d.dueAt)}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         </div>
       </div>

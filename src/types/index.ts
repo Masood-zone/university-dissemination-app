@@ -106,6 +106,66 @@ export interface AnnouncementFeed {
   hasMore: boolean;
 }
 
+export type StudentAnnouncementPriorityFilter =
+  | "ALL"
+  | "NORMAL"
+  | "HIGH"
+  | "CRITICAL";
+
+export type StudentAnnouncementsSort = "RECENT" | "OLDEST";
+
+export type StudentAnnouncementListItem = {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  category: AnnouncementCategory;
+  priority: number;
+  pinned: boolean;
+  departmentName: string | null;
+  authorName: string;
+  publishedAt: string | null; // ISO
+  createdAt: string; // ISO
+  viewCount: number;
+};
+
+export type StudentAnnouncementsCategoryCount = {
+  category: AnnouncementCategory;
+  label: string;
+  count: number;
+};
+
+export type StudentAnnouncementsFeedResult = {
+  rows: StudentAnnouncementListItem[];
+  categories: StudentAnnouncementsCategoryCount[];
+  page: number;
+  pageSize: number;
+  total: number;
+  sort: StudentAnnouncementsSort;
+};
+
+export type StudentAnnouncementDetail = {
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string | null;
+  category: AnnouncementCategory;
+  priority: number;
+  pinned: boolean;
+  departmentName: string | null;
+  authorName: string;
+  imageUrl: string | null;
+  viewCount: number;
+  publishedAt: string | null; // ISO
+  expiresAt: string | null; // ISO
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+};
+
+export type StudentAnnouncementDetailResult = {
+  announcement: StudentAnnouncementDetail;
+  related: StudentAnnouncementListItem[];
+};
+
 // ============================================================================
 // ACADEMIC TYPES
 // ============================================================================
@@ -505,6 +565,51 @@ export interface StudentDashboard {
   unreadNotifications: number;
 }
 
+export type StudentDashboardDeadlineKind = "FEE" | "EXAM";
+
+export type StudentDashboardDeadlineItem = {
+  id: string;
+  kind: StudentDashboardDeadlineKind;
+  title: string;
+  subtitle: string;
+  dueAt: string; // ISO
+};
+
+export type StudentDashboardNextClass = {
+  offeringId: string | null;
+  courseCode: string;
+  courseTitle: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  location: string;
+  lecturer: string | null;
+  startsAt: string; // ISO
+};
+
+export type StudentDashboardAnalytics = {
+  nextClass: StudentDashboardNextClass | null;
+  nextClassInMinutes: number | null;
+  fees: {
+    outstandingTotal: number;
+    currency: string;
+    pendingCount: number;
+    overdueCount: number;
+    nextDueAt: string | null; // ISO
+  };
+  announcements: Array<{
+    id: string;
+    title: string;
+    excerpt: string | null;
+    category: AnnouncementCategory;
+    pinned: boolean;
+    priority: number;
+    departmentName: string | null;
+    publishedAt: string | null; // ISO
+  }>;
+  deadlines: StudentDashboardDeadlineItem[];
+};
+
 export interface AdminDashboard {
   stats: DashboardStats;
   recentAnnouncements: AnnouncementData[];
@@ -538,6 +643,91 @@ export interface AdminOverviewData {
   stats: AdminOverviewStatCard[];
   quickActions: AdminOverviewQuickAction[];
 }
+
+// ============================================================================
+// ADMIN ANNOUNCEMENTS
+// ============================================================================
+
+export type AdminAnnouncementStatusFilter =
+  | "ALL"
+  | "ACTIVE"
+  | "SCHEDULED"
+  | "DRAFT"
+  | "ARCHIVED";
+
+export type AdminAnnouncementPriorityLevel =
+  | "NORMAL"
+  | "IMPORTANT"
+  | "CRITICAL";
+
+export type AdminAnnouncementListRow = {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  category: AnnouncementCategory;
+  status: AnnouncementStatus;
+  priority: number;
+  pinned: boolean;
+  departmentName: string | null;
+  publishedAt: string | null;
+  expiresAt: string | null;
+  viewCount: number;
+  createdAt: string;
+};
+
+export type AdminAnnouncementsStats = {
+  totalActive: number;
+  scheduled: number;
+  highPriority: number;
+  readRate: number | null;
+};
+
+export type AdminAnnouncementsListResult = {
+  stats: AdminAnnouncementsStats;
+  rows: AdminAnnouncementListRow[];
+  page: number;
+  pageSize: number;
+  total: number;
+};
+
+export type AdminAnnouncementDetail = {
+  id: string;
+  title: string;
+  content: string;
+  excerpt: string | null;
+  category: AnnouncementCategory;
+  status: AnnouncementStatus;
+  priority: number;
+  pinned: boolean;
+  imageUrl: string | null;
+  department: { id: string; name: string } | null;
+  viewCount: number;
+  publishedAt: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  author: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    avatar: string | null;
+  };
+};
+
+export type UpsertAnnouncementInput = {
+  id?: string;
+  title: string;
+  content: string;
+  excerpt?: string | null;
+  category: AnnouncementCategory;
+  priority: number;
+  pinned?: boolean;
+  departmentId?: string | null;
+  imageUrl?: string | null;
+  mode: "DRAFT" | "PUBLISH_NOW" | "SCHEDULE";
+  publishedAt?: string | null;
+  expiresAt?: string | null;
+};
 
 // ============================================================================
 // DEPARTMENT MANAGEMENT TYPES

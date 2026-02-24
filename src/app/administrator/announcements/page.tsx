@@ -1,10 +1,5 @@
-import AdminPagePlaceholder from "@/components/admin/AdminPagePlaceholder";
+import AnnouncementsClient from "@/components/admin/announcements/AnnouncementsClient";
 
 export default function AnnouncementsPage() {
-  return (
-    <AdminPagePlaceholder
-      title="Announcements & Communication"
-      description="Announcement publishing and communication tools will be implemented here."
-    />
-  );
+  return <AnnouncementsClient />;
 }

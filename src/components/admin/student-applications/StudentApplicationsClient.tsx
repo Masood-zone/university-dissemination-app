@@ -26,7 +26,7 @@ function initials(name: string): string {
 
   if (!parts.length) return "?";
   const first = parts[0]?.[0] ?? "";
-  const second = parts.length > 1 ? parts[1]?.[0] ?? "" : "";
+  const second = parts.length > 1 ? (parts[1]?.[0] ?? "") : "";
   return (first + second).toUpperCase();
 }
 
@@ -95,7 +95,9 @@ export default function StudentApplicationsClient() {
   const listError = applicationsQuery.error
     ? getApiErrorLabel(applicationsQuery.error)
     : null;
-  const detailError = detailQuery.error ? getApiErrorLabel(detailQuery.error) : null;
+  const detailError = detailQuery.error
+    ? getApiErrorLabel(detailQuery.error)
+    : null;
 
   const rows = applicationsQuery.data?.rows ?? [];
   const selected = detailQuery.data;
@@ -196,6 +198,19 @@ export default function StudentApplicationsClient() {
                   Status
                 </label>
                 <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    className={cn(
+                      "h-10 flex-1 rounded-xl px-3 text-xs font-semibold uppercase tracking-wider",
+                      status === "ALL"
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary text-secondary-foreground hover:bg-accent",
+                    )}
+                    onClick={() => setStatus("ALL")}
+                  >
+                    All
+                  </button>
+
                   <button
                     type="button"
                     className={cn(
@@ -415,8 +430,12 @@ export default function StudentApplicationsClient() {
                     </p>
                     <div className="mt-3 space-y-2 text-sm">
                       <div>
-                        <p className="text-xs text-muted-foreground">Department</p>
-                        <p className="font-medium">{selected.department.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Department
+                        </p>
+                        <p className="font-medium">
+                          {selected.department.name}
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">
@@ -431,7 +450,9 @@ export default function StudentApplicationsClient() {
                       {selected.applicantPhone ? (
                         <div>
                           <p className="text-xs text-muted-foreground">Phone</p>
-                          <p className="font-medium">{selected.applicantPhone}</p>
+                          <p className="font-medium">
+                            {selected.applicantPhone}
+                          </p>
                         </div>
                       ) : null}
                     </div>
@@ -547,8 +568,12 @@ export default function StudentApplicationsClient() {
                 <button
                   type="button"
                   className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-primary text-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60"
-                  onClick={() => selectedId && approveMutation.mutate(selectedId)}
-                  disabled={!selectedId || approveMutation.isPending || disableActions}
+                  onClick={() =>
+                    selectedId && approveMutation.mutate(selectedId)
+                  }
+                  disabled={
+                    !selectedId || approveMutation.isPending || disableActions
+                  }
                 >
                   {approveMutation.isPending
                     ? "Approving..."
@@ -562,7 +587,9 @@ export default function StudentApplicationsClient() {
                     setRejectError(null);
                     setRejectOpen(true);
                   }}
-                  disabled={!selectedId || rejectMutation.isPending || disableActions}
+                  disabled={
+                    !selectedId || rejectMutation.isPending || disableActions
+                  }
                 >
                   Reject
                 </button>
