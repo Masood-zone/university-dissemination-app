@@ -329,6 +329,8 @@ export type FinanceAnalytics = {
   sessionName: string | null;
   totalRevenue: number;
   outstandingFees: number;
+  feesAssessed: number;
+  billedStudents: number;
   collectionRate: number | null;
   targetCollectionRate: number;
 };
@@ -376,6 +378,54 @@ export type ProgrammeFeeAllocation = {
   totalFee: number;
   currency: string;
   configured: boolean;
+};
+
+export type StudentFinanceFeeItem = {
+  key: string;
+  description: string;
+  kind: string;
+  amount: number;
+  status: "PENDING" | "PAID" | "OVERDUE" | "CANCELLED";
+  note: string | null;
+};
+
+export type StudentFinanceTransactionRow = {
+  id: string;
+  reference: string;
+  amount: number;
+  currency: string;
+  status: string;
+  paymentMethod: string;
+  createdAt: string;
+};
+
+export type StudentFinanceSummary = {
+  sessionId: string | null;
+  sessionName: string | null;
+  semester: "FIRST" | "SECOND" | null;
+  applicationStatus: ApplicationStatus | null;
+  programme: { id: string; name: string; code: string } | null;
+  configured: boolean;
+  feeId: string | null;
+  feeStatus: "PENDING" | "PAID" | "OVERDUE" | "CANCELLED" | null;
+  totals: {
+    totalFee: number;
+    totalPaid: number;
+    outstanding: number;
+    currency: string;
+    dueAt: string | null;
+  };
+  breakdown: StudentFinanceFeeItem[];
+  transactions: StudentFinanceTransactionRow[];
+};
+
+export type StudentFinancePayInput = {
+  feeId: string;
+  paymentMethod: "M_MONEY" | "CARD_BANK";
+};
+
+export type StudentFinancePayResult = {
+  ok: true;
 };
 
 export type UpsertProgrammeFeeInput = {
@@ -593,6 +643,8 @@ export type StudentDashboardAnalytics = {
   nextClass: StudentDashboardNextClass | null;
   nextClassInMinutes: number | null;
   fees: {
+    assessedTotal: number;
+    paidTotal: number;
     outstandingTotal: number;
     currency: string;
     pendingCount: number;

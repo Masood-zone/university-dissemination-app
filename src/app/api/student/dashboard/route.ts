@@ -45,6 +45,16 @@ export async function GET(request: Request) {
     const session = await requireStudent(request);
     const userId = session.user.id;
 
+    // Keep fee statuses fresh for dashboard indicators.
+    await prisma.fee.updateMany({
+      where: {
+        studentId: userId,
+        status: "PENDING",
+        dueDate: { lt: new Date() },
+      },
+      data: { status: "OVERDUE" },
+    });
+
     const latestApplication = await prisma.application.findFirst({
       where: { applicantId: userId },
       orderBy: { createdAt: "desc" },
@@ -74,108 +84,129 @@ export async function GET(request: Request) {
     });
     const offeringIds = enrollments.map((e) => e.offeringId);
 
-    const [timetables, feesAgg, nextDueFee, announcements, exams] =
-      await Promise.all([
-        offeringIds.length
-          ? prisma.timetable.findMany({
-              where: { offeringId: { in: offeringIds } },
-              select: {
-                id: true,
-                dayOfWeek: true,
-                startTime: true,
-                endTime: true,
-                location: true,
-                lecturer: true,
-                offering: {
-                  select: {
-                    id: true,
-                    course: {
-                      select: { code: true, title: true },
-                    },
+    const [
+      timetables,
+      feesAgg,
+      assessedAgg,
+      paidAgg,
+      nextDueFee,
+      announcements,
+      exams,
+    ] = await Promise.all([
+      offeringIds.length
+        ? prisma.timetable.findMany({
+            where: { offeringId: { in: offeringIds } },
+            select: {
+              id: true,
+              dayOfWeek: true,
+              startTime: true,
+              endTime: true,
+              location: true,
+              lecturer: true,
+              offering: {
+                select: {
+                  id: true,
+                  course: {
+                    select: { code: true, title: true },
                   },
                 },
               },
-            })
-          : Promise.resolve([]),
-        prisma.fee.aggregate({
-          where: {
-            studentId: userId,
-            status: { in: ["PENDING", "OVERDUE"] },
-          },
-          _sum: { amount: true },
-          _count: { _all: true },
-        }),
-        prisma.fee.findFirst({
-          where: {
-            studentId: userId,
-            status: { in: ["PENDING", "OVERDUE"] },
-          },
-          orderBy: { dueDate: "asc" },
-          select: { dueDate: true },
-        }),
-        prisma.announcement.findMany({
-          where: {
-            status: AnnouncementStatus.PUBLISHED,
-            AND: [
-              {
-                OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
-              },
-              {
-                OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
-              },
-              {
-                OR: [{ departmentId: null }, { departmentId }],
-              },
-            ],
-          },
-          orderBy: [
-            { pinned: "desc" },
-            { priority: "desc" },
-            { publishedAt: "desc" },
-            { createdAt: "desc" },
+            },
+          })
+        : Promise.resolve([]),
+      prisma.fee.aggregate({
+        where: {
+          studentId: userId,
+          status: { in: ["PENDING", "OVERDUE"] },
+        },
+        _sum: { amount: true },
+        _count: { _all: true },
+      }),
+      prisma.fee.aggregate({
+        where: {
+          studentId: userId,
+          status: { not: "CANCELLED" },
+        },
+        _sum: { amount: true },
+      }),
+      prisma.fee.aggregate({
+        where: {
+          studentId: userId,
+          status: "PAID",
+        },
+        _sum: { amount: true },
+      }),
+      prisma.fee.findFirst({
+        where: {
+          studentId: userId,
+          status: { in: ["PENDING", "OVERDUE"] },
+        },
+        orderBy: { dueDate: "asc" },
+        select: { dueDate: true },
+      }),
+      prisma.announcement.findMany({
+        where: {
+          status: AnnouncementStatus.PUBLISHED,
+          AND: [
+            {
+              OR: [{ publishedAt: null }, { publishedAt: { lte: now } }],
+            },
+            {
+              OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+            },
+            {
+              OR: [{ departmentId: null }, { departmentId }],
+            },
           ],
-          take: 5,
-          select: {
-            id: true,
-            title: true,
-            excerpt: true,
-            category: true,
-            pinned: true,
-            priority: true,
-            publishedAt: true,
-            createdAt: true,
-            department: { select: { name: true } },
-          },
-        }),
-        offeringIds.length
-          ? prisma.exam.findMany({
-              where: {
-                offeringId: { in: offeringIds },
-                examDate: { gte: now },
-              },
-              orderBy: [{ examDate: "asc" }],
-              take: 5,
-              select: {
-                id: true,
-                examType: true,
-                examDate: true,
-                startTime: true,
-                endTime: true,
-                location: true,
-                offering: {
-                  select: {
-                    course: {
-                      select: {
-                        code: true,
-                        title: true,
-                      },
+        },
+        orderBy: [
+          { pinned: "desc" },
+          { priority: "desc" },
+          { publishedAt: "desc" },
+          { createdAt: "desc" },
+        ],
+        take: 5,
+        select: {
+          id: true,
+          title: true,
+          excerpt: true,
+          category: true,
+          pinned: true,
+          priority: true,
+          publishedAt: true,
+          createdAt: true,
+          department: { select: { name: true } },
+        },
+      }),
+      offeringIds.length
+        ? prisma.exam.findMany({
+            where: {
+              offeringId: { in: offeringIds },
+              examDate: { gte: now },
+            },
+            orderBy: [{ examDate: "asc" }],
+            take: 5,
+            select: {
+              id: true,
+              examType: true,
+              examDate: true,
+              startTime: true,
+              endTime: true,
+              location: true,
+              offering: {
+                select: {
+                  course: {
+                    select: {
+                      code: true,
+                      title: true,
                     },
                   },
                 },
               },
-            })
-          : Promise.resolve([]),
-      ]);
+            },
+          })
+        : Promise.resolve([]),
+    ]);
 
     const pendingCount = await prisma.fee.count({
       where: { studentId: userId, status: "PENDING" },
@@ -247,6 +278,8 @@ export async function GET(request: Request) {
       nextClass,
       nextClassInMinutes,
       fees: {
+        assessedTotal: assessedAgg._sum.amount ?? 0,
+        paidTotal: paidAgg._sum.amount ?? 0,
         outstandingTotal: feesAgg._sum.amount ?? 0,
         currency: "GHS",
         pendingCount,

@@ -95,6 +95,7 @@ export type UpdateScheduleEventInput = {
 };
 
 export type CreateExamInput = {
+  kind?: "EXAM";
   offeringId: string;
   examType: string;
   examDate: string;
@@ -103,6 +104,15 @@ export type CreateExamInput = {
   location: string;
   totalMarks?: number;
   duration?: number;
+};
+
+export type CreateClassInput = {
+  kind: "CLASS";
+  offeringId: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  location: string;
 };
 
 async function ensureLecturerAssignedToOffering(options: {
@@ -569,7 +579,142 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = (await request.json()) as Partial<CreateExamInput>;
+    const body = (await request.json()) as Partial<
+      CreateExamInput & CreateClassInput
+    >;
+
+    const createKind =
+      body.kind === "CLASS" || body.kind === "EXAM" ? body.kind : null;
+
+    // ---------------------------------------------------------------------
+    // Create class timetable entry
+    // ---------------------------------------------------------------------
+    if (createKind === "CLASS") {
+      const offeringId =
+        typeof body.offeringId === "string" ? body.offeringId : "";
+      const dayOfWeek =
+        typeof body.dayOfWeek === "number" && Number.isFinite(body.dayOfWeek)
+          ? Math.floor(body.dayOfWeek)
+          : NaN;
+      const startTime =
+        typeof body.startTime === "string" ? body.startTime.trim() : "";
+      const endTime =
+        typeof body.endTime === "string" ? body.endTime.trim() : "";
+      const location =
+        typeof body.location === "string" ? body.location.trim() : "";
+
+      if (
+        !offeringId ||
+        !Number.isFinite(dayOfWeek) ||
+        dayOfWeek < 0 ||
+        dayOfWeek > 6 ||
+        !parseHHmm(startTime) ||
+        !parseHHmm(endTime) ||
+        !location
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Invalid payload",
+            code: "VALIDATION_ERROR",
+          } satisfies ApiResponse<never>,
+          { status: 400 },
+        );
+      }
+
+      const allowed = await ensureLecturerAssignedToOffering({
+        lecturerId: userId,
+        offeringId,
+      });
+
+      if (!allowed) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Forbidden",
+            code: "FORBIDDEN",
+          } satisfies ApiResponse<never>,
+          { status: 403 },
+        );
+      }
+
+      const created = await prisma.timetable.create({
+        data: {
+          offeringId,
+          dayOfWeek,
+          startTime,
+          endTime,
+          location,
+        },
+        select: {
+          id: true,
+          dayOfWeek: true,
+          startTime: true,
+          endTime: true,
+          location: true,
+          offering: {
+            select: { course: { select: { code: true, title: true } } },
+          },
+        },
+      });
+
+      const now = new Date();
+      const weekStart = startOfWeekSunday(now);
+      const startDate = dateForWeekdayTime({
+        weekStart,
+        dayOfWeek: created.dayOfWeek,
+        time: created.startTime,
+      });
+      const endDate = dateForWeekdayTime({
+        weekStart,
+        dayOfWeek: created.dayOfWeek,
+        time: created.endTime,
+      });
+
+      await notifyEnrolledStudents({
+        offeringId,
+        title: "Class scheduled",
+        message: `${created.offering.course.code} (${created.offering.course.title}) class has been scheduled.`,
+        metadata: {
+          kind: "CLASS",
+          timetableId: created.id,
+          offeringId,
+          dayOfWeek: created.dayOfWeek,
+          startTime: created.startTime,
+          endTime: created.endTime,
+          location: created.location,
+        },
+      });
+
+      const row: LecturerScheduleEventRow = {
+        id: `CLASS:${created.id}`,
+        kind: "CLASS",
+        entityId: created.id,
+        offeringId,
+        courseCode: created.offering.course.code,
+        courseTitle: created.offering.course.title,
+        start: toIso(startDate ?? new Date()),
+        end: toIso(
+          endDate && startDate && endDate.getTime() > startDate.getTime()
+            ? endDate
+            : new Date((startDate ?? new Date()).getTime() + 60 * 60 * 1000),
+        ),
+        allDay: false,
+        location: created.location || null,
+      };
+
+      return NextResponse.json(
+        {
+          success: true,
+          data: row,
+        } satisfies ApiResponse<LecturerScheduleEventRow>,
+        { status: 201 },
+      );
+    }
+
+    // ---------------------------------------------------------------------
+    // Create exam (default)
+    // ---------------------------------------------------------------------
 
     const offeringId =
       typeof body.offeringId === "string" ? body.offeringId : "";

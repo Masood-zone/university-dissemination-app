@@ -106,18 +106,27 @@ export default function StudentDashboardPage() {
       return { title: "Outstanding Fees Alert", note: "Failed to load fees" };
 
     const outstanding = analytics?.fees.outstandingTotal ?? 0;
+    const assessed = analytics?.fees.assessedTotal ?? 0;
+    const paid = analytics?.fees.paidTotal ?? 0;
     const overdue = analytics?.fees.overdueCount ?? 0;
     const pending = analytics?.fees.pendingCount ?? 0;
     const parts = [
       overdue ? `${overdue} overdue` : null,
       pending ? `${pending} pending` : null,
     ].filter(Boolean);
+
+    const progressLabel =
+      assessed > 0 ? `${formatGhs(paid)} paid of ${formatGhs(assessed)}` : null;
     return {
       title: "Outstanding Fees Alert",
       note:
         outstanding > 0
-          ? parts.join(" • ") || "Outstanding fees"
-          : "No outstanding fees",
+          ? [progressLabel, parts.join(" • ") || "Outstanding fees"]
+              .filter(Boolean)
+              .join(" • ")
+          : progressLabel
+            ? `All clear • ${progressLabel}`
+            : "No outstanding fees",
     };
   }, [analytics, analyticsError, analyticsLoading, isApproved]);
 

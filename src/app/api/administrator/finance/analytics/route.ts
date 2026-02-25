@@ -15,24 +15,51 @@ export async function GET(request: Request) {
 
     const activeAcademicYear = activeSession?.name ?? null;
 
-    const [successfulAgg, outstandingAgg] = await Promise.all([
-      prisma.paymentTransaction.aggregate({
+    // Keep fee statuses fresh for more accurate reporting.
+    if (activeAcademicYear) {
+      await prisma.fee.updateMany({
         where: {
-          status: "SUCCESS",
-          ...(activeAcademicYear
-            ? { fee: { is: { academicYear: activeAcademicYear } } }
-            : {}),
+          academicYear: activeAcademicYear,
+          status: "PENDING",
+          dueDate: { lt: new Date() },
         },
-        _sum: { amount: true },
-      }),
-      prisma.fee.aggregate({
-        where: {
-          status: { in: ["PENDING", "OVERDUE"] },
-          ...(activeAcademicYear ? { academicYear: activeAcademicYear } : {}),
-        },
-        _sum: { amount: true },
-      }),
-    ]);
+        data: { status: "OVERDUE" },
+      });
+    }
+
+    const [successfulAgg, outstandingAgg, assessedAgg, billedStudents] =
+      await Promise.all([
+        prisma.paymentTransaction.aggregate({
+          where: {
+            status: "SUCCESS",
+            ...(activeAcademicYear
+              ? { fee: { is: { academicYear: activeAcademicYear } } }
+              : {}),
+          },
+          _sum: { amount: true },
+        }),
+        prisma.fee.aggregate({
+          where: {
+            status: { in: ["PENDING", "OVERDUE"] },
+            ...(activeAcademicYear ? { academicYear: activeAcademicYear } : {}),
+          },
+          _sum: { amount: true },
+        }),
+        prisma.fee.aggregate({
+          where: {
+            status: { not: "CANCELLED" },
+            ...(activeAcademicYear ? { academicYear: activeAcademicYear } : {}),
+          },
+          _sum: { amount: true },
+        }),
+        prisma.fee.count({
+          where: {
+            status: { not: "CANCELLED" },
+            ...(activeAcademicYear ? { academicYear: activeAcademicYear } : {}),
+          },
+          distinct: ["studentId"],
+        }),
+      ]);
 
     const totalRevenue = successfulAgg._sum.amount ?? 0;
     const outstandingFees = outstandingAgg._sum.amount ?? 0;
@@ -46,6 +73,8 @@ export async function GET(request: Request) {
       sessionName: activeSession?.name ?? null,
       totalRevenue,
       outstandingFees,
+      feesAssessed: assessedAgg._sum.amount ?? 0,
+      billedStudents,
       collectionRate,
       targetCollectionRate: 90,
     };

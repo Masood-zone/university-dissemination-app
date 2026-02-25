@@ -3,6 +3,7 @@ import { NotificationType } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { requireLecturer } from "@/lib/server";
+import { notifyUsersOfNewMessage } from "@/lib/message-notifications";
 import type { ApiResponse } from "@/types";
 
 function safeStringify(value: unknown): string {
@@ -266,6 +267,13 @@ export async function POST(request: Request) {
           senderId: lecturerId,
         }),
       })),
+    });
+
+    // External notifications (email + sms). Best-effort.
+    await notifyUsersOfNewMessage({
+      senderName,
+      recipientIds: uniqueRecipientIds,
+      messagePreview: content,
     });
 
     return NextResponse.json(

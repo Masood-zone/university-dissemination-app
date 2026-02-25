@@ -326,7 +326,7 @@ export default function FinancePage() {
                       )}
                     </p>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Pending transactions
+                      Pending/overdue obligations
                     </p>
                   </div>
                   <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-muted text-foreground">
@@ -363,19 +363,23 @@ export default function FinancePage() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Range
+                      Fees Assessed
                     </p>
                     <p className="mt-2 font-lexend text-2xl font-semibold">
-                      {transactions.data?.rangeDays ??
-                        (range === "90d" ? 90 : range === "30d" ? 30 : 7)}
-                      d
+                      {formatMoney(
+                        analytics.data?.feesAssessed ?? 0,
+                        analyticsCurrency,
+                      )}
                     </p>
                     <p className="mt-2 text-xs text-muted-foreground">
-                      Transactions window
+                      Billed: {analytics.data?.billedStudents ?? 0} students
                     </p>
                   </div>
                   <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-muted text-foreground">
-                    <MaterialSymbol icon="timeline" className="text-[22px]" />
+                    <MaterialSymbol
+                      icon="account_balance"
+                      className="text-[22px]"
+                    />
                   </div>
                 </div>
               </div>

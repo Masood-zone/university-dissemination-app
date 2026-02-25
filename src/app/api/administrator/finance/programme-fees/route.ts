@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { Prisma, SemesterName } from "@prisma/client";
+import { ApplicationStatus, Prisma, SemesterName } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/server";
@@ -57,14 +57,32 @@ async function propagateProgrammeFeeToEnrolledStudents(options: {
   const dueDate = addDays(semesterRow?.startDate ?? new Date(), 14);
   const semesterInt = semesterToInt(semester);
 
-  const offerings = await prisma.courseOffering.findMany({
-    where: {
-      sessionId,
-      semester: { name: semester },
-      course: { programmeId },
-    },
-    select: { id: true },
-  });
+  const [offerings, applications] = await Promise.all([
+    prisma.courseOffering.findMany({
+      where: {
+        sessionId,
+        semester: { name: semester },
+        course: { programmeId },
+      },
+      select: { id: true },
+    }),
+    prisma.application.findMany({
+      where: {
+        programmeId,
+        sessionId,
+        status: {
+          in: [
+            ApplicationStatus.SUBMITTED,
+            ApplicationStatus.UNDER_REVIEW,
+            ApplicationStatus.SHORTLISTED,
+            ApplicationStatus.APPROVED,
+          ],
+        },
+        applicantId: { not: null },
+      },
+      select: { applicantId: true },
+    }),
+  ]);
 
   const offeringIds = offerings.map((o) => o.id);
 
@@ -76,7 +94,12 @@ async function propagateProgrammeFeeToEnrolledStudents(options: {
     : [];
 
   const studentIds = Array.from(
-    new Set(enrollmentRows.map((e) => e.studentId)),
+    new Set([
+      ...enrollmentRows.map((e) => e.studentId),
+      ...applications
+        .map((a) => a.applicantId)
+        .filter((id): id is string => Boolean(id)),
+    ]),
   );
 
   await prisma.$transaction(async (tx) => {

@@ -3,6 +3,7 @@ import { NotificationType } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { requireStudent } from "@/lib/server";
+import { notifyUsersOfNewMessage } from "@/lib/message-notifications";
 import type { ApiResponse } from "@/types";
 
 function safeStringify(value: unknown): string {
@@ -229,12 +230,14 @@ export async function POST(request: Request) {
       select: { name: true },
     });
 
+    const senderName = sender?.name || "Student";
+
     await prisma.notification.create({
       data: {
         userId: recipientId,
         type: NotificationType.MESSAGE,
         title: "New message",
-        message: `You have a new message from ${sender?.name || "a student"}.`,
+        message: `You have a new message from ${senderName}.`,
         isRead: false,
         metadata: safeStringify({
           kind: "MESSAGE",
@@ -242,6 +245,13 @@ export async function POST(request: Request) {
         }),
       },
       select: { id: true },
+    });
+
+    // External notifications (email + sms). Best-effort.
+    await notifyUsersOfNewMessage({
+      senderName,
+      recipientIds: [recipientId],
+      messagePreview: content,
     });
 
     return NextResponse.json(

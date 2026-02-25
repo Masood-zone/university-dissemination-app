@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { MessageMarkdownPreview } from "@/components/messaging/MessageMarkdown";
 
 export function MessageBubble({
   content,
@@ -23,7 +24,10 @@ export function MessageBubble({
             : "bg-background border border-border",
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{content}</p>
+        <MessageMarkdownPreview
+          source={content}
+          colorMode={isOwn ? "dark" : "light"}
+        />
         <p
           className={cn(
             "mt-2 text-[10px]",

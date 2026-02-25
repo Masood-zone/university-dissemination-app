@@ -5,6 +5,7 @@ import { toApiClientError } from "@/lib/api-client-error";
 import type { ApiResponse } from "@/types";
 
 import type {
+  CreateClassInput,
   CreateExamInput,
   LecturerScheduleEventRow,
   LecturerScheduleResponse,
@@ -68,6 +69,25 @@ async function createExam(
   }
 }
 
+async function createClass(
+  input: CreateClassInput,
+): Promise<LecturerScheduleEventRow> {
+  try {
+    const res = await api.post<ApiResponse<LecturerScheduleEventRow>>(
+      "/lecturer/schedule",
+      input,
+    );
+
+    if (!res.data.success || !res.data.data) {
+      throw new Error(res.data.message || "Failed to create class");
+    }
+
+    return res.data.data;
+  } catch (error) {
+    throw toApiClientError(error, "Failed to create class");
+  }
+}
+
 export function useLecturerSchedule() {
   return useQuery({
     queryKey: scheduleKeys.all,
@@ -94,6 +114,20 @@ export function useCreateExam() {
     mutationFn: createExam,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
+    },
+  });
+}
+
+export function useCreateClass() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createClass,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: scheduleKeys.all });
+      await queryClient.invalidateQueries({
+        queryKey: ["lecturer", "courses"],
+      });
     },
   });
 }

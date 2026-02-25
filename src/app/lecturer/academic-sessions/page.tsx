@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import * as React from "react";
 import { dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
@@ -11,22 +10,33 @@ import BigCalendarDnD, {
 } from "@/components/common/react-big-calendar/big-calendar-dnd";
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/ui/date-picker";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getApiErrorLabel } from "@/lib/api-client-error";
 import { useLecturerCourses } from "@/services/lecturer/courses/courses";
 import {
   useCreateExam,
+  useCreateClass,
   useLecturerSchedule,
   useUpdateScheduleEvent,
 } from "@/services/lecturer/schedule/schedule";
+
+import {
+  ScheduleTabs,
+  type ScheduleTabKey,
+} from "@/components/lecturer/schedule/ScheduleTabs";
+import { UnscheduledCoursesPanel } from "@/components/lecturer/schedule/UnscheduledCoursesPanel";
+import { VenueSelect } from "@/components/lecturer/schedule/VenueSelect";
+import {
+  AutomationToolCard,
+  VenueAvailabilityCard,
+} from "@/components/lecturer/schedule/SideCards";
+import {
+  ExamCoordinatorCard,
+  type ExamCourseOption,
+} from "@/components/lecturer/schedule/ExamCoordinatorCard";
+import { VENUE_OPTIONS } from "@/lib/venues";
+
+import type { LecturerAssignedCourse } from "@/app/api/lecturer/courses/route";
 
 type ScheduleResource = {
   kind: "CLASS" | "EXAM";
@@ -54,6 +64,12 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
+function formatHHmm(date: Date): string {
+  const hh = String(date.getHours()).padStart(2, "0");
+  const mm = String(date.getMinutes()).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
 function toEventTitle(row: {
   kind: "CLASS" | "EXAM";
   courseCode: string;
@@ -72,16 +88,17 @@ export default function LecturerAcademicSessionsPage() {
   const scheduleQuery = useLecturerSchedule();
   const updateMutation = useUpdateScheduleEvent();
   const createExamMutation = useCreateExam();
+  const createClassMutation = useCreateClass();
   const coursesQuery = useLecturerCourses();
 
+  const [tab, setTab] = React.useState<ScheduleTabKey>("TIMETABLE");
   const [localError, setLocalError] = React.useState<string | null>(null);
+  const [selectedVenue, setSelectedVenue] = React.useState(
+    VENUE_OPTIONS[0] ?? "",
+  );
 
-  const [examOfferingId, setExamOfferingId] = React.useState("");
-  const [examType, setExamType] = React.useState("MIDSEM");
-  const [examDate, setExamDate] = React.useState<Date | undefined>(undefined);
-  const [startTime, setStartTime] = React.useState("09:00");
-  const [endTime, setEndTime] = React.useState("10:00");
-  const [location, setLocation] = React.useState("");
+  const [draggingCourse, setDraggingCourse] =
+    React.useState<LecturerAssignedCourse | null>(null);
 
   const apiError = scheduleQuery.error
     ? getApiErrorLabel(scheduleQuery.error)
@@ -191,202 +208,129 @@ export default function LecturerAcademicSessionsPage() {
     }
   };
 
-  const submitExam = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const assignedCourses = coursesQuery.data?.rows ?? [];
+
+  const examCourseOptions: ExamCourseOption[] = React.useMemo(
+    () =>
+      assignedCourses.map((c) => ({
+        offeringId: c.offeringId,
+        courseCode: c.courseCode,
+        courseTitle: c.courseTitle,
+      })),
+    [assignedCourses],
+  );
+
+  const periodLabel = React.useMemo(() => {
+    const first = assignedCourses[0];
+    if (!first) return null;
+    return `${first.semesterName} • ${first.sessionName}`;
+  }, [assignedCourses]);
+
+  const venueAvailability = React.useMemo(() => {
+    const used = new Set(
+      (scheduleQuery.data?.rows ?? [])
+        .map((r) => r.location)
+        .filter(
+          (v): v is string => typeof v === "string" && v.trim().length > 0,
+        ),
+    );
+
+    const shortlist = ["ROB Room 1", "NLB Room 1", "NFB Room 1", "JCRC Room 1"];
+    return shortlist.map((name) => ({
+      name,
+      status: used.has(name) ? ("Booked" as const) : ("Free" as const),
+    }));
+  }, [scheduleQuery.data]);
+
+  const onDropFromOutside = async (args: {
+    start: Date;
+    end: Date;
+    allDay: boolean;
+  }) => {
+    if (!draggingCourse) return;
+    if (!selectedVenue) {
+      setLocalError("Please select a venue before scheduling.");
+      return;
+    }
+
     setLocalError(null);
 
-    if (!examOfferingId) {
-      setLocalError("Please choose a course offering");
-      return;
-    }
-
-    if (!examType.trim()) {
-      setLocalError("Exam type is required");
-      return;
-    }
-
-    if (!examDate) {
-      setLocalError("Exam date is required");
-      return;
-    }
-
-    if (!startTime.trim() || !endTime.trim()) {
-      setLocalError("Start and end time are required");
-      return;
-    }
-
-    if (!location.trim()) {
-      setLocalError("Location is required");
-      return;
-    }
+    const start = args.start;
+    const end =
+      args.end.getTime() > start.getTime()
+        ? args.end
+        : new Date(start.getTime() + 60 * 60 * 1000);
+    const startTime = formatHHmm(start);
+    const endTime = formatHHmm(end);
 
     try {
-      await createExamMutation.mutateAsync({
-        offeringId: examOfferingId,
-        examType: examType.trim(),
-        examDate: examDate.toISOString(),
-        startTime: startTime.trim(),
-        endTime: endTime.trim(),
-        location: location.trim(),
+      await createClassMutation.mutateAsync({
+        kind: "CLASS",
+        offeringId: draggingCourse.offeringId,
+        dayOfWeek: start.getDay(),
+        startTime,
+        endTime,
+        location: selectedVenue,
       });
-
-      setExamOfferingId("");
-      setExamType("MIDSEM");
-      setExamDate(undefined);
-      setStartTime("09:00");
-      setEndTime("10:00");
-      setLocation("");
     } catch (error) {
       const label = getApiErrorLabel(error);
       setLocalError(
         label.code ? `${label.message} (${label.code})` : label.message,
       );
+    } finally {
+      setDraggingCourse(null);
     }
   };
 
-  const courseOptions = coursesQuery.data?.rows ?? [];
+  const dragFromOutsideItem = React.useCallback(() => {
+    if (!draggingCourse) return null;
+    const now = new Date();
+    return {
+      title: `${draggingCourse.courseCode} Class`,
+      start: now,
+      end: new Date(now.getTime() + 60 * 60 * 1000),
+      allDay: false,
+      resource: {
+        kind: "CLASS" as const,
+        entityId: "",
+        offeringId: draggingCourse.offeringId,
+        courseCode: draggingCourse.courseCode,
+        courseTitle: draggingCourse.courseTitle,
+        location: selectedVenue || null,
+        examType: null,
+      } satisfies ScheduleResource,
+    } satisfies ScheduleCalendarEvent;
+  }, [draggingCourse, selectedVenue]);
 
   return (
     <div className="space-y-6">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Lecturer Portal
+            Academic Management
           </p>
           <h1 className="font-lexend text-2xl font-semibold tracking-tight">
-            Academic Sessions
+            Academic Schedule Configuration
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Schedule classes and exams. Students receive notifications when
-            items change.
+            Plan classes and exams. Students receive notifications when items
+            change.
           </p>
         </div>
 
-        <Button asChild variant="ghost">
-          <Link href="/lecturer">Back to overview</Link>
-        </Button>
-      </header>
-
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold">Set midsem / exam date</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Add an exam to the calendar and notify enrolled students.
-            </p>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-muted/40">
-            <MaterialSymbol
-              icon="event"
-              className="text-[20px] text-muted-foreground"
-            />
-          </div>
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" disabled>
+            Filter
+          </Button>
+          <Button
+            type="button"
+            onClick={() => scheduleQuery.refetch()}
+            disabled={scheduleQuery.isPending}
+          >
+            Publish Changes
+          </Button>
         </div>
-
-        <form onSubmit={submitExam} className="mt-5 space-y-4">
-          {localError ? (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-              {localError}
-            </div>
-          ) : null}
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-5">
-            <div className="md:col-span-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Course
-              </label>
-              <div className="mt-2">
-                {coursesQuery.isPending ? (
-                  <Skeleton className="h-10 w-full rounded-xl" />
-                ) : (
-                  <Select
-                    value={examOfferingId ? examOfferingId : "__none"}
-                    onValueChange={(value) =>
-                      setExamOfferingId(value === "__none" ? "" : value)
-                    }
-                  >
-                    <SelectTrigger className="w-full" aria-label="Course">
-                      <SelectValue placeholder="Select course" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__none">Select course</SelectItem>
-                      {courseOptions.map((c) => (
-                        <SelectItem key={c.offeringId} value={c.offeringId}>
-                          {c.courseCode} — {c.courseTitle}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Type
-              </label>
-              <div className="mt-2">
-                <Select value={examType} onValueChange={setExamType}>
-                  <SelectTrigger className="w-full" aria-label="Exam type">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="MIDSEM">Midsem</SelectItem>
-                    <SelectItem value="EXAM">Exam</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Date
-              </label>
-              <div className="mt-2">
-                <DatePicker value={examDate} onChange={setExamDate} />
-              </div>
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Time
-              </label>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                <input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
-                />
-                <input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Location
-            </label>
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="mt-2 h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
-              placeholder="e.g., Lecture Hall 2"
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-2">
-            <Button type="submit" disabled={createExamMutation.isPending}>
-              {createExamMutation.isPending ? "Saving..." : "Add to calendar"}
-            </Button>
-          </div>
-        </form>
-      </div>
+      </header>
 
       {apiError ? (
         <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
@@ -400,15 +344,14 @@ export default function LecturerAcademicSessionsPage() {
       ) : null}
 
       <div className="rounded-2xl border border-border bg-card p-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold">Class schedule</p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">Schedule Config</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Drag and drop classes or exams to reschedule. Changes are saved
-              immediately.
+              {periodLabel ?? ""}
             </p>
           </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-muted/40">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-muted/40">
             <MaterialSymbol
               icon="calendar_month"
               className="text-[20px] text-muted-foreground"
@@ -417,25 +360,99 @@ export default function LecturerAcademicSessionsPage() {
         </div>
 
         <div className="mt-5">
-          {scheduleQuery.isPending ? (
-            <Skeleton className="h-170 w-full rounded-2xl" />
-          ) : (
-            <BigCalendarDnD
-              localizer={localizer}
-              events={events}
-              defaultView="week"
-              popup
-              resizable
-              onEventDrop={onEventDrop}
-              onEventResize={onEventResize}
-              className="h-170"
-            />
-          )}
+          <ScheduleTabs value={tab} onChange={setTab} />
 
-          {updateMutation.isPending ? (
-            <p className="mt-3 text-sm text-muted-foreground">
-              Saving changes...
-            </p>
+          {localError ? (
+            <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+              {localError}
+            </div>
+          ) : null}
+
+          {tab === "TIMETABLE" ? (
+            <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
+              <div className="space-y-6 lg:col-span-4">
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <p className="text-sm font-semibold">Placement venue</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Select a venue, then drag a course.
+                  </p>
+                  <div className="mt-3">
+                    <VenueSelect
+                      value={selectedVenue}
+                      onChange={setSelectedVenue}
+                      placeholder="Select venue"
+                      disabled={VENUE_OPTIONS.length === 0}
+                    />
+                  </div>
+                </div>
+
+                <UnscheduledCoursesPanel
+                  courses={assignedCourses}
+                  draggingOfferingId={draggingCourse?.offeringId ?? null}
+                  onDragStart={(c) => setDraggingCourse(c)}
+                  onDragEnd={() => setDraggingCourse(null)}
+                />
+
+                <VenueAvailabilityCard items={venueAvailability} />
+
+                <AutomationToolCard onRun={() => scheduleQuery.refetch()} />
+              </div>
+
+              <div className="lg:col-span-8">
+                {scheduleQuery.isPending ? (
+                  <Skeleton className="h-170 w-full rounded-2xl" />
+                ) : (
+                  <BigCalendarDnD
+                    localizer={localizer}
+                    events={events}
+                    defaultView="work_week"
+                    views={["work_week", "day"]}
+                    popup
+                    resizable
+                    step={30}
+                    timeslots={2}
+                    onEventDrop={onEventDrop}
+                    onEventResize={onEventResize}
+                    onDropFromOutside={onDropFromOutside}
+                    dragFromOutsideItem={dragFromOutsideItem}
+                    className="h-170"
+                  />
+                )}
+
+                {updateMutation.isPending || createClassMutation.isPending ? (
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    Saving changes...
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
+          {tab === "EXAMS" ? (
+            <div className="mt-6">
+              <ExamCoordinatorCard
+                courses={examCourseOptions}
+                coursesPending={coursesQuery.isPending}
+                isSaving={createExamMutation.isPending}
+                onCreate={async (input) => {
+                  await createExamMutation.mutateAsync({
+                    kind: "EXAM",
+                    offeringId: input.offeringId,
+                    examType: input.examType,
+                    examDate: input.examDate.toISOString(),
+                    startTime: input.startTime,
+                    endTime: input.endTime,
+                    location: input.location,
+                  });
+                }}
+              />
+            </div>
+          ) : null}
+
+          {tab === "LOAD" ? (
+            <div className="mt-6 rounded-2xl border border-border bg-background p-6 text-sm text-muted-foreground">
+              Staff load balancing is coming soon.
+            </div>
           ) : null}
         </div>
       </div>

@@ -26,6 +26,7 @@ import {
 } from "@/services/department-admin/programmes-and-courses/programmes-and-courses";
 import type { DepartmentAdminCourseOfferingView } from "@/types";
 import { toast } from "sonner";
+import { Loader } from "lucide-react";
 
 function percentTone(percent: number): "green" | "amber" | "red" {
   if (percent >= 90) return "red";
@@ -368,7 +369,20 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
                 className="w-full"
                 disabled={createCourse.isPending || updateCourse.isPending}
               >
-                {editingCourseId ? "Add Course" : "Add Course"}
+                {editingCourseId ? (
+                  <>
+                    {createCourse.isPending ? (
+                      <>
+                        <Loader className="animate-spin" />
+                        <span>Add Course</span>
+                      </>
+                    ) : (
+                      "Add Course"
+                    )}
+                  </>
+                ) : (
+                  "Add Course"
+                )}
               </Button>
             </form>
           </div>
