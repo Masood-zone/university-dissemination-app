@@ -18,9 +18,11 @@ export function HeroSection() {
             <span className="inline-flex items-center rounded-full border border-border bg-background/70 px-3 py-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Smart Information Dissemination System
             </span>
-            <h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
+            <h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl ">
               Timely, Targeted, and Secure <br />
-              <span className="text-primary">Campus Information</span>
+              <span className="text-primary dark:text-white">
+                Campus Information
+              </span>
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-relaxed text-muted-foreground">
               A centralized platform that delivers announcements, academic
