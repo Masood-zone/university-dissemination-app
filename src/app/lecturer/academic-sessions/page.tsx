@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import type { DragFromOutsideItemArgs } from "react-big-calendar/lib/addons/dragAndDrop";
 import { dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { enUS } from "date-fns/locale";
@@ -242,50 +243,82 @@ export default function LecturerAcademicSessionsPage() {
     }));
   }, [scheduleQuery.data]);
 
-  const onDropFromOutside = async (args: {
-    start: Date;
-    end: Date;
-    allDay: boolean;
-  }) => {
-    if (!draggingCourse) return;
-    if (!selectedVenue) {
-      setLocalError("Please select a venue before scheduling.");
-      return;
-    }
+  const coerceDate = React.useCallback((value: Date | string) => {
+    if (value instanceof Date) return value;
+    return new Date(value);
+  }, []);
 
-    setLocalError(null);
+  const handleDropFromOutside = React.useCallback(
+    async (args: DragFromOutsideItemArgs) => {
+      if (!draggingCourse) return;
+      if (!selectedVenue) {
+        setLocalError("Please select a venue before scheduling.");
+        return;
+      }
 
-    const start = args.start;
-    const end =
-      args.end.getTime() > start.getTime()
-        ? args.end
-        : new Date(start.getTime() + 60 * 60 * 1000);
-    const startTime = formatHHmm(start);
-    const endTime = formatHHmm(end);
+      setLocalError(null);
 
-    try {
-      await createClassMutation.mutateAsync({
-        kind: "CLASS",
-        offeringId: draggingCourse.offeringId,
-        dayOfWeek: start.getDay(),
-        startTime,
-        endTime,
-        location: selectedVenue,
-      });
-    } catch (error) {
-      const label = getApiErrorLabel(error);
-      setLocalError(
-        label.code ? `${label.message} (${label.code})` : label.message,
-      );
-    } finally {
-      setDraggingCourse(null);
-    }
-  };
+      const start = coerceDate(args.start);
+      const endCandidate = coerceDate(args.end);
+      const end =
+        endCandidate.getTime() > start.getTime()
+          ? endCandidate
+          : new Date(start.getTime() + 60 * 60 * 1000);
+      const startTime = formatHHmm(start);
+      const endTime = formatHHmm(end);
 
-  const dragFromOutsideItem = React.useCallback(() => {
-    if (!draggingCourse) return null;
+      try {
+        await createClassMutation.mutateAsync({
+          kind: "CLASS",
+          offeringId: draggingCourse.offeringId,
+          dayOfWeek: start.getDay(),
+          startTime,
+          endTime,
+          location: selectedVenue,
+        });
+      } catch (error) {
+        const label = getApiErrorLabel(error);
+        setLocalError(
+          label.code ? `${label.message} (${label.code})` : label.message,
+        );
+      } finally {
+        setDraggingCourse(null);
+      }
+    },
+    [coerceDate, createClassMutation, draggingCourse, selectedVenue],
+  );
+
+  const onDropFromOutside = React.useCallback(
+    (args: DragFromOutsideItemArgs) => {
+      void handleDropFromOutside(args);
+    },
+    [handleDropFromOutside],
+  );
+
+  const dragFromOutsideItem = React.useCallback((): ScheduleCalendarEvent => {
     const now = new Date();
+
+    if (!draggingCourse) {
+      return {
+        id: "DRAG:NONE",
+        title: "",
+        start: now,
+        end: new Date(now.getTime() + 60 * 60 * 1000),
+        allDay: false,
+        resource: {
+          kind: "CLASS" as const,
+          entityId: "",
+          offeringId: "",
+          courseCode: "",
+          courseTitle: "",
+          location: selectedVenue || null,
+          examType: null,
+        } satisfies ScheduleResource,
+      } satisfies ScheduleCalendarEvent;
+    }
+
     return {
+      id: `DRAG:${draggingCourse.offeringId}`,
       title: `${draggingCourse.courseCode} Class`,
       start: now,
       end: new Date(now.getTime() + 60 * 60 * 1000),
@@ -414,7 +447,9 @@ export default function LecturerAcademicSessionsPage() {
                     onEventDrop={onEventDrop}
                     onEventResize={onEventResize}
                     onDropFromOutside={onDropFromOutside}
-                    dragFromOutsideItem={dragFromOutsideItem}
+                    dragFromOutsideItem={
+                      draggingCourse ? dragFromOutsideItem : undefined
+                    }
                     className="h-170"
                   />
                 )}

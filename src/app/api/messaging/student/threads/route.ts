@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { requireStudent } from "@/lib/server";
+import { ensureStudentEnrollmentsForCurrentSemester } from "@/lib/student-auto-enrollment";
 import type { ApiResponse } from "@/types";
 
 export type StudentMessagingLecturerThread = {
@@ -38,6 +39,9 @@ export async function GET(request: Request) {
         { status: 401 },
       );
     }
+
+    // Ensure the student is enrolled into the current semester before deriving threads.
+    await ensureStudentEnrollmentsForCurrentSemester({ studentId });
 
     const enrollments = await prisma.enrollment.findMany({
       where: { studentId },

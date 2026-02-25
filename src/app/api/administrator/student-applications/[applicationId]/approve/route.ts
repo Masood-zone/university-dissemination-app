@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/server";
 import { emailService } from "@/lib/email-service";
 import { smsService } from "@/lib/sms-service";
 import { notificationService } from "@/lib/notification-service";
+import { ensureStudentEnrollmentsForCurrentSemester } from "@/lib/student-auto-enrollment";
 import type { ApiResponse } from "@/types";
 
 export async function POST(
@@ -94,6 +95,17 @@ export async function POST(
           ]
         : []),
     ]);
+
+    // Best-effort: ensure the approved student is enrolled into current offerings.
+    if (app.applicantId) {
+      try {
+        await ensureStudentEnrollmentsForCurrentSemester({
+          studentId: app.applicantId,
+        });
+      } catch (err) {
+        console.error("Auto-enrollment failed:", err);
+      }
+    }
 
     const studentName =
       `${app.applicantFirstName} ${app.applicantLastName}`.trim();

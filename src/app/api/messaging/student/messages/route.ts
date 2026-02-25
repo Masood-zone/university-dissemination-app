@@ -4,6 +4,7 @@ import { NotificationType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireStudent } from "@/lib/server";
 import { notifyUsersOfNewMessage } from "@/lib/message-notifications";
+import { ensureStudentEnrollmentsForCurrentSemester } from "@/lib/student-auto-enrollment";
 import type { ApiResponse } from "@/types";
 
 function safeStringify(value: unknown): string {
@@ -34,6 +35,8 @@ export type StudentSendMessageInput = {
 async function getAllowedLecturerIdsForStudent(
   studentId: string,
 ): Promise<Set<string>> {
+  await ensureStudentEnrollmentsForCurrentSemester({ studentId });
+
   const enrollments = await prisma.enrollment.findMany({
     where: { studentId },
     select: { offeringId: true },

@@ -579,12 +579,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = (await request.json()) as Partial<
-      CreateExamInput & CreateClassInput
-    >;
+    const body = (await request.json()) as Record<string, unknown>;
 
+    const rawKind = typeof body.kind === "string" ? body.kind : null;
     const createKind =
-      body.kind === "CLASS" || body.kind === "EXAM" ? body.kind : null;
+      rawKind === "CLASS" || rawKind === "EXAM" ? rawKind : null;
 
     // ---------------------------------------------------------------------
     // Create class timetable entry
@@ -657,6 +656,17 @@ export async function POST(request: Request) {
           },
         },
       });
+
+      if (!created.offering) {
+        return NextResponse.json(
+          {
+            success: false,
+            message: "Failed to resolve course offering",
+            code: "OFFERING_NOT_FOUND",
+          } satisfies ApiResponse<never>,
+          { status: 500 },
+        );
+      }
 
       const now = new Date();
       const weekStart = startOfWeekSunday(now);

@@ -3,6 +3,7 @@ import { ApplicationStatus, AnnouncementStatus, Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { requireStudent } from "@/lib/server";
+import { ensureStudentEnrollmentsForCurrentSemester } from "@/lib/student-auto-enrollment";
 import type { ApiResponse, StudentDashboardAnalytics } from "@/types";
 
 function parseHHmm(value: string): { hours: number; minutes: number } | null {
@@ -77,6 +78,9 @@ export async function GET(request: Request) {
 
     const now = new Date();
     const departmentId = latestApplication.departmentId;
+
+    // Ensure approved students are enrolled into current semester offerings.
+    await ensureStudentEnrollmentsForCurrentSemester({ studentId: userId });
 
     const enrollments = await prisma.enrollment.findMany({
       where: { studentId: userId },

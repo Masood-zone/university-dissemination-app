@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       });
     }
 
-    const [successfulAgg, outstandingAgg, assessedAgg, billedStudents] =
+    const [successfulAgg, outstandingAgg, assessedAgg, billedStudentsRows] =
       await Promise.all([
         prisma.paymentTransaction.aggregate({
           where: {
@@ -52,14 +52,16 @@ export async function GET(request: Request) {
           },
           _sum: { amount: true },
         }),
-        prisma.fee.count({
+        prisma.fee.groupBy({
+          by: ["studentId"],
           where: {
             status: { not: "CANCELLED" },
             ...(activeAcademicYear ? { academicYear: activeAcademicYear } : {}),
           },
-          distinct: ["studentId"],
         }),
       ]);
+
+    const billedStudents = billedStudentsRows.length;
 
     const totalRevenue = successfulAgg._sum.amount ?? 0;
     const outstandingFees = outstandingAgg._sum.amount ?? 0;
