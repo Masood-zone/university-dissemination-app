@@ -9,11 +9,21 @@ import AppLayoutShell, {
 
 const defaultLecturerNavItems: NavItem[] = [
   { label: "Overview", href: "/lecturer", icon: "dashboard" },
+  {
+    label: "Academic Sessions",
+    href: "/lecturer/academic-sessions",
+    icon: "calendar_month",
+  },
   { label: "My Courses", href: "/lecturer/courses", icon: "menu_book" },
   {
     label: "Announcements",
     href: "/lecturer/announcements",
     icon: "campaign",
+  },
+  {
+    label: "Messages",
+    href: "/lecturer/messaging",
+    icon: "message",
   },
   { label: "Profile", href: "/lecturer/profile", icon: "person" },
 ];

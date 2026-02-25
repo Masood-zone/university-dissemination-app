@@ -26,6 +26,11 @@ const studentNavSections: NavSection[] = [
         icon: "notifications",
       },
       {
+        label: "Messages",
+        href: "/student/messaging",
+        icon: "message",
+      },
+      {
         label: "Profile",
         href: "/student/profile",
         icon: "person",
