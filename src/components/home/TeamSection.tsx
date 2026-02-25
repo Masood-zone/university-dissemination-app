@@ -56,7 +56,7 @@ export function TeamSection() {
     },
     {
       name: "Asare Edmund Bediako",
-      indexNumber: "N/A",
+      indexNumber: "5221040017",
       role: "Developer",
     },
   ];
