@@ -241,7 +241,7 @@ export default function LecturerMessagingPage() {
                   <MessageBubble
                     key={m.id}
                     content={m.content}
-                    timestamp={formatTime(m.createdAt) ?? ""}
+                    time={formatTime(m.createdAt) ?? ""}
                     isOwn={
                       activeStudentId ? m.senderId !== activeStudentId : true
                     }
