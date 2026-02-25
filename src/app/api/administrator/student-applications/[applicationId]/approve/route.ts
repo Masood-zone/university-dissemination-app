@@ -67,25 +67,36 @@ export async function POST(
 
     const fromStatus = app.status;
 
-    await prisma.application.update({
-      where: { id: applicationId },
-      data: {
-        status: ApplicationStatus.APPROVED,
-        reviewedAt: new Date(),
-        decidedAt: new Date(),
-        statusHistory: {
-          create: {
-            fromStatus,
-            toStatus: ApplicationStatus.APPROVED,
-            changedById: adminId,
-            note: "Approved by administrator",
+    await prisma.$transaction([
+      prisma.application.update({
+        where: { id: applicationId },
+        data: {
+          status: ApplicationStatus.APPROVED,
+          reviewedAt: new Date(),
+          decidedAt: new Date(),
+          statusHistory: {
+            create: {
+              fromStatus,
+              toStatus: ApplicationStatus.APPROVED,
+              changedById: adminId,
+              note: "Approved by administrator",
+            },
           },
         },
-      },
-      select: { id: true },
-    });
+        select: { id: true },
+      }),
+      ...(app.applicantId
+        ? [
+            prisma.user.updateMany({
+              where: { id: app.applicantId },
+              data: { emailVerified: true },
+            }),
+          ]
+        : []),
+    ]);
 
-    const studentName = `${app.applicantFirstName} ${app.applicantLastName}`.trim();
+    const studentName =
+      `${app.applicantFirstName} ${app.applicantLastName}`.trim();
 
     const phoneRaw = app.applicantPhone?.trim() || "";
     const smsTo = phoneRaw ? smsService.formatPhoneNumber(phoneRaw) : "";
@@ -105,13 +116,13 @@ export async function POST(
     } as const;
 
     const notificationId = app.applicantId
-      ? (await notificationService.create({
+      ? await notificationService.create({
           userId: app.applicantId,
           type: "ACADEMIC",
           title: "Enrollment approved",
           message: `Your enrollment has been approved. Application No: ${app.applicationNo}.`,
           metadata: baseMetadata,
-        }))
+        })
       : null;
 
     let emailStatus: "SENT" | "FAILED" = "SENT";

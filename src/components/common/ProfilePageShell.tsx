@@ -255,7 +255,7 @@ export function ProfilePageShell({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-6">
+          {/* <div className="rounded-2xl border border-border bg-card p-6">
             <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Recent login history
             </p>
@@ -270,7 +270,7 @@ export function ProfilePageShell({
                 View full logs
               </Button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

@@ -86,7 +86,7 @@ export function PendingApprovalModal({
 
         <div className="flex items-center justify-between border-t border-border bg-muted/30 px-8 py-4">
           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            AAMUSTED ERP
+            AAMUSTED IDS
           </span>
           <div className="flex gap-2">
             <div className="h-2 w-2 rounded-full bg-primary" />
