@@ -5,7 +5,13 @@ import * as React from "react";
 
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { Button } from "@/components/ui/button";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { getApiErrorLabel } from "@/lib/api-client-error";
@@ -127,15 +133,25 @@ export default function LecturerAnnouncementsPage() {
                   <Skeleton className="h-10 w-full rounded-xl" />
                 ) : (
                   <Select
-                    value={targetOfferingId}
-                    onChange={(e) => setTargetOfferingId(e.target.value)}
+                    value={targetOfferingId ? targetOfferingId : "__all"}
+                    onValueChange={(value) =>
+                      setTargetOfferingId(value === "__all" ? "" : value)
+                    }
                   >
-                    <option value="">All my courses</option>
-                    {courseOptions.map((c) => (
-                      <option key={c.offeringId} value={c.offeringId}>
-                        {c.courseCode} — {c.courseTitle}
-                      </option>
-                    ))}
+                    <SelectTrigger
+                      className="w-full"
+                      aria-label="Target course"
+                    >
+                      <SelectValue placeholder="All my courses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__all">All my courses</SelectItem>
+                      {courseOptions.map((c) => (
+                        <SelectItem key={c.offeringId} value={c.offeringId}>
+                          {c.courseCode} — {c.courseTitle}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 )}
               </div>

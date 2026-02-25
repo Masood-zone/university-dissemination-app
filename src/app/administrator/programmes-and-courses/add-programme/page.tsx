@@ -9,7 +9,13 @@ import { ProgrammeStepper } from "@/components/admin/programmes-and-courses/Prog
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { getApiErrorLabel } from "@/lib/api-client-error";
 import { useGetDepartmentInfo } from "@/services/admin/department-management/department";
@@ -153,15 +159,23 @@ export default function AddProgrammePage() {
                       Award type
                     </label>
                     <Select
-                      className="mt-2"
                       value={awardType}
-                      onChange={(e) =>
-                        setAwardType(e.target.value as AwardType)
+                      onValueChange={(value) =>
+                        setAwardType(value as AwardType)
                       }
                     >
-                      <option value="UNDERGRADUATE">Undergraduate</option>
-                      <option value="POSTGRADUATE">Postgraduate</option>
-                      <option value="DIPLOMA">Diploma</option>
+                      <SelectTrigger className="mt-2 w-full">
+                        <SelectValue placeholder="Select award type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="UNDERGRADUATE">
+                          Undergraduate
+                        </SelectItem>
+                        <SelectItem value="POSTGRADUATE">
+                          Postgraduate
+                        </SelectItem>
+                        <SelectItem value="DIPLOMA">Diploma</SelectItem>
+                      </SelectContent>
                     </Select>
                   </div>
                 </div>
@@ -171,16 +185,20 @@ export default function AddProgrammePage() {
                     Department assignment
                   </label>
                   <Select
-                    className="mt-2"
-                    value={departmentId}
-                    onChange={(e) => setDepartmentId(e.target.value)}
+                    value={departmentId || undefined}
+                    onValueChange={setDepartmentId}
                     disabled={departmentsQuery.isLoading}
                   >
-                    {departments.map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
-                    ))}
+                    <SelectTrigger className="mt-2 w-full">
+                      <SelectValue placeholder="Select department" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {departments.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {d.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
 

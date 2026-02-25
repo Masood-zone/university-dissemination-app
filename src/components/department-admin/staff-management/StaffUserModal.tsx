@@ -12,7 +12,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -435,16 +441,21 @@ export function StaffUserModal({
                   </label>
                   <Select
                     value={createState.role}
-                    onChange={(e) =>
+                    onValueChange={(value) =>
                       setCreateState((s) => ({
                         ...s,
-                        role: e.target.value as "LECTURER" | "STUDENT",
+                        role: value as "LECTURER" | "STUDENT",
                       }))
                     }
                     disabled={disabled}
                   >
-                    <option value="LECTURER">Lecturer</option>
-                    <option value="STUDENT">Student</option>
+                    <SelectTrigger className="w-full" aria-label="Role">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LECTURER">Lecturer</SelectItem>
+                      <SelectItem value="STUDENT">Student</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
 

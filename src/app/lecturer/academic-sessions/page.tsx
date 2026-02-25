@@ -12,7 +12,13 @@ import BigCalendarDnD, {
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getApiErrorLabel } from "@/lib/api-client-error";
 import { useLecturerCourses } from "@/services/lecturer/courses/courses";
@@ -294,15 +300,22 @@ export default function LecturerAcademicSessionsPage() {
                   <Skeleton className="h-10 w-full rounded-xl" />
                 ) : (
                   <Select
-                    value={examOfferingId}
-                    onChange={(e) => setExamOfferingId(e.target.value)}
+                    value={examOfferingId ? examOfferingId : "__none"}
+                    onValueChange={(value) =>
+                      setExamOfferingId(value === "__none" ? "" : value)
+                    }
                   >
-                    <option value="">Select course</option>
-                    {courseOptions.map((c) => (
-                      <option key={c.offeringId} value={c.offeringId}>
-                        {c.courseCode} — {c.courseTitle}
-                      </option>
-                    ))}
+                    <SelectTrigger className="w-full" aria-label="Course">
+                      <SelectValue placeholder="Select course" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">Select course</SelectItem>
+                      {courseOptions.map((c) => (
+                        <SelectItem key={c.offeringId} value={c.offeringId}>
+                          {c.courseCode} — {c.courseTitle}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 )}
               </div>
@@ -313,12 +326,14 @@ export default function LecturerAcademicSessionsPage() {
                 Type
               </label>
               <div className="mt-2">
-                <Select
-                  value={examType}
-                  onChange={(e) => setExamType(e.target.value)}
-                >
-                  <option value="MIDSEM">Midsem</option>
-                  <option value="EXAM">Exam</option>
+                <Select value={examType} onValueChange={setExamType}>
+                  <SelectTrigger className="w-full" aria-label="Exam type">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MIDSEM">Midsem</SelectItem>
+                    <SelectItem value="EXAM">Exam</SelectItem>
+                  </SelectContent>
                 </Select>
               </div>
             </div>

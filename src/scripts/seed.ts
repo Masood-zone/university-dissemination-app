@@ -205,7 +205,7 @@ async function main() {
 
     console.log("Seeding department admins (no departments assigned)...");
 
-    const deptAdmins = Array.from({ length: 5 }, (_, idx) => {
+    const deptAdmins = Array.from({ length: 3 }, (_, idx) => {
       const n = idx + 1;
       const deptEmail =
         process.env[`SEED_DEPT_ADMIN_${n}_EMAIL`] ??
@@ -273,7 +273,7 @@ async function main() {
     console.log("- Role: ADMIN");
     console.log("- System Administrator template assigned");
     console.log(
-      "- Department admins: 5 created/updated (no departments assigned)",
+      "- Department admins: 3 created/updated (no departments assigned)",
     );
     console.log(
       `- Dept admin password (shared): ${deptAdminPassword} (override via SEED_DEPT_ADMIN_PASSWORD)`,

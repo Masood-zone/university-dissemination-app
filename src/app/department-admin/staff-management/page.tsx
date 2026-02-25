@@ -7,7 +7,13 @@ import { BulkImportModal } from "@/components/department-admin/staff-management/
 import { StaffUserModal } from "@/components/department-admin/staff-management/StaffUserModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn, getInitials } from "@/lib/utils";
 import { useDepartmentAdminStaffList } from "@/services/department-admin/staff-management/staff-management";
@@ -314,29 +320,37 @@ export default function DepartmentAdminStaffManagementPage() {
           <div className="flex flex-wrap items-center gap-3">
             <Select
               value={role}
-              onChange={(e) => {
-                setRole(e.target.value as DepartmentAdminStaffRoleFilter);
+              onValueChange={(value) => {
+                setRole(value as DepartmentAdminStaffRoleFilter);
                 setPage(1);
               }}
-              className="w-40"
             >
-              <option value="ALL">All Roles</option>
-              <option value="LECTURER">Lecturers</option>
-              <option value="STUDENT">Students</option>
+              <SelectTrigger className="w-40" aria-label="Role">
+                <SelectValue placeholder="All Roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Roles</SelectItem>
+                <SelectItem value="LECTURER">Lecturers</SelectItem>
+                <SelectItem value="STUDENT">Students</SelectItem>
+              </SelectContent>
             </Select>
 
             <Select
               value={status}
-              onChange={(e) => {
-                setStatus(e.target.value as DepartmentAdminStaffStatusFilter);
+              onValueChange={(value) => {
+                setStatus(value as DepartmentAdminStaffStatusFilter);
                 setPage(1);
               }}
-              className="w-40"
             >
-              <option value="ALL">Any Status</option>
-              <option value="ACTIVE">Active</option>
-              <option value="DEACTIVATED">Deactivated</option>
-              <option value="PENDING_AUTH">Pending Auth</option>
+              <SelectTrigger className="w-40" aria-label="Status">
+                <SelectValue placeholder="Any Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">Any Status</SelectItem>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="DEACTIVATED">Deactivated</SelectItem>
+                <SelectItem value="PENDING_AUTH">Pending Auth</SelectItem>
+              </SelectContent>
             </Select>
 
             <div className="hidden lg:block h-6 w-px bg-border" />

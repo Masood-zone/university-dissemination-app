@@ -10,7 +10,13 @@ import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
@@ -115,16 +121,23 @@ export default function EnrollmentStep1Page() {
                 Gender (optional)
               </label>
               <Select
-                className="mt-2"
-                value={personal.gender}
-                onChange={(e) =>
-                  setPersonal({ gender: e.target.value as EnrollmentGender })
+                value={personal.gender ? personal.gender : "__none"}
+                onValueChange={(value) =>
+                  setPersonal({
+                    gender:
+                      value === "__none" ? "" : (value as EnrollmentGender),
+                  })
                 }
               >
-                <option value="">Select gender</option>
-                <option value="MALE">Male</option>
-                <option value="FEMALE">Female</option>
-                <option value="OTHER">Other</option>
+                <SelectTrigger className="mt-2 w-full" aria-label="Gender">
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none">Select gender</SelectItem>
+                  <SelectItem value="MALE">Male</SelectItem>
+                  <SelectItem value="FEMALE">Female</SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
               </Select>
             </div>
 

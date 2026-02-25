@@ -5,7 +5,13 @@ import { useMemo, useRef, useState } from "react";
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
@@ -187,9 +193,9 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
                   <Skeleton className="h-9 w-full" />
                 ) : (
                   <Select
-                    value={programmeId}
-                    onChange={(e) => {
-                      const nextProgrammeId = e.target.value;
+                    value={programmeId ? programmeId : "__none"}
+                    onValueChange={(value) => {
+                      const nextProgrammeId = value === "__none" ? "" : value;
                       setProgrammeId(nextProgrammeId);
                       setSelectedCourseId("");
                       setEditingCourseId(null);
@@ -201,12 +207,17 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
                       codeRef.current?.focus();
                     }}
                   >
-                    <option value="">Select programme</option>
-                    {(programmesQuery.data ?? []).map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
+                    <SelectTrigger className="w-full" aria-label="Programme">
+                      <SelectValue placeholder="Select programme" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">Select programme</SelectItem>
+                      {(programmesQuery.data ?? []).map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 )}
               </div>
@@ -216,16 +227,26 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
                   Course (auto-fill)
                 </label>
                 {!programmeId.trim() ? (
-                  <Select value="" disabled>
-                    <option value="">Select a programme first</option>
+                  <Select value="__disabled" disabled>
+                    <SelectTrigger
+                      className="w-full"
+                      aria-label="Course selection disabled"
+                    >
+                      <SelectValue placeholder="Select a programme first" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__disabled">
+                        Select a programme first
+                      </SelectItem>
+                    </SelectContent>
                   </Select>
                 ) : coursesQuery.isPending ? (
                   <Skeleton className="h-9 w-full" />
                 ) : (
                   <Select
-                    value={selectedCourseId}
-                    onChange={(e) => {
-                      const nextCourseId = e.target.value;
+                    value={selectedCourseId ? selectedCourseId : "__none"}
+                    onValueChange={(value) => {
+                      const nextCourseId = value === "__none" ? "" : value;
                       setSelectedCourseId(nextCourseId);
 
                       if (!nextCourseId) {
@@ -253,12 +274,19 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
                       codeRef.current?.focus();
                     }}
                   >
-                    <option value="">Select course to auto-fill</option>
-                    {(coursesQuery.data?.rows ?? []).map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.code} — {c.title}
-                      </option>
-                    ))}
+                    <SelectTrigger className="w-full" aria-label="Course">
+                      <SelectValue placeholder="Select course to auto-fill" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none">
+                        Select course to auto-fill
+                      </SelectItem>
+                      {(coursesQuery.data?.rows ?? []).map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.code} — {c.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 )}
               </div>
@@ -307,26 +335,30 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
                   <label className="mb-1 block text-xs font-semibold uppercase text-muted-foreground">
                     Semester
                   </label>
-                  <Select
-                    value={semester}
-                    onChange={(e) => setSemester(e.target.value)}
-                  >
-                    <option value="1">1st Semester</option>
-                    <option value="2">2nd Semester</option>
+                  <Select value={semester} onValueChange={setSemester}>
+                    <SelectTrigger className="w-full" aria-label="Semester">
+                      <SelectValue placeholder="Select semester" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1st Semester</SelectItem>
+                      <SelectItem value="2">2nd Semester</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <label className="mb-1 block text-xs font-semibold uppercase text-muted-foreground">
                     Level
                   </label>
-                  <Select
-                    value={level}
-                    onChange={(e) => setLevel(e.target.value)}
-                  >
-                    <option value="100">100</option>
-                    <option value="200">200</option>
-                    <option value="300">300</option>
-                    <option value="400">400</option>
+                  <Select value={level} onValueChange={setLevel}>
+                    <SelectTrigger className="w-full" aria-label="Level">
+                      <SelectValue placeholder="Select level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="100">100</SelectItem>
+                      <SelectItem value="200">200</SelectItem>
+                      <SelectItem value="300">300</SelectItem>
+                      <SelectItem value="400">400</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
               </div>
@@ -455,9 +487,10 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
                               <Skeleton className="h-8 w-56" />
                             ) : (
                               <Select
-                                value={row.lecturerId ?? ""}
-                                onChange={(e) => {
-                                  const nextId = e.target.value || null;
+                                value={row.lecturerId ?? "__unassigned"}
+                                onValueChange={(value) => {
+                                  const nextId =
+                                    value === "__unassigned" ? null : value;
                                   setOfferingLecturer
                                     .mutateAsync({
                                       offeringId: row.offeringId,
@@ -474,22 +507,31 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
                                       ),
                                     );
                                 }}
-                                className={cn(
-                                  "min-w-55",
-                                  (lecturersQuery.data ?? []).find(
-                                    (l) => l.id === row.lecturerId,
-                                  )?.overload
-                                    ? "border-destructive bg-destructive/10"
-                                    : null,
-                                )}
                               >
-                                <option value="">Unassigned</option>
-                                {(lecturersQuery.data ?? []).map((l) => (
-                                  <option key={l.id} value={l.id}>
-                                    {l.name}
-                                    {l.overload ? " (Overload)" : ""}
-                                  </option>
-                                ))}
+                                <SelectTrigger
+                                  className={cn(
+                                    "min-w-55",
+                                    (lecturersQuery.data ?? []).find(
+                                      (l) => l.id === row.lecturerId,
+                                    )?.overload
+                                      ? "border-destructive bg-destructive/10"
+                                      : null,
+                                  )}
+                                  aria-label="Lecturer"
+                                >
+                                  <SelectValue placeholder="Unassigned" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="__unassigned">
+                                    Unassigned
+                                  </SelectItem>
+                                  {(lecturersQuery.data ?? []).map((l) => (
+                                    <SelectItem key={l.id} value={l.id}>
+                                      {l.name}
+                                      {l.overload ? " (Overload)" : ""}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
                               </Select>
                             )}
                           </td>

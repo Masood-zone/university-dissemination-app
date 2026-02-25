@@ -9,7 +9,13 @@ import { CourseLivePreview } from "@/components/admin/programmes-and-courses/Cou
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { getApiErrorLabel } from "@/lib/api-client-error";
@@ -148,15 +154,19 @@ function AddCoursePageInner() {
                 <div>
                   <label className="text-sm font-semibold">Credit Units</label>
                   <Select
-                    className="mt-2"
                     value={credits}
-                    onChange={(e) => setCredits(e.target.value)}
+                    onValueChange={(value) => setCredits(value)}
                   >
-                    <option value="1">1 Unit</option>
-                    <option value="2">2 Units</option>
-                    <option value="3">3 Units</option>
-                    <option value="4">4 Units</option>
-                    <option value="5">5 Units</option>
+                    <SelectTrigger className="mt-2 w-full">
+                      <SelectValue placeholder="Select credit unit(s)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 Unit</SelectItem>
+                      <SelectItem value="2">2 Units</SelectItem>
+                      <SelectItem value="3">3 Units</SelectItem>
+                      <SelectItem value="4">4 Units</SelectItem>
+                      <SelectItem value="5">5 Units</SelectItem>
+                    </SelectContent>
                   </Select>
                 </div>
               </div>

@@ -7,7 +7,13 @@ import { toast } from "sonner";
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getApiErrorLabel } from "@/lib/api-client-error";
 import { cn } from "@/lib/utils";
@@ -94,9 +100,7 @@ function AnalyticsSkeleton() {
 }
 
 function downloadCsv(filename: string, rows: Array<Record<string, unknown>>) {
-  const headers = Array.from(
-    new Set(rows.flatMap((row) => Object.keys(row))),
-  );
+  const headers = Array.from(new Set(rows.flatMap((row) => Object.keys(row))));
 
   const escapeCell = (value: unknown) => {
     const str = value == null ? "" : String(value);
@@ -152,13 +156,16 @@ export default function FinancePage() {
     facilityFee: "",
   });
 
-  const setFromAllocation = React.useCallback((data: ProgrammeFeeAllocation) => {
-    setFeeState({
-      tuitionFee: String(data.tuitionFee ?? 0),
-      libraryFee: String(data.libraryFee ?? 0),
-      facilityFee: String(data.facilityFee ?? 0),
-    });
-  }, []);
+  const setFromAllocation = React.useCallback(
+    (data: ProgrammeFeeAllocation) => {
+      setFeeState({
+        tuitionFee: String(data.tuitionFee ?? 0),
+        libraryFee: String(data.libraryFee ?? 0),
+        facilityFee: String(data.facilityFee ?? 0),
+      });
+    },
+    [],
+  );
 
   React.useEffect(() => {
     if (!allocation.data) return;
@@ -392,31 +399,43 @@ export default function FinancePage() {
             <div className="flex items-center gap-2">
               <Select
                 value={range}
-                onChange={(e) =>
-                  setRange(e.target.value as "7d" | "30d" | "90d")
+                onValueChange={(value) =>
+                  setRange(value as "7d" | "30d" | "90d")
                 }
-                className="w-full sm:w-36"
-                aria-label="Select date range"
               >
-                <option value="7d">Last 7 days</option>
-                <option value="30d">Last 30 days</option>
-                <option value="90d">Last 90 days</option>
+                <SelectTrigger
+                  className="w-full sm:w-36"
+                  aria-label="Select date range"
+                >
+                  <SelectValue placeholder="Last 30 days" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7d">Last 7 days</SelectItem>
+                  <SelectItem value="30d">Last 30 days</SelectItem>
+                  <SelectItem value="90d">Last 90 days</SelectItem>
+                </SelectContent>
               </Select>
               <Select
                 value={status}
-                onChange={(e) =>
-                  setStatus(e.target.value as PaymentTransactionStatusFilter)
+                onValueChange={(value) =>
+                  setStatus(value as PaymentTransactionStatusFilter)
                 }
-                className="w-full sm:w-44"
-                aria-label="Select status"
               >
-                <option value="ALL">All status</option>
-                <option value="SUCCESS">Success</option>
-                <option value="PENDING">Pending</option>
-                <option value="FAILED">Failed</option>
-                <option value="REVERSED">Reversed</option>
-                <option value="REFUNDED">Refunded</option>
-                <option value="CANCELLED">Cancelled</option>
+                <SelectTrigger
+                  className="w-full sm:w-44"
+                  aria-label="Select status"
+                >
+                  <SelectValue placeholder="All status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ALL">All status</SelectItem>
+                  <SelectItem value="SUCCESS">Success</SelectItem>
+                  <SelectItem value="PENDING">Pending</SelectItem>
+                  <SelectItem value="FAILED">Failed</SelectItem>
+                  <SelectItem value="REVERSED">Reversed</SelectItem>
+                  <SelectItem value="REFUNDED">Refunded</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                </SelectContent>
               </Select>
             </div>
 
@@ -545,22 +564,48 @@ export default function FinancePage() {
                   Programme
                 </p>
                 <Select
-                  value={programmeId ?? ""}
-                  onChange={(e) => setProgrammeId(e.target.value || null)}
-                  className="mt-2"
-                  aria-label="Select programme"
+                  value={programmeId ?? "__none"}
+                  onValueChange={(value) =>
+                    setProgrammeId(value === "__none" ? null : value)
+                  }
+                  disabled={
+                    programmes.isLoading || (programmes.data ?? []).length === 0
+                  }
                 >
-                  {programmes.isLoading ? (
-                    <option value="">Loading...</option>
-                  ) : (programmes.data ?? []).length === 0 ? (
-                    <option value="">No programmes</option>
-                  ) : (
-                    (programmes.data ?? []).map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.code} — {p.name}
-                      </option>
-                    ))
-                  )}
+                  <SelectTrigger
+                    className="mt-2 w-full"
+                    aria-label="Select programme"
+                  >
+                    <SelectValue
+                      placeholder={
+                        programmes.isLoading
+                          ? "Loading..."
+                          : (programmes.data ?? []).length === 0
+                            ? "No programmes"
+                            : "Select programme"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {programmes.isLoading ? (
+                      <SelectItem value="__loading" disabled>
+                        Loading...
+                      </SelectItem>
+                    ) : (programmes.data ?? []).length === 0 ? (
+                      <SelectItem value="__empty" disabled>
+                        No programmes
+                      </SelectItem>
+                    ) : (
+                      <>
+                        <SelectItem value="__none">Select programme</SelectItem>
+                        {(programmes.data ?? []).map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.code} — {p.name}
+                          </SelectItem>
+                        ))}
+                      </>
+                    )}
+                  </SelectContent>
                 </Select>
                 {programmes.isError ? (
                   <p className="mt-2 text-xs text-destructive">
@@ -601,7 +646,9 @@ export default function FinancePage() {
 
             {allocation.isError ? (
               <div className="rounded-xl border border-border bg-background p-4">
-                <p className="text-sm font-semibold">Unable to load fee setup</p>
+                <p className="text-sm font-semibold">
+                  Unable to load fee setup
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
                   {getApiErrorLabel(allocation.error).message}
                 </p>
