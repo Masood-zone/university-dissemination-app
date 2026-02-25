@@ -664,6 +664,53 @@ export type StudentDashboardAnalytics = {
   deadlines: StudentDashboardDeadlineItem[];
 };
 
+export type StudentAcademicCalendarEvent = {
+  id: string;
+  offeringId: string;
+  courseCode: string;
+  courseTitle: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  start: string; // ISO
+  end: string; // ISO
+  location: string;
+  lecturer: string | null;
+};
+
+export type StudentAcademicCalendarResponse = {
+  weekStart: string; // ISO (Monday)
+  weekEnd: string; // ISO (exclusive)
+  events: StudentAcademicCalendarEvent[];
+};
+
+export type StudentCourseOfferingRow = {
+  offeringId: string;
+  courseCode: string;
+  courseTitle: string;
+  credits: number;
+  semester: number;
+  level: number | null;
+  departmentName: string | null;
+  sessionName: string;
+  semesterName: SemesterName;
+  lecturers: Array<{ id: string; name: string }>;
+  timetable: Array<{
+    id: string;
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    location: string;
+    lecturer: string | null;
+  }>;
+};
+
+export type StudentCourseOfferingsResponse = {
+  sessionName: string | null;
+  semesterName: SemesterName | null;
+  rows: StudentCourseOfferingRow[];
+};
+
 export interface AdminDashboard {
   stats: DashboardStats;
   recentAnnouncements: AnnouncementData[];
