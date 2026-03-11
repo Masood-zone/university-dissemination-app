@@ -1,36 +1,151 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# University Dissemination App
+
+University Dissemination App is a production-oriented university platform built with Next.js, Prisma, and PostgreSQL. The repository supports public enrollment flows and role-based experiences for administrators, department admins, lecturers, and students.
+
+## Project Overview
+
+The system covers the following major functional areas:
+
+- announcements and institutional communication
+- lecturer and student messaging
+- student enrollment and application submission
+- academic sessions, programmes, courses, and course offerings
+- fee configuration, student finance, and payment tracking
+- role-based dashboards and profile management
+
+## Documentation Entry Point
+
+The main engineering review for this repository is documented in [PROJECT_DEVELOPMENT_ANALYSIS.md](PROJECT_DEVELOPMENT_ANALYSIS.md).
+
+That document includes:
+
+- architecture style and repository structure
+- end-to-end data flow analysis
+- design pattern review
+- system layer breakdown
+- Prisma and PostgreSQL design review
+- scalability and maintainability assessment
+- security and operational observations
+- improvement roadmap and architecture scorecard
+
+### Quick Links Into The Analysis
+
+- [Executive Summary](PROJECT_DEVELOPMENT_ANALYSIS.md#2-executive-summary)
+- [Architectural Style](PROJECT_DEVELOPMENT_ANALYSIS.md#4-architectural-style)
+- [Data Flow and Interactions](PROJECT_DEVELOPMENT_ANALYSIS.md#6-how-the-main-parts-interact)
+- [Design Patterns](PROJECT_DEVELOPMENT_ANALYSIS.md#7-design-patterns-found-in-the-codebase)
+- [System Layer Analysis](PROJECT_DEVELOPMENT_ANALYSIS.md#8-system-layer-analysis)
+- [Prisma and Database Review](PROJECT_DEVELOPMENT_ANALYSIS.md#9-prisma-and-database-design-review)
+- [Improvement Roadmap](PROJECT_DEVELOPMENT_ANALYSIS.md#14-recommended-improvement-roadmap)
+- [Architecture Scorecard](PROJECT_DEVELOPMENT_ANALYSIS.md#16-architecture-scorecard)
+
+## Technology Stack
+
+| Area              | Technology                   |
+| ----------------- | ---------------------------- |
+| Frontend          | Next.js App Router, React 19 |
+| Client Data Layer | TanStack React Query, Axios  |
+| State Management  | Zustand                      |
+| Authentication    | Better Auth                  |
+| ORM               | Prisma                       |
+| Database          | PostgreSQL                   |
+| Validation        | Zod                          |
+| Email             | Nodemailer, React Email      |
+| SMS               | UelloSend integration        |
+| Media Uploads     | Cloudinary                   |
+
+## Repository Structure
+
+| Path                                     | Purpose                                              |
+| ---------------------------------------- | ---------------------------------------------------- |
+| [prisma](prisma)                         | Prisma schema and migrations                         |
+| [src/app](src/app)                       | Next.js pages, layouts, route groups, and API routes |
+| [src/components](src/components)         | Reusable UI and feature components                   |
+| [src/services](src/services)             | Client-side query and mutation wrappers              |
+| [src/lib](src/lib)                       | Shared infrastructure and server-side utilities      |
+| [src/stores](src/stores)                 | Zustand-based local state                            |
+| [src/types/index.ts](src/types/index.ts) | Shared application types and DTOs                    |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20 or newer
+- pnpm
+- PostgreSQL
+- environment variables for database access and feature integrations
+
+At minimum, configure one of the following database variables before running the app:
+
+- `DIRECT_URL`
+- `DATABASE_URL`
+
+Additional features may require environment variables for authentication, email delivery, SMS delivery, and Cloudinary uploads.
+
+### Install Dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Run The Development Server
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open `http://localhost:3000` in your browser.
 
-## Learn More
+### Build For Production
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm build
+pnpm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Seed Development Data
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm db:seed
+```
 
-## Deploy on Vercel
+### Lint The Project
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm lint
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Recommended Reading Order
+
+If you are new to this repository, read in this order:
+
+1. [README.md](README.md) for the project summary and navigation.
+2. [PROJECT_DEVELOPMENT_ANALYSIS.md](PROJECT_DEVELOPMENT_ANALYSIS.md) for the full architecture review.
+3. [prisma/schema.prisma](prisma/schema.prisma) for the core data model.
+4. [src/app/api](src/app/api) and [src/lib](src/lib) for the runtime backend structure.
+5. [src/services](src/services) and [src/components](src/components) for the client-side interaction layer.
+
+## Current Architecture Snapshot
+
+Based on the repository review documented in [PROJECT_DEVELOPMENT_ANALYSIS.md](PROJECT_DEVELOPMENT_ANALYSIS.md), the current architectural assessment is:
+
+| Category             | Score  |
+| -------------------- | ------ |
+| Architecture Quality | 7/10   |
+| Maintainability      | 5.5/10 |
+| Scalability          | 6/10   |
+| Code Organization    | 7/10   |
+
+The application is a strong modular monolith, but it would benefit from deeper backend service extraction, reduced duplication across role-specific modules, and stronger operational maturity through testing, CI, and asynchronous background processing.
+
+## Suggested Next Reading
+
+If your goal is architectural understanding, start with [PROJECT_DEVELOPMENT_ANALYSIS.md](PROJECT_DEVELOPMENT_ANALYSIS.md).
+
+If your goal is implementation understanding, start with:
+
+- [src/app/layout.tsx](src/app/layout.tsx)
+- [src/components/providers/providers.tsx](src/components/providers/providers.tsx)
+- [src/lib/prisma.ts](src/lib/prisma.ts)
+- [src/lib/server.ts](src/lib/server.ts)
+- [prisma/schema.prisma](prisma/schema.prisma)
