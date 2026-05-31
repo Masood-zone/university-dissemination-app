@@ -38,11 +38,11 @@ export default function LecturerLayoutShell({
   return (
     <AppLayoutShell
       navSections={navSections}
-      portalTitle="AAMUSTED IDS"
+      portalTitle="USTED IDS"
       portalSubtitle="Lecturer Portal"
       headerTitle="Lecturer Dashboard"
       logoSrc="/logo-nobg.png"
-      logoAlt="AAMUSTED Logo"
+      logoAlt="USTED Logo"
     >
       {children}
     </AppLayoutShell>

@@ -468,7 +468,7 @@ export function StaffUserModal({
                     onChange={(e) =>
                       setCreateState((s) => ({ ...s, email: e.target.value }))
                     }
-                    placeholder="user@aamusted.edu.gh"
+                    placeholder="user@USTED.edu.gh"
                     disabled={disabled}
                   />
                 </div>

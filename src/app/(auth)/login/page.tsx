@@ -2,7 +2,7 @@ import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata = {
   title: "Login",
-  description: "Sign in to AAMUSTED Information Dissemination System",
+  description: "Sign in to USTED Information Dissemination System",
 };
 
 export default function LoginPage() {
@@ -18,7 +18,7 @@ export default function LoginPage() {
       </div>
 
       <div className="relative z-10 mt-8 text-center text-xs text-muted-foreground">
-        <p>© 2026 AAMUSTED. All rights reserved.</p>
+        <p>© 2026 USTED. All rights reserved.</p>
         <p className="mt-1">Smart Information Dissemination System</p>
       </div>
     </div>

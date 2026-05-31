@@ -18,7 +18,7 @@ export default function ForgotPasswordPage() {
       </div>
 
       <div className="relative z-10 mt-8 text-center text-xs text-muted-foreground">
-        <p>© 2026 AAMUSTED. All rights reserved.</p>
+        <p>© 2026 USTED. All rights reserved.</p>
         <p className="mt-1">Smart Information Dissemination System</p>
       </div>
     </div>

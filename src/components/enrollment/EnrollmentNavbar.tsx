@@ -21,7 +21,7 @@ export function EnrollmentNavbar({
           <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card">
             <Image
               src="/logo-nobg.png"
-              alt="AAMUSTED Logo"
+              alt="USTED Logo"
               width={1000}
               height={1000}
               className=" w-auto"
@@ -30,7 +30,7 @@ export function EnrollmentNavbar({
           </div>
           <div className="leading-tight">
             <p className="font-lexend text-sm font-semibold tracking-tight">
-              AAMUSTED
+              USTED
             </p>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               Enrollment Portal

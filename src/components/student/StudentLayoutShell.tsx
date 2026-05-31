@@ -49,11 +49,11 @@ export function StudentLayoutShell({ children }: { children: ReactNode }) {
   return (
     <AppLayoutShell
       navSections={studentNavSections}
-      portalTitle="AAMUSTED IDS"
+      portalTitle="USTED IDS"
       portalSubtitle="Student Portal"
       headerTitle="Student Dashboard"
       logoSrc="/logo-nobg.png"
-      logoAlt="AAMUSTED Logo"
+      logoAlt="USTED Logo"
     >
       {children}
     </AppLayoutShell>

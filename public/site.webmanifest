@@ -1,7 +1,7 @@
 {
-  "name": "AAMUSTED IDS - Information Dissemination System",
-  "short_name": "AAMUSTED IDS",
-  "description": "Official AAMUSTED platform for campus announcements, academic schedules, and internal updates.",
+  "name": "USTED IDS - Information Dissemination System",
+  "short_name": "USTED IDS",
+  "description": "Official USTED platform for campus announcements, academic schedules, and internal updates.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

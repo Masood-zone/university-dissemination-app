@@ -42,7 +42,7 @@ export function PendingApprovalModal({
 
           <div className="mt-4 space-y-4 text-sm text-muted-foreground">
             <p className="text-base leading-relaxed">
-              Welcome to the AAMUSTED Student Portal,{" "}
+              Welcome to the USTED Student Portal,{" "}
               <span className="font-semibold text-foreground">
                 {studentName || "Student"}
               </span>
@@ -86,7 +86,7 @@ export function PendingApprovalModal({
 
         <div className="flex items-center justify-between border-t border-border bg-muted/30 px-8 py-4">
           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            AAMUSTED IDS
+            USTED IDS
           </span>
           <div className="flex gap-2">
             <div className="h-2 w-2 rounded-full bg-primary" />

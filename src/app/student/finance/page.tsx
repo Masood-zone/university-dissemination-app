@@ -510,7 +510,7 @@ export default function StudentFinancePage() {
             <div className="mt-4 space-y-2 text-sm">
               <div className="flex items-center gap-2 text-muted-foreground">
                 <MaterialSymbol icon="mail" className="text-[18px]" />
-                <span>finance@aamusted.edu.gh</span>
+                <span>finance@USTED.edu.gh</span>
               </div>
               <div className="flex items-center gap-2 text-muted-foreground">
                 <MaterialSymbol icon="call" className="text-[18px]" />

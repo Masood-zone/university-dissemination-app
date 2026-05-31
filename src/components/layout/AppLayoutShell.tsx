@@ -32,7 +32,7 @@ export default function AppLayoutShell({
   portalSubtitle,
   headerTitle,
   logoSrc = "/logo-nobg.png",
-  logoAlt = "AAMUSTED Logo",
+  logoAlt = "USTED Logo",
 }: {
   children: React.ReactNode;
   navSections: NavSection[];

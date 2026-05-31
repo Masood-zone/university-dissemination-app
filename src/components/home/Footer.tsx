@@ -17,13 +17,13 @@ export function Footer() {
             <div className="flex items-center gap-3">
               <Image
                 src="/logo.png"
-                alt="AAMUSTED Logo"
+                alt="USTED Logo"
                 width={64}
                 height={64}
                 className="h-16 w-16 object-contain"
               />
               <div className="leading-none">
-                <p className="text-lg font-extrabold">AAMUSTED</p>
+                <p className="text-lg font-extrabold">USTED</p>
                 <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                   Information Dissemination System
                 </p>
@@ -76,7 +76,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-xs text-muted-foreground md:flex-row">
-          <p>© 2026 AAMUSTED Information Dissemination System.</p>
+          <p>© 2026 USTED Information Dissemination System.</p>
           <div className="flex items-center gap-6">
             <Link className="hover:underline" href="#">
               Privacy Policy

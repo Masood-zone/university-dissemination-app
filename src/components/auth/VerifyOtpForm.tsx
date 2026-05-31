@@ -32,7 +32,7 @@ export function VerifyOtpForm() {
       <div className="pt-10 pb-6 px-8 flex flex-col items-center text-center">
         <div className="w-24 h-24 mb-4 relative flex items-center justify-center">
           <Image
-            alt="AAMUSTED Crest"
+            alt="USTED Crest"
             className="w-full h-full object-contain drop-shadow-sm rounded-xl scale-150"
             src="/logo-nobg.png"
             width={96}

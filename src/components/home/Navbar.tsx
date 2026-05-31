@@ -49,16 +49,14 @@ export function Navbar() {
             <Link href="/" className="inline-flex items-center gap-3">
               <Image
                 src="/logo.png"
-                alt="AAMUSTED Logo"
+                alt="USTED Logo"
                 width={56}
                 height={56}
                 className="h-14 w-14 object-contain"
                 priority
               />
               <div className="hidden md:block leading-none">
-                <p className="text-lg font-extrabold tracking-tight">
-                  AAMUSTED
-                </p>
+                <p className="text-lg font-extrabold tracking-tight">USTED</p>
                 <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                   Information Dissemination System
                 </p>
@@ -137,15 +135,13 @@ export function Navbar() {
             <div className="flex items-center gap-3">
               <Image
                 src="/logo.png"
-                alt="AAMUSTED Logo"
+                alt="USTED Logo"
                 width={44}
                 height={44}
                 className="h-11 w-11 object-contain"
               />
               <div className="leading-none">
-                <p className="text-sm font-extrabold tracking-tight">
-                  AAMUSTED
-                </p>
+                <p className="text-sm font-extrabold tracking-tight">USTED</p>
                 <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                   SIDS
                 </p>

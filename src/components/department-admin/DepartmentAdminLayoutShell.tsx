@@ -52,11 +52,11 @@ export default function DepartmentAdminLayoutShell({
   return (
     <AppLayoutShell
       navSections={navSections}
-      portalTitle="AAMUSTED IDS"
+      portalTitle="USTED IDS"
       portalSubtitle="Dept. Head Portal"
       headerTitle="Department Admin Dashboard"
       logoSrc="/logo-nobg.png"
-      logoAlt="AAMUSTED Logo"
+      logoAlt="USTED Logo"
     >
       {children}
     </AppLayoutShell>

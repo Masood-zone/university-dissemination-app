@@ -86,7 +86,7 @@ async function ensureCredentialAccount(userId: string, plainPassword: string) {
 }
 
 async function main() {
-  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@aamusted.edu.gh";
+  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@USTED.edu.gh";
   const plainPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin@123";
 
   const deptAdminPassword =
@@ -209,7 +209,7 @@ async function main() {
       const n = idx + 1;
       const deptEmail =
         process.env[`SEED_DEPT_ADMIN_${n}_EMAIL`] ??
-        `deptadmin${n}@aamusted.edu.gh`;
+        `deptadmin${n}@USTED.edu.gh`;
       const first =
         process.env[`SEED_DEPT_ADMIN_${n}_FIRST_NAME`] ?? "Department";
       const last =

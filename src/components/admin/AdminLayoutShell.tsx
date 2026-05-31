@@ -67,11 +67,11 @@ export default function AdminLayoutShell({
   return (
     <AppLayoutShell
       navSections={navSections}
-      portalTitle="AAMUSTED IDS"
+      portalTitle="USTED IDS"
       portalSubtitle="Admin Portal"
       headerTitle="Admin Dashboard"
       logoSrc="/logo-nobg.png"
-      logoAlt="AAMUSTED Logo"
+      logoAlt="USTED Logo"
     >
       {children}
     </AppLayoutShell>

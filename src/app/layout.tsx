@@ -33,13 +33,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "AAMUSTED IDS - Information Dissemination System",
-    template: "%s | AAMUSTED IDS",
+    default: "USTED IDS - Information Dissemination System",
+    template: "%s | USTED IDS",
   },
   description:
-    "Official AAMUSTED platform for campus announcements, academic schedules, and internal updates.",
+    "Official USTED platform for campus announcements, academic schedules, and internal updates.",
   keywords: [
-    "AAMUSTED",
+    "USTED",
     "campus",
     "announcements",
     "academic calendar",
@@ -51,11 +51,11 @@ export const metadata: Metadata = {
   ],
   authors: [
     {
-      name: "AAMUSTED IDS",
+      name: "USTED IDS",
     },
   ],
-  creator: "AAMUSTED IDS",
-  publisher: "AAMUSTED",
+  creator: "USTED IDS",
+  publisher: "USTED",
   robots: {
     index: true,
     follow: true,
@@ -72,16 +72,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    title: "AAMUSTED IDS - Information Dissemination System",
+    title: "USTED IDS - Information Dissemination System",
     description:
-      "Official AAMUSTED platform for campus announcements, academic schedules, and internal updates.",
-    siteName: "AAMUSTED IDS",
+      "Official USTED platform for campus announcements, academic schedules, and internal updates.",
+    siteName: "USTED IDS",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AAMUSTED IDS - Information Dissemination System",
+    title: "USTED IDS - Information Dissemination System",
     description:
-      "Official AAMUSTED platform for campus announcements, academic schedules, and internal updates.",
+      "Official USTED platform for campus announcements, academic schedules, and internal updates.",
   },
   icons: {
     icon: "/logo.png",

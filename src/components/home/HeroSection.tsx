@@ -54,7 +54,7 @@ export function HeroSection() {
                 <div className="mx-auto grid place-items-center rounded-2xl border border-border bg-background/60 p-10">
                   <Image
                     src="/logo.png"
-                    alt="AAMUSTED IDS"
+                    alt="USTED IDS"
                     width={240}
                     height={240}
                     className="h-40 w-40 object-contain"

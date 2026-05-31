@@ -65,7 +65,7 @@ export function LoginForm() {
         <div className="w-24 h-24 mb-4 relative flex items-center justify-center">
           <Link href="/" className="absolute inset-0">
             <Image
-              alt="AAMUSTED Crest"
+              alt="USTED Crest"
               className="w-full h-full object-contain drop-shadow-sm rounded-xl scale-150"
               src="/logo-nobg.png"
               width={96}
