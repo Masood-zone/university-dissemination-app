@@ -7,13 +7,12 @@ import Link from "next/link";
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import Image from "next/image";
 import { toast } from "sonner";
-import { userLogin } from "@/services/auth/user-auth";
+import { getAuthErrorMessage, userLogin } from "@/services/auth/user-auth";
 import { useState } from "react";
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const form = useForm<LoginInput>({
-    // NOTE: Avoids resolver typing mismatch between Zod minor versions.
     resolver: zodResolver(loginSchema as never),
     defaultValues: {
       email: "",
@@ -24,8 +23,27 @@ export function LoginForm() {
 
   const onSubmit = async (data: LoginInput) => {
     try {
-      await userLogin(data.email, data.password, data.rememberMe);
-      toast.success("Login successful! Redirecting...");
+      const { error } = await userLogin(
+        data.email,
+        data.password,
+        data.rememberMe,
+      );
+
+      if (error) {
+        const message = getAuthErrorMessage(
+          error,
+          "Invalid email or password.",
+        );
+
+        toast.error(message);
+        form.setError("root", {
+          message,
+        });
+
+        return;
+      }
+
+      toast.success("Login successful. Redirecting...");
     } catch (error) {
       const message =
         error instanceof Error
@@ -33,7 +51,6 @@ export function LoginForm() {
           : "Login failed. Please try again.";
 
       toast.error(message);
-
       form.setError("root", {
         message,
       });

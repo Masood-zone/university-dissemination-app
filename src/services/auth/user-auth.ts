@@ -1,5 +1,34 @@
 import { authClient } from "@/lib/auth-client";
 
+type AuthErrorLike = {
+  message?: string;
+  code?: string;
+  status?: number;
+};
+
+export function getAuthErrorMessage(
+  error: unknown,
+  fallbackMessage = "Login failed. Please try again.",
+) {
+  if (error && typeof error === "object") {
+    const authError = error as AuthErrorLike;
+
+    if (authError.status === 401 || authError.code === "INVALID_CREDENTIALS") {
+      return "Invalid email or password.";
+    }
+
+    if (typeof authError.message === "string" && authError.message.trim()) {
+      return authError.message;
+    }
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message;
+  }
+
+  return fallbackMessage;
+}
+
 export async function userLogin(
   email: string,
   password: string,
@@ -10,7 +39,7 @@ export async function userLogin(
       email,
       password,
       callbackURL: "/",
-      rememberMe: rememberMe,
+      rememberMe,
     },
     {
       //callbacks
