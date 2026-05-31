@@ -70,6 +70,7 @@ export function LoginForm() {
               src="/logo-nobg.png"
               width={96}
               height={96}
+              loading="eager"
             />
           </Link>
         </div>
