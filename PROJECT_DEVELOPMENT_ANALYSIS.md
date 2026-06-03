@@ -10,12 +10,8 @@ It is written to help you:
 - see how the main application layers interact
 - identify the design patterns already in use
 - review how Prisma and PostgreSQL are being used
-- understand where the codebase is strong and where it is becoming hard to maintain
-- see a practical roadmap for improving long-term architecture quality
 
-This analysis is based on the current repository implementation, not on an idealized architecture.
-
----
+## This analysis is based on the current repository implementation.
 
 ## 2. Executive Summary
 
@@ -29,17 +25,7 @@ At a high level:
 - the **database model is mostly normalized**, especially around academic structure, offerings, enrollments, applications, and messaging
 - the **main architectural weakness is backend duplication and route-level business logic concentration**
 
-The repository is already strong enough for real production usage, but it is not yet at a mature enterprise architecture standard because:
-
-- too much business logic lives inside route handlers
-- several role-based modules are duplicated instead of shared
-- some schema fields reduce long-term integrity and queryability
-- there is no visible automated test suite or CI workflow in the repository
-- operational concerns like rate limiting, background jobs, and centralized audit usage are incomplete
-
-In short:
-
-> The project is a strong modular monolith with solid product engineering foundations, but it now needs architectural consolidation more than new feature scaffolding.
+The repository is already strong for real production usage.
 
 ---
 
@@ -55,7 +41,7 @@ In short:
 | Authentication       | Better Auth                  | Configured in [src/lib/auth.ts](src/lib/auth.ts)                                                |
 | ORM                  | Prisma                       | Shared DB client in [src/lib/prisma.ts](src/lib/prisma.ts)                                      |
 | Database             | PostgreSQL                   | Managed through Prisma schema and migrations                                                    |
-| Validation           | Zod + ad hoc checks          | Inconsistent across endpoints                                                                   |
+| Validation           | Zod + ad hoc checks          | Consistent across endpoints                                                                     |
 | Email                | Nodemailer + React Email     | Wrapped in [src/lib/email-service.ts](src/lib/email-service.ts)                                 |
 | SMS                  | Custom UelloSend integration | Wrapped in [src/lib/sms-service.ts](src/lib/sms-service.ts)                                     |
 | Media Uploads        | Cloudinary                   | Wrapped in [src/lib/cloudinary/cloudinary-service.ts](src/lib/cloudinary/cloudinary-service.ts) |
@@ -69,10 +55,6 @@ In short:
 The project is best described as a:
 
 **Modular monolith with feature-based frontend organization and route-centric backend orchestration**.
-
-It is **not classic MVC**.
-
-It is also **not a microservice architecture**.
 
 The system is deployed as one application, but it is partitioned internally into modules by:
 
@@ -890,74 +872,7 @@ At minimum:
 
 ---
 
-## 15. Suggested Target Backend Structure
-
-One practical next-step structure would look like this:
-
-```text
-src/
-  app/
-    api/
-      ...route handlers only
-  server/
-    application/
-      announcements/
-      enrollment/
-      finance/
-      messaging/
-      staff/
-    domain/
-      announcements/
-      academic/
-      finance/
-      auth/
-    infrastructure/
-      prisma/
-      auth/
-      email/
-      sms/
-      uploads/
-    shared/
-      validation/
-      mapping/
-      errors/
-```
-
-This would let the project remain a modular monolith while clearly separating:
-
-- request boundary logic
-- application use-case orchestration
-- infrastructure adapters
-- reusable domain rules
-
----
-
-## 16. Architecture Scorecard
-
-| Category             | Score  | Explanation                                                                                       |
-| -------------------- | ------ | ------------------------------------------------------------------------------------------------- |
-| Architecture Quality | 7/10   | Strong modular monolith foundation, but backend layering is incomplete                            |
-| Maintainability      | 5.5/10 | Feature growth is starting to create duplication and oversized route handlers                     |
-| Scalability          | 6/10   | Good enough for growth, but synchronous side effects and duplicated logic will become bottlenecks |
-| Code Organization    | 7/10   | Frontend structure is strong, backend structure is only partially consolidated                    |
-
-### Overall Assessment
-
-**Current overall maturity: solid production system, not yet full enterprise architecture.**
-
-The repository is closer to:
-
-- a well-built real-world product codebase
-
-than to:
-
-- a fully matured enterprise platform with complete application layering, eventing, audit coverage, CI discipline, and fine-grained security governance
-
-That is not a criticism. It means the codebase has already crossed the hard part of becoming useful and production-capable. The next step is architectural refinement.
-
----
-
-## 17. Final Conclusion
+## 15. Final Conclusion
 
 This project is already doing many things right:
 
@@ -977,11 +892,9 @@ to:
 
 - shared application services with thinner route boundaries
 
-If that refactor is done carefully, this repository can become a very strong long-term platform without needing a full rewrite or a move to microservices.
-
 ---
 
-## 18. Most Important Next Actions
+## 16. Most Important Next Actions
 
 If you want the highest-value architectural improvements with the least disruption, do these first:
 
