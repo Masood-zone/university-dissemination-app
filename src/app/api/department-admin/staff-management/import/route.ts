@@ -5,6 +5,7 @@ import { Role } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { requireDepartmentAdmin } from "@/lib/server";
+import { notifyDepartmentStaffWelcome } from "@/lib/department-staff-notifications";
 import type {
   ApiResponse,
   DepartmentAdminBulkImportResult,

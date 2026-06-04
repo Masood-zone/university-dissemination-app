@@ -7,6 +7,7 @@ import { PasswordResetConfirmationEmail } from "@/components/emails/password-res
 import { StudentEnrollmentSubmittedEmail } from "@/components/emails/student-enrollment-submitted-email";
 import { StudentEnrollmentDecisionEmail } from "@/components/emails/student-enrollment-decision-email";
 import { AnnouncementPublishedEmail } from "@/components/emails/announcement-published-email";
+import { DepartmentStaffWelcomeEmail } from "@/components/emails/department-staff-welcome-email";
 
 interface EmailConfig {
   service?: string;
@@ -237,6 +238,32 @@ class EmailService {
         summary: args.summary,
       }),
       text: `New announcement (${args.category}): ${args.title}. View: ${announcementUrl}`,
+    });
+  }
+
+  async sendDepartmentStaffWelcomeEmail(args: {
+    to: string;
+    recipientName: string;
+    roleLabel: string;
+    departmentName: string;
+    email: string;
+    password: string;
+    loginUrl?: string;
+  }): Promise<void> {
+    const loginUrl = args.loginUrl || `${getAppUrl()}/login`;
+
+    await this.sendReactEmail({
+      to: args.to,
+      subject: `Your ${args.roleLabel.toLowerCase()} account is ready - ${process.env.APP_NAME || "SIDS"}`,
+      component: createElement(DepartmentStaffWelcomeEmail, {
+        recipientName: args.recipientName,
+        departmentName: args.departmentName,
+        roleLabel: args.roleLabel,
+        loginUrl,
+        email: args.email,
+        password: args.password,
+      }),
+      text: `Welcome ${args.recipientName}. Your ${args.roleLabel.toLowerCase()} account for ${args.departmentName} is ready. Email: ${args.email}. Temporary password: ${args.password}. Sign in: ${loginUrl}`,
     });
   }
 }

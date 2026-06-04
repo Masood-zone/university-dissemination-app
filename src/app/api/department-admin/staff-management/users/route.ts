@@ -5,6 +5,7 @@ import { Role } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { requireDepartmentAdmin } from "@/lib/server";
+import { notifyDepartmentStaffWelcome } from "@/lib/department-staff-notifications";
 import type {
   ApiResponse,
   DepartmentAdminCreateStaffUserInput,
@@ -338,20 +339,22 @@ export async function POST(request: Request) {
 
     const actor = await prisma.user.findUnique({
       where: { id: actorId },
-      select: { departmentId: true, firstName: true, lastName: true },
+      select: { departmentId: true, firstName: true, lastName: true, department: { select: { name: true } } },
     });
 
     let departmentId = actor?.departmentId ?? null;
+    let departmentName = actor?.department?.name ?? "Department";
 
     if (!departmentId && actor) {
       const headName = `${actor.firstName} ${actor.lastName}`.trim();
       if (headName) {
         const dept = await prisma.department.findFirst({
           where: { headOfDept: headName },
-          select: { id: true },
+          select: { id: true, name: true },
         });
         if (dept?.id) {
           departmentId = dept.id;
+          departmentName = dept.name;
           prisma.user
             .update({ where: { id: actorId }, data: { departmentId: dept.id } })
             .catch(() => undefined);
@@ -482,6 +485,18 @@ export async function POST(request: Request) {
           },
         });
       }
+    });
+
+    // Send welcome notifications (email and SMS)
+    await notifyDepartmentStaffWelcome({
+      recipientName: name,
+      departmentName,
+      role: role === Role.LECTURER ? "LECTURER" : "STUDENT",
+      email,
+      phone: input.phone?.trim() || "",
+      password: input.password,
+    }).catch((error) => {
+      console.error("Failed to send welcome notifications:", error);
     });
 
     return NextResponse.json(

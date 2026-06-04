@@ -102,6 +102,20 @@ class SMSService {
     await this.sendSMS({ to: args.to, message });
   }
 
+  async sendDepartmentStaffWelcomeSMS(args: {
+    to: string;
+    recipientName: string;
+    roleLabel: string;
+    departmentName: string;
+    email: string;
+    password: string;
+    loginUrl?: string;
+  }): Promise<void> {
+    const loginUrl = args.loginUrl || `${process.env.APP_URL || process.env.BETTER_AUTH_URL || "http://localhost:3000"}/login`;
+    const message = `Welcome ${args.recipientName}. Your ${args.roleLabel.toLowerCase()} account for ${args.departmentName} is ready. Email: ${args.email}. Temp password: ${args.password}. Sign in: ${loginUrl}`;
+    await this.sendSMS({ to: args.to, message });
+  }
+
   async sendPasswordResetTokenSMS(args: {
     to: string;
     token: string;
