@@ -86,7 +86,7 @@ export default function DepartmentManagementPage() {
     <section className="space-y-6">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="font-lexend text-xl font-semibold">
+          <h1 className="font-display text-xl font-semibold">
             Departments & Faculty Management
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -152,7 +152,7 @@ export default function DepartmentManagementPage() {
             </div>
 
             <div className="mt-4">
-              <p className="font-lexend text-lg font-semibold leading-tight">
+              <p className="font-display text-lg font-semibold leading-tight">
                 {dept.name}
               </p>
               <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">

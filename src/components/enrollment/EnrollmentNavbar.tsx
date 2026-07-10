@@ -15,21 +15,21 @@ export function EnrollmentNavbar({
   applicationId?: string | null;
 }) {
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur">
+    <header className="fixed top-0 z-50 w-full border-b border-border border-t-4 border-t-brand-gold bg-background/90 shadow-xs backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card">
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-card p-0.5 shadow-xs">
             <Image
               src="/logo-nobg.png"
               alt="USTED Logo"
               width={1000}
               height={1000}
-              className=" w-auto"
+              className="h-full w-full object-contain"
               priority
             />
           </div>
           <div className="leading-tight">
-            <p className="font-lexend text-sm font-semibold tracking-tight">
+            <p className="font-display text-sm font-semibold tracking-tight text-primary">
               USTED
             </p>
             <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">

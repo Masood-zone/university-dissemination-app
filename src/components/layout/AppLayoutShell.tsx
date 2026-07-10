@@ -70,8 +70,8 @@ export default function AppLayoutShell({
       "flex items-center rounded-lg border-r-4 border-transparent px-3 py-2.5 text-sm font-medium transition-colors",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       active
-        ? "bg-primary/10 text-primary border-primary"
-        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+        ? "border-primary bg-accent text-primary shadow-xs"
+        : "text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground",
     );
 
   const nav = (
@@ -120,21 +120,21 @@ export default function AppLayoutShell({
       <div className="mx-auto flex w-full max-w-400">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-border bg-background lg:sticky lg:top-0 lg:h-screen",
+            "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-sm lg:sticky lg:top-0 lg:h-screen",
             mobileNavOpen ? "block" : "hidden lg:flex",
           )}
           aria-label="Portal navigation"
         >
-          <div className="relative flex flex-col items-center px-4 py-4">
+          <div className="relative flex flex-col items-center border-t-4 border-brand-gold px-4 py-5">
             <Image
               src={logoSrc}
               alt={logoAlt}
-              width={84}
-              height={84}
-              className="h-14 w-auto"
+              width={112}
+              height={112}
+              className="h-20 w-20 object-contain"
               priority
             />
-            <h2 className="mt-3 text-xs font-semibold uppercase tracking-wide text-foreground text-center">
+            <h2 className="mt-2 text-center font-display text-xs font-semibold uppercase tracking-wide text-sidebar-foreground">
               {portalTitle}
             </h2>
             <p className="mt-0.5 text-[10px] font-medium text-muted-foreground uppercase">
@@ -163,7 +163,7 @@ export default function AppLayoutShell({
         </aside>
 
         <div className="flex min-h-screen flex-1 flex-col">
-          <header className="sticky top-0 z-10 border-b border-border bg-background/90 px-4 py-3 backdrop-blur sm:px-6 sm:py-4">
+          <header className="sticky top-0 z-10 border-b border-border bg-background/90 px-4 py-3 shadow-xs backdrop-blur sm:px-6 sm:py-4">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <button
@@ -174,7 +174,7 @@ export default function AppLayoutShell({
                 >
                   <MaterialSymbol icon="menu" />
                 </button>
-                <h2 className="font-lexend text-base font-semibold">
+                <h2 className="font-display text-base font-semibold text-primary">
                   {headerTitle}
                 </h2>
               </div>
@@ -184,7 +184,7 @@ export default function AppLayoutShell({
               </div>
             </div>
           </header>
-          <main className="flex-1 p-6">{children}</main>
+          <main className="flex-1 bg-linear-to-b from-background to-muted/25 p-6">{children}</main>
         </div>
       </div>
     </div>

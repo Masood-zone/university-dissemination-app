@@ -34,7 +34,7 @@ function StatCard({
           {loading ? (
             <Skeleton className="mt-3 h-9 w-24" />
           ) : (
-            <p className="mt-2 font-lexend text-3xl font-semibold tracking-tight">
+            <p className="mt-2 font-display text-3xl font-semibold tracking-tight">
               {value}
             </p>
           )}
@@ -81,7 +81,7 @@ export default function LecturerDashboardPage() {
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Lecturer Portal
           </p>
-          <h1 className="font-lexend text-2xl font-semibold tracking-tight">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
             Overview
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">

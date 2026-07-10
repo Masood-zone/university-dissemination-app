@@ -24,7 +24,7 @@ export default function EnrollmentLandingPage() {
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Enrollment
               </p>
-              <h1 className="mt-2 font-lexend text-3xl font-semibold tracking-tight">
+              <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight">
                 Student Enrollment
               </h1>
               <p className="mt-2 text-sm text-muted-foreground">

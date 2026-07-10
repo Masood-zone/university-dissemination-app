@@ -1,15 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import {
-  Geist,
-  Geist_Mono,
-  Inter,
-  Lexend,
-  Nunito_Sans,
-} from "next/font/google";
+import { Geist_Mono, Inter, Lexend } from "next/font/google";
 import "./globals.css";
 import { Providers } from "../components/providers/providers";
-
-const nunitoSans = Nunito_Sans({ variable: "--font-sans" });
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,12 +10,7 @@ const inter = Inter({
 
 const lexend = Lexend({
   subsets: ["latin"],
-  variable: "--font-lexend",
-});
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: "--font-display",
 });
 
 const geistMono = Geist_Mono({
@@ -97,8 +84,8 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: light)", color: "#002366" },
+    { media: "(prefers-color-scheme: dark)", color: "#071225" },
   ],
 };
 
@@ -122,7 +109,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${nunitoSans.variable} ${inter.variable} ${lexend.variable} antialiased`}
+        className={`${geistMono.variable} ${inter.variable} ${lexend.variable} antialiased`}
       >
         <Providers>{children}</Providers>
       </body>

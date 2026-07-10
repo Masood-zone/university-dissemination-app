@@ -86,7 +86,7 @@ function AddCoursePageInner() {
               <MaterialSymbol icon="arrow_back" className="text-[18px]" />
             </Link>
           </Button>
-          <h1 className="font-lexend text-xl font-semibold">
+          <h1 className="font-display text-xl font-semibold">
             Create New Course
           </h1>
         </div>
@@ -116,7 +116,7 @@ function AddCoursePageInner() {
               <span className="mx-1">›</span>
               <span className="text-primary font-semibold">New Course</span>
             </p>
-            <h2 className="mt-2 font-lexend text-2xl font-semibold">
+            <h2 className="mt-2 font-display text-2xl font-semibold">
               Course Configuration
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">

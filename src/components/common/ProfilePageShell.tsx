@@ -69,7 +69,7 @@ export function ProfilePageShell({
           className="text-[22px] text-muted-foreground"
         />
         <div>
-          <h1 className="font-lexend text-2xl font-semibold tracking-tight">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
             {title}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -114,7 +114,7 @@ export function ProfilePageShell({
                 </>
               ) : (
                 <>
-                  <h2 className="font-lexend text-xl font-semibold tracking-tight">
+                  <h2 className="font-display text-xl font-semibold tracking-tight">
                     {data.name}
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">

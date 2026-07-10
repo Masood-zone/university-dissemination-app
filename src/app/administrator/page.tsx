@@ -46,7 +46,7 @@ export default function AdministratorOverviewPage() {
   return (
     <section className="space-y-8">
       <header>
-        <h1 className="font-lexend text-2xl font-semibold tracking-tight">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
           Dashboard Overview
         </h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
@@ -82,7 +82,7 @@ export default function AdministratorOverviewPage() {
                     </p>
                     <p
                       className={cn(
-                        "mt-2 font-lexend font-semibold",
+                        "mt-2 font-display font-semibold",
                         item.label === "Current Semester"
                           ? "text-lg"
                           : "text-3xl",
@@ -104,7 +104,7 @@ export default function AdministratorOverviewPage() {
 
       <section className="rounded-xl border border-border bg-card p-6">
         <div className="mb-5">
-          <h2 className="font-lexend text-lg font-semibold">Quick Actions</h2>
+          <h2 className="font-display text-lg font-semibold">Quick Actions</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Common admin tasks for the portal.
           </p>

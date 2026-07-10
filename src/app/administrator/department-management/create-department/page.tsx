@@ -77,7 +77,7 @@ export default function CreateDepartmentPage() {
     <section className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-lexend text-xl font-semibold">
+          <h1 className="font-display text-xl font-semibold">
             Create New Department
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -205,7 +205,7 @@ export default function CreateDepartmentPage() {
         </section>
 
         <aside className="rounded-xl border border-border bg-card p-6">
-          <h2 className="font-lexend text-base font-semibold">Actions</h2>
+          <h2 className="font-display text-base font-semibold">Actions</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Create a department and assign its head.
           </p>

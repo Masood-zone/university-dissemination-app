@@ -43,7 +43,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-border border-t-4 border-t-brand-gold bg-background/90 shadow-xs backdrop-blur">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <Link href="/" className="inline-flex items-center gap-3">
@@ -52,11 +52,11 @@ export function Navbar() {
                 alt="USTED Logo"
                 width={56}
                 height={56}
-                className="h-14 w-14 object-contain"
+                className="h-14 w-14 object-contain drop-shadow-sm"
                 priority
               />
               <div className="hidden md:block leading-none">
-                <p className="text-lg font-extrabold tracking-tight">USTED</p>
+                <p className="font-display text-lg font-extrabold tracking-tight text-primary">USTED</p>
                 <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                   Information Dissemination System
                 </p>
@@ -69,7 +69,7 @@ export function Navbar() {
               <Link
                 key={l.label}
                 href={l.href}
-                className="text-sm font-semibold text-foreground/80 hover:text-foreground transition-colors"
+                className="text-sm font-semibold text-foreground/75 transition-colors hover:text-primary"
               >
                 {l.label}
               </Link>

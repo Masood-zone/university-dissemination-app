@@ -121,7 +121,7 @@ export default function AcademicSessionsPage() {
     <section className="space-y-6">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="font-lexend text-xl font-semibold">
+          <h1 className="font-display text-xl font-semibold">
             Academic Sessions Management
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -253,7 +253,7 @@ export default function AcademicSessionsPage() {
               <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/80">
                 Current Active Session
               </p>
-              <p className="mt-3 font-lexend text-2xl font-semibold">
+              <p className="mt-3 font-display text-2xl font-semibold">
                 {activeSession?.name ?? "Not set"}
               </p>
               <p className="mt-1 text-xs text-primary-foreground/80">

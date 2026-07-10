@@ -144,7 +144,7 @@ export default function StudentFinancePage() {
   return (
     <section className="space-y-8">
       <header>
-        <h1 className="font-lexend text-xl font-semibold">Finance & Fees</h1>
+        <h1 className="font-display text-xl font-semibold">Finance & Fees</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Fee breakdown, payment history, and outstanding balance.
         </p>
@@ -179,7 +179,7 @@ export default function StudentFinancePage() {
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Total Fees
                   </p>
-                  <p className="mt-2 font-lexend text-2xl font-semibold">
+                  <p className="mt-2 font-display text-2xl font-semibold">
                     {formatMoney(summary.data?.totals.totalFee ?? 0, currency)}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
@@ -198,7 +198,7 @@ export default function StudentFinancePage() {
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Balance Due
                   </p>
-                  <p className="mt-2 font-lexend text-2xl font-semibold">
+                  <p className="mt-2 font-display text-2xl font-semibold">
                     {formatMoney(outstanding, currency)}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
@@ -220,7 +220,7 @@ export default function StudentFinancePage() {
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Total Paid
                   </p>
-                  <p className="mt-2 font-lexend text-2xl font-semibold">
+                  <p className="mt-2 font-display text-2xl font-semibold">
                     {formatMoney(summary.data?.totals.totalPaid ?? 0, currency)}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
@@ -239,7 +239,7 @@ export default function StudentFinancePage() {
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Payment Deadline
                   </p>
-                  <p className="mt-2 font-lexend text-2xl font-semibold">
+                  <p className="mt-2 font-display text-2xl font-semibold">
                     {formatDate(summary.data?.totals.dueAt ?? null)}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
@@ -268,7 +268,7 @@ export default function StudentFinancePage() {
                   icon="receipt_long"
                   className="text-[18px] text-muted-foreground"
                 />
-                <h2 className="font-lexend text-base font-semibold">
+                <h2 className="font-display text-base font-semibold">
                   Fee Breakdown (Current Semester)
                 </h2>
               </div>
@@ -367,7 +367,7 @@ export default function StudentFinancePage() {
                 icon="history"
                 className="text-[18px] text-muted-foreground"
               />
-              <h2 className="font-lexend text-base font-semibold">
+              <h2 className="font-display text-base font-semibold">
                 Transaction History
               </h2>
             </div>
@@ -417,7 +417,7 @@ export default function StudentFinancePage() {
           <section className="rounded-2xl border border-border bg-card p-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-lexend text-base font-semibold">
+                <p className="font-display text-base font-semibold">
                   Secure Pay Now
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -500,7 +500,7 @@ export default function StudentFinancePage() {
                 icon="help"
                 className="text-[18px] text-muted-foreground"
               />
-              <p className="font-lexend text-base font-semibold">Need Help?</p>
+              <p className="font-display text-base font-semibold">Need Help?</p>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
               If you notice any discrepancy in your fees or payments, please

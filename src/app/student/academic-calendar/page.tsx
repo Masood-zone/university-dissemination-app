@@ -112,7 +112,7 @@ export default function StudentAcademicCalendarPage() {
     <section className="space-y-6">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-lexend text-xl font-semibold">
+          <h1 className="font-display text-xl font-semibold">
             Academic Calendar
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">

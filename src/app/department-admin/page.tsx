@@ -79,7 +79,7 @@ function CalendarCard({
 
   return (
     <div className="rounded-xl bg-primary p-6 text-primary-foreground">
-      <h3 className="font-lexend text-lg font-semibold">Academic Calendar</h3>
+      <h3 className="font-display text-lg font-semibold">Academic Calendar</h3>
       <p className="mt-3 text-sm font-semibold">{title}</p>
       <p className="mt-1 text-sm text-primary-foreground/80">{description}</p>
       <p className="mt-4 text-xs text-primary-foreground/80">{rangeLabel}</p>
@@ -122,7 +122,7 @@ export default function DepartmentAdminOverviewPage() {
   return (
     <section className="space-y-8">
       <header>
-        <h1 className="font-lexend text-2xl font-semibold tracking-tight">
+        <h1 className="font-display text-2xl font-semibold tracking-tight">
           Department Admin Dashboard Overview
         </h1>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
@@ -156,7 +156,7 @@ export default function DepartmentAdminOverviewPage() {
                     <p className="text-sm font-medium text-muted-foreground">
                       {item.label}
                     </p>
-                    <p className="mt-2 font-lexend text-3xl font-semibold tracking-tight">
+                    <p className="mt-2 font-display text-3xl font-semibold tracking-tight">
                       {item.value}
                     </p>
                     <p className="mt-2 text-xs text-muted-foreground">
@@ -196,7 +196,7 @@ export default function DepartmentAdminOverviewPage() {
           <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
             <div className="flex items-center gap-2">
               <MaterialSymbol icon="history" className="text-[18px]" />
-              <h2 className="font-lexend text-base font-semibold">
+              <h2 className="font-display text-base font-semibold">
                 Department Activity Feed
               </h2>
             </div>
@@ -230,7 +230,7 @@ export default function DepartmentAdminOverviewPage() {
         <div className="space-y-6">
           <section className="rounded-xl border border-border bg-card p-6">
             <div className="mb-5">
-              <h2 className="font-lexend text-lg font-semibold">
+              <h2 className="font-display text-lg font-semibold">
                 Quick Actions
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -290,7 +290,7 @@ export default function DepartmentAdminOverviewPage() {
             />
           ) : (
             <div className="rounded-xl border border-border bg-card p-6">
-              <h3 className="font-lexend text-lg font-semibold">
+              <h3 className="font-display text-lg font-semibold">
                 Academic Calendar
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">

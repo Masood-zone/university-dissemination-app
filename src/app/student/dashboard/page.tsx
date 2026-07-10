@@ -146,7 +146,7 @@ export default function StudentDashboardPage() {
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Student Portal
             </p>
-            <h1 className="font-lexend text-2xl font-semibold tracking-tight">
+            <h1 className="font-display text-2xl font-semibold tracking-tight">
               Dashboard
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -171,7 +171,7 @@ export default function StudentDashboardPage() {
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Next Class In
                 </p>
-                <p className="mt-2 font-lexend text-4xl font-extrabold tracking-tight">
+                <p className="mt-2 font-display text-4xl font-extrabold tracking-tight">
                   {nextClassIn}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
@@ -210,7 +210,7 @@ export default function StudentDashboardPage() {
               ) : analyticsError ? (
                 <div className="h-9 rounded-xl bg-muted/40" />
               ) : (
-                <p className="font-lexend text-3xl font-extrabold tracking-tight">
+                <p className="font-display text-3xl font-extrabold tracking-tight">
                   {formatGhs(analytics?.fees.outstandingTotal ?? 0)}
                 </p>
               )}

@@ -138,7 +138,7 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
     <section className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="font-lexend text-2xl font-semibold tracking-tight">
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
             Department Course Management
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -170,7 +170,7 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
         <div className="space-y-6 lg:col-span-1">
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="border-b border-border bg-muted/30 px-5 py-4">
-              <h2 className="flex items-center gap-2 font-lexend text-sm font-semibold">
+              <h2 className="flex items-center gap-2 font-display text-sm font-semibold">
                 <MaterialSymbol
                   icon="post_add"
                   className="text-[18px] text-primary"
@@ -409,7 +409,7 @@ export default function DepartmentAdminProgrammesAndCoursesPage() {
         <div className="lg:col-span-2">
           <div className="overflow-hidden rounded-xl border border-border bg-card">
             <div className="flex items-center justify-between gap-4 border-b border-border px-6 py-5">
-              <h2 className="font-lexend text-lg font-semibold">
+              <h2 className="font-display text-lg font-semibold">
                 Assigned Courses
               </h2>
 

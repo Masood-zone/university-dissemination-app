@@ -52,7 +52,7 @@ function StatCard({
           <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
-          <p className="mt-2 font-lexend text-2xl font-semibold tracking-tight">
+          <p className="mt-2 font-display text-2xl font-semibold tracking-tight">
             {value}
           </p>
           <p className="mt-1 text-[11px] text-muted-foreground">{note}</p>
@@ -253,7 +253,7 @@ export default function DepartmentAdminStaffManagementPage() {
             className="text-[22px] text-muted-foreground"
           />
           <div>
-            <h1 className="font-lexend text-2xl font-semibold tracking-tight">
+            <h1 className="font-display text-2xl font-semibold tracking-tight">
               {headerTitle}
             </h1>
             <p className="text-sm text-muted-foreground">

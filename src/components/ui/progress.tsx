@@ -4,11 +4,11 @@ export default function RadialProgress({ progress }: { progress: number }) {
   return (
     <div
       x-data="scrollProgress"
-      className="  inline-flex items-center justify-center overflow-hidden rounded-full "
+      className="relative inline-flex items-center justify-center overflow-hidden rounded-full"
     >
       <svg className=" w-20 h-20">
         <circle
-          className="text-gray-300"
+          className="text-muted"
           strokeWidth={"4"}
           stroke="currentColor"
           fill="transparent"
@@ -17,7 +17,7 @@ export default function RadialProgress({ progress }: { progress: number }) {
           cy="40"
         />
         <circle
-          className="text-black"
+          className="text-primary"
           strokeWidth="4"
           strokeDasharray={30 * 2 * Math.PI}
           strokeDashoffset={100 - (progress / 100) * 100}
@@ -29,7 +29,7 @@ export default function RadialProgress({ progress }: { progress: number }) {
           cy="40"
         />
       </svg>
-      <span className="absolute text-sm text-black" x-text="`${percent}%`">
+      <span className="absolute text-sm font-semibold text-foreground" x-text="`${percent}%`">
         {progress}%
       </span>
     </div>

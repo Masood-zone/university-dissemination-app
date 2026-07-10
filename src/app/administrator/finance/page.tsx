@@ -252,7 +252,7 @@ export default function FinancePage() {
   return (
     <section className="space-y-8">
       <header>
-        <h1 className="font-lexend text-xl font-semibold">Finance & Revenue</h1>
+        <h1 className="font-display text-xl font-semibold">Finance & Revenue</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Revenue analytics, payment transactions, and programme fee allocation.
         </p>
@@ -261,7 +261,7 @@ export default function FinancePage() {
       <section className="space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-lexend text-lg font-semibold">Analytics</h2>
+            <h2 className="font-display text-lg font-semibold">Analytics</h2>
             <p className="text-sm text-muted-foreground">
               Overview of collections and outstanding balances.
             </p>
@@ -297,7 +297,7 @@ export default function FinancePage() {
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Total Revenue
                     </p>
-                    <p className="mt-2 font-lexend text-2xl font-semibold">
+                    <p className="mt-2 font-display text-2xl font-semibold">
                       {formatMoney(
                         analytics.data?.totalRevenue ?? 0,
                         analyticsCurrency,
@@ -319,7 +319,7 @@ export default function FinancePage() {
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Outstanding Fees
                     </p>
-                    <p className="mt-2 font-lexend text-2xl font-semibold">
+                    <p className="mt-2 font-display text-2xl font-semibold">
                       {formatMoney(
                         analytics.data?.outstandingFees ?? 0,
                         analyticsCurrency,
@@ -344,7 +344,7 @@ export default function FinancePage() {
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Collection Rate
                     </p>
-                    <p className="mt-2 font-lexend text-2xl font-semibold">
+                    <p className="mt-2 font-display text-2xl font-semibold">
                       {analytics.data?.collectionRate == null
                         ? "—"
                         : formatPercent(analytics.data.collectionRate)}
@@ -365,7 +365,7 @@ export default function FinancePage() {
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       Fees Assessed
                     </p>
-                    <p className="mt-2 font-lexend text-2xl font-semibold">
+                    <p className="mt-2 font-display text-2xl font-semibold">
                       {formatMoney(
                         analytics.data?.feesAssessed ?? 0,
                         analyticsCurrency,
@@ -391,7 +391,7 @@ export default function FinancePage() {
       <section className="rounded-xl border border-border bg-card">
         <div className="flex flex-col gap-4 border-b border-border p-5 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="font-lexend text-lg font-semibold">
+            <h2 className="font-display text-lg font-semibold">
               Payment Transactions
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -553,7 +553,7 @@ export default function FinancePage() {
       <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <section className="lg:col-span-2 rounded-xl border border-border bg-card">
           <div className="border-b border-border p-5">
-            <h2 className="font-lexend text-lg font-semibold">
+            <h2 className="font-display text-lg font-semibold">
               Programme Fee Allocation
             </h2>
             <p className="text-sm text-muted-foreground">
@@ -719,7 +719,7 @@ export default function FinancePage() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-lexend text-xl font-semibold">
+                <p className="font-display text-xl font-semibold">
                   {formatMoney(
                     numericFees.totalFee,
                     allocation.data?.currency ?? "GHS",
@@ -761,7 +761,7 @@ export default function FinancePage() {
               <p className="text-[10px] font-semibold uppercase tracking-wider text-primary-foreground/80">
                 Fee Setup Note
               </p>
-              <p className="mt-3 font-lexend text-lg font-semibold">
+              <p className="mt-3 font-display text-lg font-semibold">
                 Active session required
               </p>
               <p className="mt-2 text-sm text-primary-foreground/80">

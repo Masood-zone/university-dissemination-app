@@ -30,7 +30,7 @@ export function EnrollmentShell({
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Step {step} of 4
               </p>
-              <h1 className="font-lexend text-2xl font-semibold tracking-tight">
+              <h1 className="font-display text-2xl font-semibold tracking-tight">
                 {title}
               </h1>
               {subtitle ? (

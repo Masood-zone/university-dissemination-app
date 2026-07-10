@@ -33,7 +33,7 @@ export default function StudentCourseOfferingsPage() {
     <section className="space-y-6">
       <header className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-lexend text-xl font-semibold">
+          <h1 className="font-display text-xl font-semibold">
             Course Offerings
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -97,7 +97,7 @@ export default function StudentCourseOfferingsPage() {
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                       {row.courseCode}
                     </p>
-                    <h2 className="mt-1 font-lexend text-lg font-semibold truncate">
+                    <h2 className="mt-1 font-display text-lg font-semibold truncate">
                       {row.courseTitle}
                     </h2>
                     <p className="mt-1 text-xs text-muted-foreground">

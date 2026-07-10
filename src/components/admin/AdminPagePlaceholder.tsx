@@ -9,7 +9,7 @@ export default function AdminPagePlaceholder({
 }: AdminPagePlaceholderProps) {
   return (
     <section className="rounded-xl border border-border bg-card p-6">
-      <h1 className="font-lexend text-2xl font-semibold tracking-tight">
+      <h1 className="font-display text-2xl font-semibold tracking-tight">
         {title}
       </h1>
       <p className="mt-2 max-w-3xl text-sm text-muted-foreground">

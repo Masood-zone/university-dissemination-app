@@ -239,7 +239,7 @@ export default function StudentAnnouncementDetailPage() {
 
           <section className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="font-lexend text-lg font-semibold tracking-tight">
+              <h2 className="font-display text-lg font-semibold tracking-tight">
                 Related announcements
               </h2>
               <Button asChild variant="link">

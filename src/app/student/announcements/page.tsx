@@ -267,7 +267,7 @@ export default function StudentAnnouncementsPage() {
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Student Portal
             </p>
-            <h1 className="font-lexend text-2xl font-semibold tracking-tight">
+            <h1 className="font-display text-2xl font-semibold tracking-tight">
               Notice Board
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">

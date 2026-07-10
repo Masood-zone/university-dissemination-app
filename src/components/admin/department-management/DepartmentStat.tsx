@@ -12,7 +12,7 @@ export function DepartmentStat({
       <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
-      <p className="mt-1 font-lexend text-xl font-semibold">{value}</p>
+      <p className="mt-1 font-display text-xl font-semibold">{value}</p>
     </div>
   );
 }

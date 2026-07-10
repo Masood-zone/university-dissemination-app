@@ -22,7 +22,7 @@ export function EnrollmentStepper({
       <div className="relative">
         <div className="absolute left-0 top-5 h-px w-full bg-border" />
         <div
-          className="absolute left-0 top-5 h-px bg-primary"
+          className="absolute left-0 top-5 h-0.5 bg-secondary"
           style={{ width: `${((activeStep - 1) / 3) * 100}%` }}
         />
 
@@ -37,9 +37,9 @@ export function EnrollmentStepper({
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-full border bg-background",
                     isDone
-                      ? "border-primary text-primary"
+                      ? "border-secondary bg-secondary text-secondary-foreground"
                       : isActive
-                        ? "border-primary bg-primary/10 text-primary ring-2 ring-primary/20"
+                        ? "border-primary bg-accent text-primary ring-2 ring-secondary/40"
                         : "border-border text-muted-foreground",
                   )}
                   aria-current={isActive ? "step" : undefined}

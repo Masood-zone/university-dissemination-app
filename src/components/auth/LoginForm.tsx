@@ -60,13 +60,13 @@ export function LoginForm() {
   const isSubmitting = form.formState.isSubmitting;
 
   return (
-    <div className="w-full max-w-md mx-auto bg-card text-card-foreground rounded-2xl shadow-2xl relative z-10 border border-border overflow-hidden">
+    <div className="relative z-10 mx-auto w-full max-w-md overflow-hidden rounded-2xl border border-border border-t-4 border-t-brand-gold bg-card text-card-foreground shadow-2xl">
       <div className="pt-10 pb-6 px-8 flex flex-col items-center text-center">
         <div className="w-24 h-24 mb-4 relative flex items-center justify-center">
           <Link href="/" className="absolute inset-0">
             <Image
               alt="USTED Crest"
-              className="w-full h-full object-contain drop-shadow-sm rounded-xl scale-150"
+              className="h-full w-full rounded-xl object-contain drop-shadow-sm"
               src="/logo-nobg.png"
               width={96}
               height={96}
@@ -194,7 +194,7 @@ export function LoginForm() {
         </form>
       </div>
 
-      <div className="h-1.5 w-full bg-linear-to-r from-primary via-primary/80 to-primary" />
+      <div className="h-1.5 w-full bg-linear-to-r from-brand-navy via-brand-gold to-brand-red" />
     </div>
   );
 }

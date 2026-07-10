@@ -42,7 +42,7 @@ function StatCard({
           {loading ? (
             <Skeleton className="mt-3 h-8 w-24" />
           ) : (
-            <p className="mt-2 font-lexend text-3xl font-semibold">{value}</p>
+            <p className="mt-2 font-display text-3xl font-semibold">{value}</p>
           )}
           <p className="mt-2 text-xs text-muted-foreground">{note}</p>
         </div>
