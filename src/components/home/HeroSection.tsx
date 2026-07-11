@@ -9,13 +9,13 @@ export function HeroSection() {
     >
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-linear-to-br from-background via-background to-muted" />
-        <div className="absolute inset-0 opacity-20 dark:opacity-30 bg-[radial-gradient(circle_at_30%_20%,var(--brand-gold)_0%,transparent_45%),radial-gradient(circle_at_80%_60%,var(--brand-navy)_0%,transparent_45%)]" />
+        <div className="absolute inset-0 opacity-12 dark:opacity-20 bg-[radial-gradient(circle_at_30%_20%,var(--brand-burgundy)_0%,transparent_42%),radial-gradient(circle_at_80%_60%,var(--brand-navy)_0%,transparent_48%)]" />
       </div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid items-center gap-10 lg:grid-cols-12">
           <div className="text-center lg:col-span-7 lg:text-left">
-            <span className="inline-flex items-center rounded-full border border-brand-gold/50 bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wider text-accent-foreground">
+            <span className="inline-flex items-center rounded-full border border-primary/20 bg-accent px-3 py-1 text-xs font-bold uppercase tracking-wider text-accent-foreground">
               Smart Information Dissemination System
             </span>
             <h1 className="mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl ">
@@ -47,7 +47,7 @@ export function HeroSection() {
 
           <div className="lg:col-span-5">
             <div className="relative mx-auto w-full overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
-              <div className="absolute inset-0 opacity-75 bg-[radial-gradient(circle_at_50%_35%,var(--brand-gold)_0%,transparent_45%),radial-gradient(circle_at_70%_70%,var(--brand-navy)_0%,transparent_45%)]" />
+              <div className="absolute inset-0 opacity-55 bg-[radial-gradient(circle_at_50%_35%,var(--brand-burgundy)_0%,transparent_42%),radial-gradient(circle_at_70%_70%,var(--brand-navy)_0%,transparent_48%)]" />
               <div className="relative p-10">
                 <div className="mx-auto grid place-items-center rounded-2xl border border-border bg-background/60 p-10">
                   <Image

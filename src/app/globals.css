@@ -13,8 +13,10 @@
   --font-display: var(--font-lexend), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --color-brand-navy: var(--brand-navy);
+  --color-brand-burgundy: var(--brand-burgundy);
   --color-brand-gold: var(--brand-gold);
   --color-brand-red: var(--brand-red);
+  --color-brand-green: var(--brand-green);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -54,82 +56,86 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.375rem;
 
   /* USTED institutional identity */
-  --brand-navy: #002366;
-  --brand-gold: #f2b51d;
-  --brand-red: #d41111;
-  --background: #faf9f6;
-  --foreground: #101828;
+  --brand-burgundy: #970044;
+  --brand-navy: #062a6e;
+  --brand-gold: #f3c300;
+  --brand-red: #c20e1a;
+  --brand-green: #006b3f;
+  --background: #f7f7f5;
+  --foreground: #202124;
   --card: #ffffff;
   --card-foreground: #101828;
   --popover: #ffffff;
   --popover-foreground: #101828;
 
-  --primary: var(--brand-navy);
+  --primary: var(--brand-burgundy);
   --primary-foreground: #ffffff;
-  --secondary: var(--brand-gold);
-  --secondary-foreground: #17203a;
-  --accent: #fff6dc;
-  --accent-foreground: #4a3500;
+  --secondary: #e8e6e1;
+  --secondary-foreground: #34363b;
+  --accent: #f5eaf0;
+  --accent-foreground: #700033;
 
-  --muted: #f1efe9;
-  --muted-foreground: #596274;
+  --muted: #eeece8;
+  --muted-foreground: #5f6672;
   --destructive: #b42318;
-  --border: #ddd9cf;
-  --input: #d6d1c5;
-  --ring: var(--brand-gold);
-  --chart-1: #002366;
-  --chart-2: #f2b51d;
-  --chart-3: #d41111;
-  --chart-4: #2878b5;
-  --chart-5: #6d5a25;
+  --border: #dad7d0;
+  --input: #cbc7be;
+  --ring: var(--brand-burgundy);
+  --chart-1: #970044;
+  --chart-2: #006b3f;
+  --chart-3: #f3c300;
+  --chart-4: #062a6e;
+  --chart-5: #c20e1a;
   --sidebar: #ffffff;
   --sidebar-foreground: #101828;
-  --sidebar-primary: var(--brand-navy);
+  --sidebar-primary: var(--brand-burgundy);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #fff6dc;
-  --sidebar-accent-foreground: #002366;
-  --sidebar-border: #ddd9cf;
-  --sidebar-ring: var(--brand-gold);
+  --sidebar-accent: #f5eaf0;
+  --sidebar-accent-foreground: #970044;
+  --sidebar-border: #dedbd4;
+  --sidebar-ring: var(--brand-burgundy);
 }
 
 .dark {
-  --brand-navy: #6f99ed;
+  --brand-burgundy: #e65b99;
+  --brand-navy: #7ea7ef;
   --brand-gold: #ffc943;
   --brand-red: #ff6868;
-  --background: #071225;
+  --brand-green: #55c98f;
+  --background: #171317;
   --foreground: #f7f5ee;
-  --card: #0c1b33;
+  --card: #211a20;
   --card-foreground: #f7f5ee;
-  --popover: #0c1b33;
+  --popover: #211a20;
   --popover-foreground: #f7f5ee;
-  --primary: #6f99ed;
-  --primary-foreground: #061126;
-  --secondary: #ffc943;
-  --secondary-foreground: #2b2100;
-  --accent: #29334a;
+  --primary: #e65b99;
+  --primary-foreground: #280014;
+  --secondary: #373136;
+  --secondary-foreground: #f3eff1;
+  --accent: #3d2932;
   --accent-foreground: #fff1bd;
-  --muted: #172641;
+  --muted: #30262d;
   --muted-foreground: #b6c0d1;
   --destructive: #ff6b60;
   --border: rgb(226 232 240 / 16%);
   --input: rgb(226 232 240 / 20%);
-  --ring: #ffc943;
-  --chart-1: #7da7f5;
-  --chart-2: #ffc943;
-  --chart-3: #ff6868;
-  --chart-4: #61b6e9;
-  --chart-5: #d7c17a;
-  --sidebar: #08162b;
+  --ring: #e65b99;
+  --chart-1: #e65b99;
+  --chart-2: #55c98f;
+  --chart-3: #ffc943;
+  --chart-4: #7ea7ef;
+  --chart-5: #ff6868;
+  --sidebar: #1c161b;
   --sidebar-foreground: #f7f5ee;
-  --sidebar-primary: #6f99ed;
-  --sidebar-primary-foreground: #061126;
-  --sidebar-accent: #26334c;
+  --sidebar-primary: #e65b99;
+  --sidebar-primary-foreground: #280014;
+  --sidebar-accent: #3d2932;
   --sidebar-accent-foreground: #fff1bd;
   --sidebar-border: rgb(226 232 240 / 14%);
-  --sidebar-ring: #ffc943;
+  --sidebar-ring: #e65b99;
 }
 
 @layer base {
@@ -139,12 +145,16 @@
   body {
     @apply bg-background font-sans text-foreground;
     text-rendering: optimizeLegibility;
+    letter-spacing: -0.006em;
   }
   ::selection {
-    background: color-mix(in srgb, var(--brand-gold) 65%, transparent);
-    color: #101828;
+    background: color-mix(in srgb, var(--brand-burgundy) 28%, transparent);
+    color: var(--foreground);
   }
   :where(h1, h2, h3) {
     font-family: var(--font-lexend), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  }
+  a, button, input, select, textarea {
+    -webkit-tap-highlight-color: transparent;
   }
 }

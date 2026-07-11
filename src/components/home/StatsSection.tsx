@@ -9,7 +9,7 @@ export function StatsSection() {
   return (
     <section
       id="academics"
-      className="relative scroll-mt-24 overflow-hidden border-y-4 border-brand-gold bg-primary py-12 text-primary-foreground"
+      className="relative scroll-mt-24 overflow-hidden bg-brand-burgundy py-12 text-white"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">

@@ -15,7 +15,7 @@ export function EnrollmentNavbar({
   applicationId?: string | null;
 }) {
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-border border-t-4 border-t-brand-gold bg-background/90 shadow-xs backdrop-blur">
+    <header className="fixed top-0 z-50 w-full border-b border-border border-t-2 border-t-brand-gold bg-background/90 shadow-xs backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-border bg-card p-0.5 shadow-xs">

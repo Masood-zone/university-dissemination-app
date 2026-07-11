@@ -9,7 +9,7 @@ export function Footer() {
   return (
     <footer
       id="contact"
-      className="scroll-mt-24 border-t-4 border-brand-gold bg-primary py-16 text-primary-foreground"
+      className="scroll-mt-24 border-t-2 border-brand-gold bg-brand-burgundy py-16 text-white"
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
@@ -24,12 +24,12 @@ export function Footer() {
               />
               <div className="leading-none">
                 <p className="font-display text-lg font-extrabold">USTED</p>
-                <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-primary-foreground/70">
+                <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/70">
                   Information Dissemination System
                 </p>
               </div>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-primary-foreground/75">
+            <p className="mt-4 text-sm leading-relaxed text-white/75">
               A centralized communication platform for timely announcements,
               academic information, administrative services, campus life
               updates, and direct student-staff messaging — with role-based
@@ -40,7 +40,7 @@ export function Footer() {
           <div className="grid gap-8 sm:grid-cols-2">
             <div id="e-resources" className="scroll-mt-24">
               <p className="text-sm font-bold">Quick Links</p>
-              <ul className="mt-4 space-y-3 text-sm text-primary-foreground/75">
+              <ul className="mt-4 space-y-3 text-sm text-white/75">
                 <li>
                   <Link className="hover:underline" href="#research">
                     Core Modules
@@ -68,14 +68,14 @@ export function Footer() {
               <div className="mt-4">
                 <UserAvatar />
               </div>
-              <p className="mt-3 text-xs text-primary-foreground/70">
+              <p className="mt-3 text-xs text-white/70">
                 Signed-in users see their avatar here.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-primary-foreground/20 pt-8 text-xs text-primary-foreground/70 md:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-white/20 pt-8 text-xs text-white/70 md:flex-row">
           <p>© 2026 USTED Information Dissemination System.</p>
           <div className="flex items-center gap-6">
             <Link className="hover:underline" href="#">

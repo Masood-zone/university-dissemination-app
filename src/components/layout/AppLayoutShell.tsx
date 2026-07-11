@@ -67,11 +67,11 @@ export default function AppLayoutShell({
 
   const navLinkClass = (active: boolean) =>
     cn(
-      "flex items-center rounded-lg border-r-4 border-transparent px-3 py-2.5 text-sm font-medium transition-colors",
+      "flex items-center rounded-md border-l-4 border-transparent px-3 py-2.5 text-sm font-semibold transition-[background-color,color,border-color]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       active
-        ? "border-primary bg-accent text-primary shadow-xs"
-        : "text-muted-foreground hover:bg-accent/70 hover:text-accent-foreground",
+        ? "border-primary bg-accent text-primary"
+        : "text-muted-foreground hover:border-border hover:bg-muted/65 hover:text-foreground",
     );
 
   const nav = (
@@ -117,27 +117,27 @@ export default function AppLayoutShell({
         />
       ) : null}
 
-      <div className="mx-auto flex w-full max-w-400">
+      <div className="mx-auto flex w-full max-w-450 border-t-[5px] border-t-neutral-800 dark:border-t-neutral-950">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-sm lg:sticky lg:top-0 lg:h-screen",
+            "fixed inset-y-0 left-0 z-50 flex w-68 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground lg:sticky lg:top-0 lg:h-[calc(100vh-5px)]",
             mobileNavOpen ? "block" : "hidden lg:flex",
           )}
           aria-label="Portal navigation"
         >
-          <div className="relative flex flex-col items-center border-t-4 border-brand-gold px-4 py-5">
+          <div className="relative flex flex-col items-center border-t-2 border-brand-gold px-5 py-7">
             <Image
               src={logoSrc}
               alt={logoAlt}
               width={112}
               height={112}
-              className="h-20 w-20 object-contain"
+              className="h-24 w-24 object-contain"
               priority
             />
-            <h2 className="mt-2 text-center font-display text-xs font-semibold uppercase tracking-wide text-sidebar-foreground">
+            <h2 className="mt-3 text-center font-display text-sm font-semibold tracking-tight text-sidebar-foreground">
               {portalTitle}
             </h2>
-            <p className="mt-0.5 text-[10px] font-medium text-muted-foreground uppercase">
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
               {portalSubtitle}
             </p>
 
@@ -163,7 +163,7 @@ export default function AppLayoutShell({
         </aside>
 
         <div className="flex min-h-screen flex-1 flex-col">
-          <header className="sticky top-0 z-10 border-b border-border bg-background/90 px-4 py-3 shadow-xs backdrop-blur sm:px-6 sm:py-4">
+          <header className="sticky top-0 z-10 border-b border-border bg-card/95 px-4 py-4 backdrop-blur sm:px-8 sm:py-5">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <button
@@ -174,7 +174,7 @@ export default function AppLayoutShell({
                 >
                   <MaterialSymbol icon="menu" />
                 </button>
-                <h2 className="font-display text-base font-semibold text-primary">
+                <h2 className="font-display text-lg font-semibold text-primary sm:text-xl">
                   {headerTitle}
                 </h2>
               </div>
@@ -184,7 +184,7 @@ export default function AppLayoutShell({
               </div>
             </div>
           </header>
-          <main className="flex-1 bg-linear-to-b from-background to-muted/25 p-6">{children}</main>
+          <main className="flex-1 bg-background p-4 sm:p-8">{children}</main>
         </div>
       </div>
     </div>

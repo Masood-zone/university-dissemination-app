@@ -45,7 +45,7 @@ export function ForgotPasswordForm() {
   };
 
   return (
-    <div className="relative z-10 mx-auto w-full max-w-md overflow-hidden rounded-2xl border border-border border-t-4 border-t-brand-gold bg-card text-card-foreground shadow-2xl">
+    <div className="relative z-10 mx-auto w-full max-w-md overflow-hidden rounded-2xl border border-border border-t-4 border-t-primary bg-card text-card-foreground shadow-2xl">
       <div className="pt-10 pb-6 px-8 flex flex-col items-center text-center">
         <div className="w-24 h-24 mb-4 relative flex items-center justify-center">
           <Image
@@ -147,7 +147,7 @@ export function ForgotPasswordForm() {
         )}
       </div>
 
-      <div className="h-1.5 w-full bg-linear-to-r from-brand-navy via-brand-gold to-brand-red" />
+      <div className="h-1.5 w-full bg-linear-to-r from-brand-burgundy via-primary to-brand-navy" />
     </div>
   );
 }
