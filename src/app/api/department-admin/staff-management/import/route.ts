@@ -5,7 +5,7 @@ import { Role } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { requireDepartmentAdmin } from "@/lib/server";
-import { notifyDepartmentStaffWelcome } from "@/lib/department-staff-notifications";
+import { provisionApprovedStudent } from "@/lib/student-provisioning";
 import type {
   ApiResponse,
   DepartmentAdminBulkImportResult,
@@ -121,20 +121,27 @@ export async function POST(request: Request) {
 
     const actor = await prisma.user.findUnique({
       where: { id: actorId },
-      select: { departmentId: true, firstName: true, lastName: true },
+      select: {
+        departmentId: true,
+        firstName: true,
+        lastName: true,
+        department: { select: { code: true } },
+      },
     });
 
     let departmentId = actor?.departmentId ?? null;
+    let departmentCode = actor?.department?.code ?? null;
 
     if (!departmentId && actor) {
       const headName = `${actor.firstName} ${actor.lastName}`.trim();
       if (headName) {
         const dept = await prisma.department.findFirst({
           where: { headOfDept: headName },
-          select: { id: true },
+          select: { id: true, code: true },
         });
         if (dept?.id) {
           departmentId = dept.id;
+          departmentCode = dept.code;
           prisma.user
             .update({ where: { id: actorId }, data: { departmentId: dept.id } })
             .catch(() => undefined);
@@ -151,6 +158,14 @@ export async function POST(request: Request) {
         } satisfies ApiResponse<never>,
         { status: 400 },
       );
+    }
+
+    if (!departmentCode) {
+      const department = await prisma.department.findUnique({
+        where: { id: departmentId },
+        select: { code: true },
+      });
+      departmentCode = department?.code ?? null;
     }
 
     const body = (await request.json()) as unknown as { rows?: unknown };
@@ -174,6 +189,7 @@ export async function POST(request: Request) {
       updated: 0,
       failed: 0,
       errors: [],
+      credentials: [],
     };
 
     for (let index = 0; index < rows.length; index++) {
@@ -191,6 +207,36 @@ export async function POST(request: Request) {
           throw new Error(
             "Missing required fields (email, password, firstName, lastName)",
           );
+        }
+
+        if (role === Role.STUDENT) {
+          const studentId = normalizeString(row.studentId);
+          const batch = normalizeString(row.batch);
+          const programmeCode = normalizeString(row.programmeCode);
+          if (!departmentCode || !studentId || !batch || !programmeCode) {
+            throw new Error(
+              "Missing student fields (studentId, batch, programmeCode)",
+            );
+          }
+          const provisioned = await provisionApprovedStudent({
+            actorId,
+            allowedDepartmentId: departmentId,
+            row: {
+              email,
+              password,
+              firstName,
+              lastName,
+              phone: normalizeString(row.phone) || undefined,
+              studentId,
+              batch,
+              departmentCode,
+              programmeCode,
+            },
+          });
+          if (provisioned.created) result.created += 1;
+          else result.updated += 1;
+          if (provisioned.credential) result.credentials?.push(provisioned.credential);
+          continue;
         }
 
         const existing = await prisma.user.findUnique({
@@ -249,24 +295,6 @@ export async function POST(request: Request) {
               });
             }
 
-            if (role === Role.STUDENT) {
-              const studentId =
-                normalizeString(row.studentId) ||
-                `STU-${new Date().getFullYear()}-${Math.floor(
-                  100000 + Math.random() * 900000,
-                )}`;
-              const batch =
-                normalizeString(row.batch) || String(new Date().getFullYear());
-
-              await tx.studentProfile.create({
-                data: {
-                  userId,
-                  studentId,
-                  batch,
-                  enrolledCourses: [],
-                },
-              });
-            }
           });
 
           result.created += 1;

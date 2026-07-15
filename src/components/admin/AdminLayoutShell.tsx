@@ -5,18 +5,18 @@ import AppLayoutShell, {
   type NavItem,
 } from "@/components/layout/AppLayoutShell";
 
-const defaultAdminNavItems: NavItem[] = [
+const mainAdminNavItems: NavItem[] = [
   { label: "Overview", href: "/administrator", icon: "dashboard" },
   {
     label: "Academic Sessions",
     href: "/administrator/academic-sessions",
     icon: "event_note",
   },
-  // {
-  //   label: "Student Profiles",
-  //   href: "/administrator/student-profiles",
-  //   icon: "school",
-  // },
+  {
+    label: "Students",
+    href: "/administrator/student-profiles",
+    icon: "groups",
+  },
   {
     label: "Student Applications",
     href: "/administrator/student-applications",
@@ -37,11 +37,9 @@ const defaultAdminNavItems: NavItem[] = [
     href: "/administrator/announcements",
     icon: "forum",
   },
-  {
-    label: "Finance & Revenue",
-    href: "/administrator/finance",
-    icon: "payments",
-  },
+];
+
+const accountNavItems: NavItem[] = [
   {
     label: "Profile",
     href: "/administrator/profile",
@@ -56,12 +54,9 @@ export default function AdminLayoutShell({
 }: {
   children: React.ReactNode;
 }) {
-  const topNavItems = defaultAdminNavItems.slice(0, -2);
-  const reportNavItems = defaultAdminNavItems.slice(-2);
-
   const navSections: NavSection[] = [
-    { items: topNavItems },
-    { label: "Reports", items: reportNavItems },
+    { items: mainAdminNavItems },
+    { label: "Account", items: accountNavItems },
   ];
 
   return (

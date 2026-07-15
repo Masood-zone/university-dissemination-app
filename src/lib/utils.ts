@@ -48,11 +48,6 @@ export function formatCompactNumber(value: number): string {
   }).format(value);
 }
 
-export function formatGhs(value: number): string {
-  if (!Number.isFinite(value) || value <= 0) return "₵0";
-  return `₵${formatCompactNumber(value)}`;
-}
-
 export function formatStudentCount(value: number): string {
   return new Intl.NumberFormat("en").format(value);
 }

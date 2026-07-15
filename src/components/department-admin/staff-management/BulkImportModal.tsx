@@ -115,6 +115,11 @@ function parseCsv(text: string): ParsedResult {
       office: (record.office || "").trim(),
       studentId: (record.studentid || record.student_id || "").trim(),
       batch: (record.batch || record.level || "").trim(),
+      programmeCode: (
+        record.programmecode ||
+        record.programme_code ||
+        ""
+      ).trim(),
     };
 
     if (!role) {
@@ -140,6 +145,16 @@ function parseCsv(text: string): ParsedResult {
           row: rowNumber,
           message:
             "Missing lecturer fields (employeeId, qualification, specialization)",
+        });
+        continue;
+      }
+    }
+
+    if (base.role === "STUDENT") {
+      if (!base.studentId || !base.batch || !base.programmeCode) {
+        errors.push({
+          row: rowNumber,
+          message: "Missing student fields (studentId, batch, programmeCode)",
         });
         continue;
       }
@@ -172,7 +187,7 @@ export function BulkImportModal({
       [
         "email,password,role,firstName,lastName,phone",
         "employeeId,qualification,specialization,office",
-        "studentId,batch",
+        "studentId,batch,programmeCode",
       ].join("\n"),
     [],
   );

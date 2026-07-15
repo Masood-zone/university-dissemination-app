@@ -24,7 +24,7 @@ export function FeaturesSection() {
       icon: "admin_panel_settings",
       title: "Administrative & Campus Services",
       description:
-        "Check fee and registration status, access digital student ID, and view campus life info like events, maps, library resources, and transport schedules.",
+        "Check registration status, access your digital student identity, and view campus information such as events, library resources, and transport schedules.",
       cta: "Explore modules",
       href: "#e-resources",
     },

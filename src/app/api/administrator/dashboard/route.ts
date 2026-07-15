@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/server";
 import type { AdminOverviewData, ApiResponse } from "@/types";
 import { prisma } from "@/lib/prisma";
-import { formatEndsIn, formatGhs, formatStudentCount } from "@/lib/utils";
+import { formatEndsIn, formatStudentCount } from "@/lib/utils";
 
 const quickActions: AdminOverviewData["quickActions"] = [
   {
@@ -25,10 +25,10 @@ const quickActions: AdminOverviewData["quickActions"] = [
     icon: "campaign",
   },
   {
-    title: "Export Reports",
-    description: "Excel / PDF / CSV",
-    href: "/administrator/finance",
-    icon: "download",
+    title: "Manage Students",
+    description: "Profiles and bulk import",
+    href: "/administrator/student-profiles",
+    icon: "group_add",
   },
 ];
 
@@ -42,9 +42,7 @@ export async function GET(request: Request) {
       totalStudents,
       totalDepartments,
       activeSession,
-      paidFeesAgg,
-      allFeesAgg,
-      successfulPaymentsAgg,
+      pendingApplications,
     ] = await Promise.all([
       prisma.user.count({ where: { role: "STUDENT" } }),
       prisma.department.count(),
@@ -52,16 +50,8 @@ export async function GET(request: Request) {
         where: { isActive: true },
         include: { semesters: true },
       }),
-      prisma.fee.aggregate({
-        where: { status: "PAID" },
-        _sum: { amount: true },
-      }),
-      prisma.fee.aggregate({
-        _sum: { amount: true },
-      }),
-      prisma.paymentTransaction.aggregate({
-        where: { status: "SUCCESS" },
-        _sum: { amount: true },
+      prisma.application.count({
+        where: { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } },
       }),
     ]);
 
@@ -101,15 +91,6 @@ export async function GET(request: Request) {
         ? "Active session"
         : "No active session";
 
-    const totalPaidFees = paidFeesAgg._sum.amount ?? 0;
-    const totalFees = allFeesAgg._sum.amount ?? 0;
-    const collectionRate =
-      totalFees > 0 ? Math.round((totalPaidFees / totalFees) * 100) : null;
-
-    const totalSuccessfulPayments = successfulPaymentsAgg._sum.amount ?? 0;
-    const revenueValue =
-      totalSuccessfulPayments > 0 ? totalSuccessfulPayments : totalPaidFees;
-
     const dashboardData: AdminOverviewData = {
       stats: [
         {
@@ -131,13 +112,10 @@ export async function GET(request: Request) {
           icon: "calendar_today",
         },
         {
-          label: "Total Revenue",
-          value: formatGhs(revenueValue),
-          note:
-            collectionRate === null
-              ? "No fees recorded"
-              : `${collectionRate}% collection rate`,
-          icon: "savings",
+          label: "Pending Applications",
+          value: String(pendingApplications),
+          note: "Awaiting review",
+          icon: "pending_actions",
         },
       ],
       quickActions,

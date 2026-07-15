@@ -6,7 +6,7 @@ import { useStudentDashboardAnalytics } from "@/services/student/dashboard/dashb
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { PendingApprovalModal } from "@/components/student/PendingApprovalModal";
 import { authClient } from "@/lib/auth-client";
-import { cn, getDayOfWeekName, formatGhs, timeAgo } from "@/lib/utils";
+import { cn, getDayOfWeekName, timeAgo } from "@/lib/utils";
 
 function formatMinutesToHHMM(totalMinutes: number): string {
   if (!Number.isFinite(totalMinutes) || totalMinutes < 0) return "--:--";
@@ -53,7 +53,6 @@ export default function StudentDashboardPage() {
     if (!data) return;
     if (data.status !== "APPROVED") return;
 
-    setNowMs(Date.now());
     const t = window.setInterval(() => setNowMs(Date.now()), 60_000);
     return () => window.clearInterval(t);
   }, [data]);
@@ -95,39 +94,6 @@ export default function StudentDashboardPage() {
 
     const row = analytics.nextClass;
     return `${row.courseCode} • ${getDayOfWeekName(row.dayOfWeek)} ${row.startTime} • ${row.location}`;
-  }, [analytics, analyticsError, analyticsLoading, isApproved]);
-
-  const feeLabel = React.useMemo(() => {
-    if (!isApproved)
-      return { title: "Outstanding Fees Alert", note: "Data locked" };
-    if (analyticsLoading)
-      return { title: "Outstanding Fees Alert", note: "Loading fees..." };
-    if (analyticsError)
-      return { title: "Outstanding Fees Alert", note: "Failed to load fees" };
-
-    const outstanding = analytics?.fees.outstandingTotal ?? 0;
-    const assessed = analytics?.fees.assessedTotal ?? 0;
-    const paid = analytics?.fees.paidTotal ?? 0;
-    const overdue = analytics?.fees.overdueCount ?? 0;
-    const pending = analytics?.fees.pendingCount ?? 0;
-    const parts = [
-      overdue ? `${overdue} overdue` : null,
-      pending ? `${pending} pending` : null,
-    ].filter(Boolean);
-
-    const progressLabel =
-      assessed > 0 ? `${formatGhs(paid)} paid of ${formatGhs(assessed)}` : null;
-    return {
-      title: "Outstanding Fees Alert",
-      note:
-        outstanding > 0
-          ? [progressLabel, parts.join(" • ") || "Outstanding fees"]
-              .filter(Boolean)
-              .join(" • ")
-          : progressLabel
-            ? `All clear • ${progressLabel}`
-            : "No outstanding fees",
-    };
   }, [analytics, analyticsError, analyticsLoading, isApproved]);
 
   return (
@@ -188,32 +154,32 @@ export default function StudentDashboardPage() {
           </div>
 
           <div className="rounded-2xl border border-border bg-card p-6">
-            <div className="flex items-start gap-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Current Enrollments
+                </p>
+                <div className="mt-2">
+                  {!isApproved || analyticsLoading || analyticsError ? (
+                    <div className="h-10 w-24 rounded-xl bg-muted/40" />
+                  ) : (
+                    <p className="font-display text-4xl font-extrabold tracking-tight">
+                      {analytics?.enrolledCourseCount ?? 0}
+                    </p>
+                  )}
+                </div>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {isApproved
+                    ? "Active courses this semester"
+                    : "Courses unlock after approval"}
+                </p>
+              </div>
               <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-muted/40">
                 <MaterialSymbol
-                  icon="account_balance_wallet"
+                  icon="menu_book"
                   className="text-[20px] text-muted-foreground"
                 />
               </div>
-              <div>
-                <p className="text-sm font-semibold">{feeLabel.title}</p>
-                <p className="mt-1 text-xs text-muted-foreground italic">
-                  {feeLabel.note}
-                </p>
-              </div>
-            </div>
-            <div className="mt-5">
-              {!isApproved ? (
-                <div className="h-9 rounded-xl bg-muted/40" />
-              ) : analyticsLoading ? (
-                <div className="h-9 rounded-xl bg-muted/40" />
-              ) : analyticsError ? (
-                <div className="h-9 rounded-xl bg-muted/40" />
-              ) : (
-                <p className="font-display text-3xl font-extrabold tracking-tight">
-                  {formatGhs(analytics?.fees.outstandingTotal ?? 0)}
-                </p>
-              )}
             </div>
           </div>
         </div>
@@ -290,7 +256,7 @@ export default function StudentDashboardPage() {
             <p className="text-sm font-semibold">Upcoming Deadlines</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {isApproved
-                ? "Exams and fee due dates."
+                ? "Exams and academic due dates."
                 : "Deadlines unlock after approval."}
             </p>
             <div className="mt-5">

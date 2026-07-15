@@ -46,16 +46,6 @@ export async function GET(request: Request) {
     const session = await requireStudent(request);
     const userId = session.user.id;
 
-    // Keep fee statuses fresh for dashboard indicators.
-    await prisma.fee.updateMany({
-      where: {
-        studentId: userId,
-        status: "PENDING",
-        dueDate: { lt: new Date() },
-      },
-      data: { status: "OVERDUE" },
-    });
-
     const latestApplication = await prisma.application.findFirst({
       where: { applicantId: userId },
       orderBy: { createdAt: "desc" },
@@ -88,15 +78,7 @@ export async function GET(request: Request) {
     });
     const offeringIds = enrollments.map((e) => e.offeringId);
 
-    const [
-      timetables,
-      feesAgg,
-      assessedAgg,
-      paidAgg,
-      nextDueFee,
-      announcements,
-      exams,
-    ] = await Promise.all([
+    const [timetables, announcements, exams] = await Promise.all([
       offeringIds.length
         ? prisma.timetable.findMany({
             where: { offeringId: { in: offeringIds } },
@@ -118,36 +100,6 @@ export async function GET(request: Request) {
             },
           })
         : Promise.resolve([]),
-      prisma.fee.aggregate({
-        where: {
-          studentId: userId,
-          status: { in: ["PENDING", "OVERDUE"] },
-        },
-        _sum: { amount: true },
-        _count: { _all: true },
-      }),
-      prisma.fee.aggregate({
-        where: {
-          studentId: userId,
-          status: { not: "CANCELLED" },
-        },
-        _sum: { amount: true },
-      }),
-      prisma.fee.aggregate({
-        where: {
-          studentId: userId,
-          status: "PAID",
-        },
-        _sum: { amount: true },
-      }),
-      prisma.fee.findFirst({
-        where: {
-          studentId: userId,
-          status: { in: ["PENDING", "OVERDUE"] },
-        },
-        orderBy: { dueDate: "asc" },
-        select: { dueDate: true },
-      }),
       prisma.announcement.findMany({
         where: {
           status: AnnouncementStatus.PUBLISHED,
@@ -212,13 +164,6 @@ export async function GET(request: Request) {
         : Promise.resolve([]),
     ]);
 
-    const pendingCount = await prisma.fee.count({
-      where: { studentId: userId, status: "PENDING" },
-    });
-    const overdueCount = await prisma.fee.count({
-      where: { studentId: userId, status: "OVERDUE" },
-    });
-
     let nextClass: StudentDashboardAnalytics["nextClass"] = null;
     let nextClassStart: Date | null = null;
 
@@ -257,16 +202,6 @@ export async function GET(request: Request) {
 
     const deadlineItems: StudentDashboardAnalytics["deadlines"] = [];
 
-    if (nextDueFee?.dueDate) {
-      deadlineItems.push({
-        id: "fee-next-due",
-        kind: "FEE",
-        title: "Fee payment due",
-        subtitle: "Outstanding fee",
-        dueAt: nextDueFee.dueDate.toISOString(),
-      });
-    }
-
     for (const ex of exams) {
       const course = ex.offering.course;
       deadlineItems.push({
@@ -281,15 +216,7 @@ export async function GET(request: Request) {
     const payload: StudentDashboardAnalytics = {
       nextClass,
       nextClassInMinutes,
-      fees: {
-        assessedTotal: assessedAgg._sum.amount ?? 0,
-        paidTotal: paidAgg._sum.amount ?? 0,
-        outstandingTotal: feesAgg._sum.amount ?? 0,
-        currency: "GHS",
-        pendingCount,
-        overdueCount,
-        nextDueAt: toIso(nextDueFee?.dueDate),
-      },
+      enrolledCourseCount: offeringIds.length,
       announcements: announcements.map((a) => ({
         id: a.id,
         title: a.title,

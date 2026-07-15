@@ -1,6 +1,6 @@
 export function StatsSection() {
   const stats = [
-    { value: "8", label: "Core modules integrated" },
+    { value: "7", label: "Core capabilities integrated" },
     { value: "4", label: "Roles supported" },
     { value: "Real-time", label: "Push + in-app alerts" },
     { value: "RBAC", label: "Secure access control" },

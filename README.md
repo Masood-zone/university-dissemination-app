@@ -10,7 +10,7 @@ The system covers the following major functional areas:
 - lecturer and student messaging
 - student enrollment and application submission
 - academic sessions, programmes, courses, and course offerings
-- fee configuration, student finance, and payment tracking
+- student profile management and bulk roster provisioning
 - role-based dashboards and profile management
 
 ## Documentation Entry Point

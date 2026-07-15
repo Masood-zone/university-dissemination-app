@@ -43,20 +43,12 @@ enum NotificationType {
   MESSAGE
   SYSTEM
   ACADEMIC
-  PAYMENT
 }
 
 enum MessageStatus {
   SENT
   DELIVERED
   READ
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  OVERDUE
-  CANCELLED
 }
 
 enum ApplicationStatus {
@@ -76,15 +68,6 @@ enum ApplicationDocumentType {
   ID_DOCUMENT
   BIRTH_CERTIFICATE
   OTHER
-}
-
-enum PaymentTransactionStatus {
-  PENDING
-  SUCCESS
-  FAILED
-  REVERSED
-  REFUNDED
-  CANCELLED
 }
 
 enum ProgrammeAwardType {
@@ -295,35 +278,10 @@ model Programme {
 
   courses      Course[]
   applications Application[]
-  programmeFees ProgrammeFee[]
 
   @@unique([departmentId, code])
   @@index([departmentId])
   @@index([isActive])
-}
-
-model ProgrammeFee {
-  id          String       @id @default(cuid())
-  programme   Programme    @relation(fields: [programmeId], references: [id], onDelete: Cascade)
-  programmeId String
-  session     AcademicSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sessionId   String
-  semester    SemesterName
-
-  fees        Fee[]
-
-  tuitionFee  Float
-  libraryFee  Float
-  facilityFee Float
-  totalFee    Float
-  currency    String       @default("GHS")
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([programmeId, sessionId, semester])
-  @@index([programmeId])
-  @@index([sessionId])
 }
 
 // ============================================================================
@@ -343,7 +301,6 @@ model AcademicSession {
   semesters Semester[]
   offerings CourseOffering[]
   applications Application[]
-  programmeFees ProgrammeFee[]
 
   @@index([isActive])
 }
@@ -648,57 +605,6 @@ model Notification {
 
   @@index([userId])
   @@index([isRead])
-  @@index([createdAt])
-}
-
-// ============================================================================
-// FEES & PAYMENTS
-// ============================================================================
-
-model Fee {
-  id           String        @id @default(cuid())
-  studentId    String
-  programmeFee ProgrammeFee? @relation(fields: [programmeFeeId], references: [id], onDelete: SetNull)
-  programmeFeeId String?
-  feeType      String
-  amount       Float
-  dueDate      DateTime
-  status       PaymentStatus @default(PENDING)
-  paidDate     DateTime?
-  semester     Int
-  academicYear String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  transactions PaymentTransaction[]
-
-  @@index([studentId])
-  @@index([programmeFeeId])
-  @@index([status])
-  @@index([academicYear])
-  @@unique([studentId, programmeFeeId])
-}
-
-model PaymentTransaction {
-  id              String                   @id @default(cuid())
-  reference       String                   @unique
-  fee             Fee?                     @relation(fields: [feeId], references: [id], onDelete: SetNull)
-  feeId           String?
-  studentId       String
-  amount          Float
-  currency        String                   @default("GHS")
-  paymentMethod   String
-  provider        String?
-  providerRef     String?
-  status          PaymentTransactionStatus @default(PENDING)
-  paidAt          DateTime?
-  metadata        String?
-  createdAt       DateTime                 @default(now())
-  updatedAt       DateTime                 @updatedAt
-
-  @@index([feeId])
-  @@index([studentId])
-  @@index([status])
   @@index([createdAt])
 }
 

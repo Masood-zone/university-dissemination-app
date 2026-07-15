@@ -11,11 +11,6 @@ const studentNavSections: NavSection[] = [
     items: [
       { label: "Dashboard", href: "/student/dashboard", icon: "dashboard" },
       {
-        label: "Finance & Fees",
-        href: "/student/finance",
-        icon: "account_balance_wallet",
-      },
-      {
         label: "Academic Calendar",
         href: "/student/academic-calendar",
         icon: "calendar_today",

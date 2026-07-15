@@ -324,118 +324,6 @@ export interface ProgrammeListItem {
   activeCourses: number;
 }
 
-export type FinanceAnalytics = {
-  sessionId: string | null;
-  sessionName: string | null;
-  totalRevenue: number;
-  outstandingFees: number;
-  feesAssessed: number;
-  billedStudents: number;
-  collectionRate: number | null;
-  targetCollectionRate: number;
-};
-
-export type PaymentTransactionStatusFilter =
-  | "ALL"
-  | "PENDING"
-  | "SUCCESS"
-  | "FAILED"
-  | "REVERSED"
-  | "REFUNDED"
-  | "CANCELLED";
-
-export type FinanceTransactionRow = {
-  id: string;
-  reference: string;
-  studentId: string;
-  studentName: string;
-  amount: number;
-  currency: string;
-  status: string;
-  createdAt: string;
-};
-
-export type FinanceTransactionsResult = {
-  rangeDays: number;
-  rows: FinanceTransactionRow[];
-};
-
-export type FinanceProgrammeListItem = {
-  id: string;
-  name: string;
-  code: string;
-  departmentName: string;
-};
-
-export type ProgrammeFeeAllocation = {
-  programmeId: string;
-  sessionId: string;
-  sessionName: string;
-  semester: "FIRST" | "SECOND";
-  tuitionFee: number;
-  libraryFee: number;
-  facilityFee: number;
-  totalFee: number;
-  currency: string;
-  configured: boolean;
-};
-
-export type StudentFinanceFeeItem = {
-  key: string;
-  description: string;
-  kind: string;
-  amount: number;
-  status: "PENDING" | "PAID" | "OVERDUE" | "CANCELLED";
-  note: string | null;
-};
-
-export type StudentFinanceTransactionRow = {
-  id: string;
-  reference: string;
-  amount: number;
-  currency: string;
-  status: string;
-  paymentMethod: string;
-  createdAt: string;
-};
-
-export type StudentFinanceSummary = {
-  sessionId: string | null;
-  sessionName: string | null;
-  semester: "FIRST" | "SECOND" | null;
-  applicationStatus: ApplicationStatus | null;
-  programme: { id: string; name: string; code: string } | null;
-  configured: boolean;
-  feeId: string | null;
-  feeStatus: "PENDING" | "PAID" | "OVERDUE" | "CANCELLED" | null;
-  totals: {
-    totalFee: number;
-    totalPaid: number;
-    outstanding: number;
-    currency: string;
-    dueAt: string | null;
-  };
-  breakdown: StudentFinanceFeeItem[];
-  transactions: StudentFinanceTransactionRow[];
-};
-
-export type StudentFinancePayInput = {
-  feeId: string;
-  paymentMethod: "M_MONEY" | "CARD_BANK";
-};
-
-export type StudentFinancePayResult = {
-  ok: true;
-};
-
-export type UpsertProgrammeFeeInput = {
-  programmeId: string;
-  semester: "FIRST" | "SECOND";
-  tuitionFee: number;
-  libraryFee: number;
-  facilityFee: number;
-};
-
 export interface CreateProgrammeInput {
   name: string;
   code: string;
@@ -573,31 +461,6 @@ export interface NotificationData {
 export type Notification = NotificationData;
 
 // ============================================================================
-// FEE TYPES
-// ============================================================================
-
-export interface FeeData {
-  id: string;
-  studentId: string;
-  feeType: string;
-  amount: number;
-  dueDate: Date;
-  status: "PENDING" | "PAID" | "OVERDUE" | "CANCELLED";
-  paidDate?: Date;
-  semester: number;
-  academicYear: string;
-  createdAt: Date;
-}
-
-export interface FeeStatement {
-  totalFees: number;
-  totalPaid: number;
-  totalPending: number;
-  overdueFees: number;
-  feeDetails: FeeData[];
-}
-
-// ============================================================================
 // DASHBOARD TYPES
 // ============================================================================
 
@@ -613,11 +476,10 @@ export interface StudentDashboard {
   upcomingExams: ExamData[];
   timetable: TimetableEntry[];
   announcements: AnnouncementData[];
-  fees: FeeStatement;
   unreadNotifications: number;
 }
 
-export type StudentDashboardDeadlineKind = "FEE" | "EXAM";
+export type StudentDashboardDeadlineKind = "EXAM";
 
 export type StudentDashboardDeadlineItem = {
   id: string;
@@ -642,15 +504,7 @@ export type StudentDashboardNextClass = {
 export type StudentDashboardAnalytics = {
   nextClass: StudentDashboardNextClass | null;
   nextClassInMinutes: number | null;
-  fees: {
-    assessedTotal: number;
-    paidTotal: number;
-    outstandingTotal: number;
-    currency: string;
-    pendingCount: number;
-    overdueCount: number;
-    nextDueAt: string | null; // ISO
-  };
+  enrolledCourseCount: number;
   announcements: Array<{
     id: string;
     title: string;
@@ -744,6 +598,61 @@ export interface AdminOverviewData {
   stats: AdminOverviewStatCard[];
   quickActions: AdminOverviewQuickAction[];
 }
+
+export type AdminStudentImportRow = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+  studentId: string;
+  batch: string;
+  departmentCode: string;
+  programmeCode: string;
+  password?: string;
+};
+
+export type ImportedStudentCredential = {
+  email: string;
+  studentId: string;
+  password: string;
+};
+
+export type AdminStudentImportResult = {
+  created: number;
+  updated: number;
+  failed: number;
+  errors: Array<{ row: number; message: string }>;
+  credentials: ImportedStudentCredential[];
+};
+
+export type AdminStudentListRow = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  studentId: string;
+  batch: string;
+  departmentId: string | null;
+  departmentName: string | null;
+  programmeId: string | null;
+  programmeName: string | null;
+  applicationStatus: ApplicationStatus | null;
+  isActive: boolean;
+  createdAt: string;
+};
+
+export type AdminStudentListResult = {
+  stats: {
+    total: number;
+    approved: number;
+    pending: number;
+    active: number;
+  };
+  rows: AdminStudentListRow[];
+  page: number;
+  pageSize: number;
+  total: number;
+};
 
 // ============================================================================
 // DEPARTMENT ADMIN OVERVIEW (DASHBOARD OVERVIEW PAGE)
@@ -867,6 +776,7 @@ export type DepartmentAdminCreateStaffUserInput = {
 
   studentId?: string;
   batch?: string;
+  programmeCode?: string;
 };
 
 export type DepartmentAdminUpdateStaffUserInput = {
@@ -892,6 +802,7 @@ export type DepartmentAdminBulkImportResult = {
   updated: number;
   failed: number;
   errors: Array<{ row: number; message: string }>;
+  credentials?: ImportedStudentCredential[];
 };
 
 // ============================================================================

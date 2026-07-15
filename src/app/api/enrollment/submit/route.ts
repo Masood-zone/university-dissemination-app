@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   ApplicationStatus,
-  PaymentStatus,
   Role,
-  SemesterName,
 } from "@prisma/client";
 import { randomBytes, randomUUID, scrypt } from "node:crypto";
 import { promisify } from "node:util";
@@ -46,16 +44,6 @@ async function hashBetterAuthPassword(password: string): Promise<string> {
 function generateTemporaryPassword(): string {
   const digits = Math.floor(100000 + Math.random() * 900000);
   return `Student@${digits}`;
-}
-
-function addDays(date: Date, days: number): Date {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
-}
-
-function semesterToInt(value: SemesterName | null | undefined): 1 | 2 {
-  return value === "SECOND" ? 2 : 1;
 }
 
 async function ensureCredentialAccount(userId: string, plainPassword: string) {
@@ -284,56 +272,6 @@ export async function POST(request: Request) {
       },
       select: { id: true },
     });
-
-    // Create fee obligation for applicants if programme fees are configured.
-    if (session?.id) {
-      const semesterName = session.currentSemester ?? SemesterName.FIRST;
-
-      const programmeFee = await prisma.programmeFee.findUnique({
-        where: {
-          programmeId_sessionId_semester: {
-            programmeId: programme.id,
-            sessionId: session.id,
-            semester: semesterName,
-          },
-        },
-        select: {
-          id: true,
-          totalFee: true,
-          semester: true,
-        },
-      });
-
-      if (programmeFee) {
-        const semesterRow = await prisma.semester.findUnique({
-          where: {
-            sessionId_name: {
-              sessionId: session.id,
-              name: programmeFee.semester,
-            },
-          },
-          select: { startDate: true },
-        });
-
-        const dueDate = addDays(semesterRow?.startDate ?? new Date(), 14);
-
-        await prisma.fee.createMany({
-          data: [
-            {
-              studentId: userId,
-              programmeFeeId: programmeFee.id,
-              feeType: "PROGRAMME_FEE",
-              amount: programmeFee.totalFee,
-              dueDate,
-              status: PaymentStatus.PENDING,
-              semester: semesterToInt(programmeFee.semester),
-              academicYear: session.name,
-            },
-          ],
-          skipDuplicates: true,
-        });
-      }
-    }
 
     // Notifications (store in DB + attempt external delivery)
     const phone = input.personal.phone.trim();

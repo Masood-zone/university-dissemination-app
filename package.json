@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "db:seed": "tsx src/scripts/seed.ts",
+    "db:seed:verify": "tsx src/scripts/verify-seed.ts",
+    "test:student-import": "tsx --test src/lib/student-import-validation.test.ts",
     "lint": "eslint"
   },
   "dependencies": {
@@ -26,6 +28,7 @@
     "cloudinary": "^2.10.0",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
+    "dotenv": "^17.2.3",
     "framer-motion": "^12.40.0",
     "kysely": "^0.29.2",
     "lucide-react": "^0.575.0",

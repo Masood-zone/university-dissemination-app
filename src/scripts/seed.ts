@@ -1,34 +1,11 @@
 import "dotenv/config";
 
-import { PrismaClient, Role } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
-import { Pool } from "pg";
+import { Role, SemesterName } from "@prisma/client";
 import { randomBytes, randomUUID, scrypt } from "node:crypto";
 import { promisify } from "node:util";
 
-const directUrl = process.env.DIRECT_URL;
-const accelerateUrl = process.env.ACCELERATE_URL ?? process.env.DATABASE_URL;
-
-const prisma = (() => {
-  const logLevels =
-    process.env.NODE_ENV === "development"
-      ? (["error", "warn"] as const)
-      : (["error"] as const);
-
-  if (directUrl && !directUrl.startsWith("prisma+")) {
-    const pool = new Pool({ connectionString: directUrl });
-    const adapter = new PrismaPg(pool);
-    return new PrismaClient({ adapter, log: [...logLevels] });
-  }
-
-  if (!accelerateUrl) {
-    throw new Error(
-      "Missing database configuration. Set DIRECT_URL or DATABASE_URL/ACCELERATE_URL.",
-    );
-  }
-
-  return new PrismaClient({ accelerateUrl, log: [...logLevels] });
-})();
+import { prisma } from "@/lib/prisma";
+import { provisionApprovedStudent } from "@/lib/student-provisioning";
 
 const scryptAsync = promisify(scrypt) as (
   password: string,
@@ -86,7 +63,9 @@ async function ensureCredentialAccount(userId: string, plainPassword: string) {
 }
 
 async function main() {
-  const email = process.env.SEED_ADMIN_EMAIL ?? "admin@USTED.edu.gh";
+  const email = (process.env.SEED_ADMIN_EMAIL ?? "admin@usted.edu.gh")
+    .trim()
+    .toLowerCase();
   const plainPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin@123";
 
   const deptAdminPassword =
@@ -118,29 +97,37 @@ async function main() {
       },
     });
 
-    const user = await prisma.user.upsert({
-      where: { email },
-      create: {
-        id: randomUUID(),
-        name,
-        email,
-        emailVerified: true,
-        firstName,
-        lastName,
-        role: Role.ADMIN,
-        isActive: true,
-        departmentId: department.id,
-      },
-      update: {
-        name,
-        emailVerified: true,
-        firstName,
-        lastName,
-        role: Role.ADMIN,
-        isActive: true,
-        departmentId: department.id,
-      },
+    const existingAdmin = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
+      select: { id: true },
     });
+    const user = existingAdmin
+      ? await prisma.user.update({
+          where: { id: existingAdmin.id },
+          data: {
+            name,
+            email,
+            emailVerified: true,
+            firstName,
+            lastName,
+            role: Role.ADMIN,
+            isActive: true,
+            departmentId: department.id,
+          },
+        })
+      : await prisma.user.create({
+          data: {
+            id: randomUUID(),
+            name,
+            email,
+            emailVerified: true,
+            firstName,
+            lastName,
+            role: Role.ADMIN,
+            isActive: true,
+            departmentId: department.id,
+          },
+        });
 
     const systemAdminTemplate = await prisma.roleTemplate.upsert({
       where: { name: "System Administrator" },
@@ -209,7 +196,7 @@ async function main() {
       const n = idx + 1;
       const deptEmail =
         process.env[`SEED_DEPT_ADMIN_${n}_EMAIL`] ??
-        `deptadmin${n}@USTED.edu.gh`;
+        `deptadmin${n}@usted.edu.gh`;
       const first =
         process.env[`SEED_DEPT_ADMIN_${n}_FIRST_NAME`] ?? "Department";
       const last =
@@ -228,29 +215,41 @@ async function main() {
     });
 
     for (const deptAdmin of deptAdmins) {
-      const deptUser = await prisma.user.upsert({
-        where: { email: deptAdmin.email },
-        create: {
-          id: randomUUID(),
-          name: deptAdmin.name,
-          email: deptAdmin.email,
-          emailVerified: true,
-          firstName: deptAdmin.firstName,
-          lastName: deptAdmin.lastName,
-          role: Role.DEPARTMENT_ADMIN,
-          isActive: true,
-          departmentId: null,
-        },
-        update: {
-          name: deptAdmin.name,
-          emailVerified: true,
-          firstName: deptAdmin.firstName,
-          lastName: deptAdmin.lastName,
-          role: Role.DEPARTMENT_ADMIN,
-          isActive: true,
-          departmentId: null,
-        },
+      const existingStaffProfile = await prisma.departmentAdminProfile.findUnique({
+        where: { staffId: deptAdmin.staffId },
+        select: { userId: true },
       });
+      const existingDeptUser = existingStaffProfile
+        ? { id: existingStaffProfile.userId }
+        : await prisma.user.findFirst({
+            where: { email: { equals: deptAdmin.email, mode: "insensitive" } },
+            select: { id: true },
+          });
+      const deptUser = existingDeptUser
+        ? await prisma.user.update({
+            where: { id: existingDeptUser.id },
+            data: {
+              name: deptAdmin.name,
+              emailVerified: true,
+              firstName: deptAdmin.firstName,
+              lastName: deptAdmin.lastName,
+              role: Role.DEPARTMENT_ADMIN,
+              isActive: true,
+            },
+          })
+        : await prisma.user.create({
+            data: {
+              id: randomUUID(),
+              name: deptAdmin.name,
+              email: deptAdmin.email,
+              emailVerified: true,
+              firstName: deptAdmin.firstName,
+              lastName: deptAdmin.lastName,
+              role: Role.DEPARTMENT_ADMIN,
+              isActive: true,
+              departmentId: null,
+            },
+          });
 
       await prisma.departmentAdminProfile.upsert({
         where: { userId: deptUser.id },
@@ -264,6 +263,113 @@ async function main() {
       });
 
       await ensureCredentialAccount(deptUser.id, deptAdminPassword);
+    }
+
+    console.log("Seeding portal-ready students...");
+
+    const academicDepartments = [
+      {
+        code: "FASME",
+        name: "Faculty of Applied Sciences and Mathematics Education",
+        description: "Applied sciences, mathematics and computing programmes",
+      },
+      {
+        code: "FLLT",
+        name: "Faculty of Languages and Literary Studies",
+        description: "Language and literary education programmes",
+      },
+    ] as const;
+
+    const seededDepartments = new Map<string, string>();
+    for (const item of academicDepartments) {
+      const seeded = await prisma.department.upsert({
+        where: { code: item.code },
+        create: item,
+        update: { name: item.name, description: item.description },
+        select: { id: true, code: true },
+      });
+      seededDepartments.set(seeded.code, seeded.id);
+    }
+
+    const programmeFixtures = [
+      { code: "BSc-CSC", name: "Bachelor of Science in Computer Science", departmentCode: "FASME" },
+      { code: "BSc-ITE", name: "Bachelor of Science in Information Technology", departmentCode: "FASME" },
+      { code: "BSc-MED", name: "Bachelor of Science in Mathematics Education", departmentCode: "FASME" },
+      { code: "BSc-Eng", name: "Bachelor of Science in English Education", departmentCode: "FLLT" },
+    ] as const;
+
+    for (const item of programmeFixtures) {
+      const departmentId = seededDepartments.get(item.departmentCode);
+      if (!departmentId) throw new Error(`Missing seeded department ${item.departmentCode}`);
+      await prisma.programme.upsert({
+        where: { departmentId_code: { departmentId, code: item.code } },
+        create: {
+          name: item.name,
+          code: item.code,
+          departmentId,
+          durationYears: 4,
+          totalSemesters: 8,
+          isActive: true,
+        },
+        update: { name: item.name, isActive: true },
+      });
+    }
+
+    let activeSession = await prisma.academicSession.findFirst({
+      where: { isActive: true },
+      orderBy: { startDate: "desc" },
+    });
+    if (!activeSession) {
+      activeSession = await prisma.academicSession.upsert({
+        where: { name: "2026/2027" },
+        create: {
+          name: "2026/2027",
+          isActive: true,
+          currentSemester: SemesterName.FIRST,
+          startDate: new Date("2026-08-01T00:00:00.000Z"),
+          endDate: new Date("2027-07-31T23:59:59.000Z"),
+        },
+        update: { isActive: true, currentSemester: SemesterName.FIRST },
+      });
+    }
+    await prisma.semester.upsert({
+      where: { sessionId_name: { sessionId: activeSession.id, name: SemesterName.FIRST } },
+      create: {
+        sessionId: activeSession.id,
+        name: SemesterName.FIRST,
+        startDate: activeSession.startDate,
+        endDate: activeSession.endDate,
+      },
+      update: {},
+    });
+
+    const studentPassword = process.env.SEED_STUDENT_PASSWORD ?? "Student@123";
+    const studentFixtures = [
+      ["Ama", "Mensah", "BSc-CSC", "FASME"],
+      ["Kwame", "Asante", "BSc-CSC", "FASME"],
+      ["Akosua", "Owusu", "BSc-ITE", "FASME"],
+      ["Kofi", "Boateng", "BSc-ITE", "FASME"],
+      ["Abena", "Osei", "BSc-MED", "FASME"],
+      ["Yaw", "Agyeman", "BSc-MED", "FASME"],
+      ["Efua", "Brew", "BSc-Eng", "FLLT"],
+      ["Kojo", "Arthur", "BSc-Eng", "FLLT"],
+    ] as const;
+
+    for (let index = 0; index < studentFixtures.length; index += 1) {
+      const [studentFirstName, studentLastName, programmeCode, departmentCode] = studentFixtures[index];
+      const ordinal = String(index + 1).padStart(3, "0");
+      await provisionApprovedStudent({
+        row: {
+          email: `student${ordinal}@usted.edu.gh`,
+          password: studentPassword,
+          firstName: studentFirstName,
+          lastName: studentLastName,
+          studentId: `USTED-2026-${ordinal}`,
+          batch: "2026",
+          departmentCode,
+          programmeCode,
+        },
+      });
     }
 
     console.log("Seed complete:");
@@ -282,6 +388,9 @@ async function main() {
     for (const deptAdmin of deptAdmins) {
       console.log(`  - ${deptAdmin.email} (${deptAdmin.staffId})`);
     }
+    console.log(`- Students: ${studentFixtures.length} created/updated`);
+    console.log(`- Student password (shared): ${studentPassword}`);
+    console.log("- Student emails: student001@usted.edu.gh through student008@usted.edu.gh");
   } catch (error) {
     console.error("Seed failed:", error);
     throw error;
