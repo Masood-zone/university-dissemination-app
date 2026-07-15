@@ -13,7 +13,7 @@ import { useSession } from "@/lib/auth-client";
 const navLinks = [
   { label: "Overview", href: "#admissions" },
   { label: "Highlights", href: "#academics" },
-  { label: "Modules", href: "#research" },
+  { label: "Explore USTED", href: "#usted" },
   { label: "Leadership", href: "#leadership" },
   { label: "Resources", href: "#e-resources" },
   { label: "About Us", href: "#about-us" },

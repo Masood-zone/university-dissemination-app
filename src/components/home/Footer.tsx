@@ -42,8 +42,8 @@ export function Footer() {
               <p className="text-sm font-bold">Quick Links</p>
               <ul className="mt-4 space-y-3 text-sm text-white/75">
                 <li>
-                  <Link className="hover:underline" href="#research">
-                    Core Modules
+                  <Link className="hover:underline" href="#usted">
+                    Explore USTED
                   </Link>
                 </li>
                 <li>
