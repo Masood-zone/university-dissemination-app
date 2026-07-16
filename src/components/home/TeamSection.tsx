@@ -52,7 +52,7 @@ export function TeamSection() {
       name: "Theophilus King Asare",
       indexNumber: "5201040297",
       role: "Project Lead and Manager",
-      profile: "/king.jpeg",
+      // profile: "/king.jpeg",
     },
     {
       name: "Asare Edmund Bediako",
@@ -63,7 +63,7 @@ export function TeamSection() {
       name: "Kyei Gyamfi Solomon",
       indexNumber: "5221040042",
       role: "Backend Developer",
-      profile: "/solomon.jpeg",
+      // profile: "/solomon.jpeg",
     },
   ];
 

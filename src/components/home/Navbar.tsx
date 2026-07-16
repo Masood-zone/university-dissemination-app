@@ -12,10 +12,10 @@ import { useSession } from "@/lib/auth-client";
 
 const navLinks = [
   { label: "Overview", href: "#admissions" },
-  { label: "Highlights", href: "#academics" },
+  // { label: "Highlights", href: "#academics" },
   { label: "Explore USTED", href: "#usted" },
   { label: "Leadership", href: "#leadership" },
-  { label: "Resources", href: "#e-resources" },
+  // { label: "Resources", href: "#e-resources" },
   { label: "About Us", href: "#about-us" },
   { label: "Contact", href: "#contact" },
 ] as const;
@@ -57,7 +57,9 @@ export function Navbar() {
                 priority
               />
               <div className="hidden md:block leading-none">
-                <p className="font-display text-lg font-extrabold tracking-tight text-brand-burgundy">USTED</p>
+                <p className="font-display text-lg font-extrabold tracking-tight text-brand-burgundy">
+                  USTED
+                </p>
                 <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                   Information Dissemination System
                 </p>
