@@ -1,0 +1,48 @@
+.marquee {
+  overflow: hidden;
+  padding-block: 0.25rem 1rem;
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: leadership-marquee 42s linear infinite;
+}
+
+.group {
+  display: flex;
+  flex-shrink: 0;
+  gap: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.marquee:hover .track,
+.marquee:focus-within .track {
+  animation-play-state: paused;
+}
+
+@keyframes leadership-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee {
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .track {
+    animation: none;
+  }
+
+  .duplicate {
+    display: none;
+  }
+}
