@@ -82,6 +82,11 @@ At minimum, configure one of the following database variables before running the
 
 Additional features may require environment variables for authentication, email delivery, SMS delivery, and Cloudinary uploads.
 
+Scheduled announcement delivery also requires `ANNOUNCEMENT_CRON_SECRET`.
+Configure a scheduler to send `POST /api/internal/announcements/publish-due`
+with `Authorization: Bearer <ANNOUNCEMENT_CRON_SECRET>`. Announcement reads
+also opportunistically process a small due batch as a fallback.
+
 ### Install Dependencies
 
 ```bash

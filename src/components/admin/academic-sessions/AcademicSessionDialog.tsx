@@ -63,6 +63,8 @@ export function AcademicSessionDialog(props: {
     if (!open) return;
 
     if (mode === "create") {
+      // Opening the reusable dialog intentionally initializes its form state.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessionName("");
       setSessionStart(undefined);
       setSessionEnd(undefined);

@@ -5,6 +5,7 @@ import { ensureCredentialAccount, generateTemporaryPassword } from "@/lib/creden
 import { prisma } from "@/lib/prisma";
 import { ensureStudentEnrollmentsForCurrentSemester } from "@/lib/student-auto-enrollment";
 import { normalizeStudentImportRow } from "@/lib/student-import-validation";
+import { normalizeGhanaPhone } from "@/lib/phone";
 import type { AdminStudentImportRow, ImportedStudentCredential } from "@/types";
 
 export type ProvisionStudentOptions = {
@@ -86,6 +87,7 @@ export async function provisionApprovedStudent(
           firstName: row.firstName,
           lastName: row.lastName,
           phone: row.phone ?? null,
+          phoneNumber: normalizeGhanaPhone(row.phone),
           role: Role.STUDENT,
           isActive: true,
           departmentId: department.id,
@@ -100,6 +102,7 @@ export async function provisionApprovedStudent(
           firstName: row.firstName,
           lastName: row.lastName,
           phone: row.phone ?? null,
+          phoneNumber: normalizeGhanaPhone(row.phone),
           isActive: true,
           departmentId: department.id,
         },

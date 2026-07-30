@@ -4,6 +4,7 @@ import { promisify } from "node:util";
 import { Role } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
+import { normalizeGhanaPhone } from "@/lib/phone";
 import { requireDepartmentAdmin } from "@/lib/server";
 import { provisionApprovedStudent } from "@/lib/student-provisioning";
 import type {
@@ -258,6 +259,7 @@ export async function POST(request: Request) {
                 firstName,
                 lastName,
                 phone: normalizeString(row.phone) || null,
+                phoneNumber: normalizeGhanaPhone(normalizeString(row.phone)),
                 role,
                 isActive: true,
                 departmentId,

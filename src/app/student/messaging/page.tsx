@@ -78,6 +78,8 @@ export default function StudentMessagingPage() {
     const list = (threadsQuery.data?.users ??
       []) as StudentMessagingLecturerThread[];
     const stillExists = list.some((l) => l.userId === activeLecturerId);
+    // Clear a selection removed by an enrollment/thread refetch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!stillExists) setActiveLecturerId(null);
   }, [activeLecturerId, threadsQuery.data]);
 

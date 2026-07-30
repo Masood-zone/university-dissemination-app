@@ -46,7 +46,10 @@ export default function AddProgrammePage() {
   const [minCredits, setMinCredits] = React.useState("120");
   const [durationYears, setDurationYears] = React.useState("4");
 
-  const departments = departmentsQuery.data?.departments ?? [];
+  const departments = React.useMemo(
+    () => departmentsQuery.data?.departments ?? [],
+    [departmentsQuery.data?.departments],
+  );
   const selectedDepartment = React.useMemo(() => {
     return departments.find((d) => d.id === departmentId) ?? null;
   }, [departments, departmentId]);
@@ -54,6 +57,8 @@ export default function AddProgrammePage() {
   React.useEffect(() => {
     if (departmentId) return;
     const first = departments[0];
+    // Initialize the controlled stepper field when remote options arrive.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (first) setDepartmentId(first.id);
   }, [departments, departmentId]);
 

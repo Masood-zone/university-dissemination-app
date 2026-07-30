@@ -99,6 +99,8 @@ export default function StudentAnnouncementsPage() {
   const pageSize = 10;
 
   React.useEffect(() => {
+    // Filter changes intentionally reset server pagination.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPage(1);
   }, [q, scope, category, sort, priority]);
 

@@ -133,6 +133,8 @@ export default function LecturerMessagingPage() {
     const stillExists = users.some(
       (u: LecturerMessagingUserThread) => u.userId === activeStudentId,
     );
+    // Clear a selection removed by a course/filter refetch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!stillExists) setActiveStudentId(null);
   }, [activeStudentId, threadsQuery.data]);
 

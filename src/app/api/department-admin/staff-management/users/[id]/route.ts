@@ -5,6 +5,7 @@ import { Role } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { requireDepartmentAdmin } from "@/lib/server";
+import { normalizeGhanaPhone } from "@/lib/phone";
 import type {
   ApiResponse,
   DepartmentAdminStaffUserDetail,
@@ -314,6 +315,10 @@ export async function PATCH(
               : undefined,
           phone:
             input.phone === undefined ? undefined : input.phone?.trim() || null,
+          phoneNumber:
+            input.phone === undefined
+              ? undefined
+              : normalizeGhanaPhone(input.phone),
           isActive: input.isActive,
         },
       });

@@ -1,4 +1,5 @@
 import { authClient } from "@/lib/auth-client";
+import api from "@/lib/axios";
 
 type AuthErrorLike = {
   message?: string;
@@ -64,6 +65,22 @@ export async function resetPassword(newPassword: string, token: string) {
   });
 
   return { data, error };
+}
+
+export async function requestPhonePasswordReset(phoneNumber: string) {
+  const response = await api.post("/password-recovery/phone/request", {
+    phoneNumber,
+  });
+  return response.data;
+}
+
+export async function resetPasswordByPhone(args: {
+  phoneNumber: string;
+  otp: string;
+  newPassword: string;
+}) {
+  const response = await api.post("/password-recovery/phone/reset", args);
+  return response.data;
 }
 
 export async function userLogout() {

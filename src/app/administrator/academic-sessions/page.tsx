@@ -86,6 +86,8 @@ export default function AcademicSessionsPage() {
 
   React.useEffect(() => {
     if (activeSemesterName === "FIRST" || activeSemesterName === "SECOND") {
+      // The server-selected semester is the source of truth after a refetch.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentSemester(activeSemesterName);
     }
   }, [activeSemesterName]);

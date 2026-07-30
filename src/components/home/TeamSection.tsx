@@ -41,28 +41,28 @@ export function TeamSection() {
     {
       name: "Badu Adwoa Ntiriwaa",
       indexNumber: "5221040008",
-      // role: "UI/UX Designer",
+      role: "UI/UX Designer",
     },
     {
       name: "Appiah Justice Barfo",
       indexNumber: "5221040041",
-      // role: "Quality Assurance and Tester",
+      role: "Quality Assurance and Tester",
     },
     {
       name: "Theophilus King Asare",
       indexNumber: "5201040297",
-      // role: "Project Lead and Manager",
+      role: "Project Lead and Manager",
       // profile: "/king.jpeg",
     },
     {
       name: "Asare Edmund Bediako",
       indexNumber: "5221040017",
-      // role: "Frontend Developer",
+      role: "Frontend Developer",
     },
     {
       name: "Kyei Gyamfi Solomon",
       indexNumber: "5221040042",
-      // role: "Backend Developer",
+      role: "Backend Developer",
       // profile: "/solomon.jpeg",
     },
   ];

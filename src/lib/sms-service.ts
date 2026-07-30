@@ -125,6 +125,17 @@ class SMSService {
     await this.sendSMS({ to: args.to, message });
   }
 
+  async sendPhoneVerificationOTP(args: {
+    to: string;
+    code: string;
+    expiresIn?: string;
+  }): Promise<void> {
+    await this.sendSMS({
+      to: args.to,
+      message: `Your password reset code is ${args.code}. It expires in ${args.expiresIn ?? "5 minutes"}. Do not share this code.`,
+    });
+  }
+
   async sendPasswordResetConfirmationSMS(args: { to: string }): Promise<void> {
     const message =
       "Your password has been reset successfully. If you did not request this, contact support immediately.";

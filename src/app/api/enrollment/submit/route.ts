@@ -7,6 +7,7 @@ import { randomBytes, randomUUID, scrypt } from "node:crypto";
 import { promisify } from "node:util";
 
 import { prisma } from "@/lib/prisma";
+import { normalizeGhanaPhone } from "@/lib/phone";
 import { emailService } from "@/lib/email-service";
 import { smsService } from "@/lib/sms-service";
 import { notificationService } from "@/lib/notification-service";
@@ -216,6 +217,7 @@ export async function POST(request: Request) {
           firstName,
           lastName,
           phone: input.personal.phone.trim(),
+          phoneNumber: normalizeGhanaPhone(input.personal.phone),
           role: Role.STUDENT,
           isActive: true,
           departmentId: department.id,

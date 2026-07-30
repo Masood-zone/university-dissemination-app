@@ -253,7 +253,7 @@ export default function LecturerAnnouncementsPage() {
           </select>
           <Input
             type="datetime-local"
-            value={form.publishedAt ?? ""}
+            value={localDate(form.publishedAt ?? null)}
             disabled={form.mode !== "SCHEDULE"}
             onChange={(event) =>
               setForm((current) => ({
@@ -266,7 +266,7 @@ export default function LecturerAnnouncementsPage() {
           />
           <Input
             type="datetime-local"
-            value={form.expiresAt ?? ""}
+            value={localDate(form.expiresAt ?? null)}
             onChange={(event) =>
               setForm((current) => ({
                 ...current,

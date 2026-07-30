@@ -201,16 +201,6 @@ export async function PATCH(
 
     const { id } = await params;
 
-    const sessionUser = session.user as unknown as {
-      name?: string;
-      firstName?: string;
-      lastName?: string;
-    };
-    const publishedByName =
-      sessionUser.name ||
-      `${sessionUser.firstName || ""} ${sessionUser.lastName || ""}`.trim() ||
-      undefined;
-
     const json = (await request.json()) as unknown;
     const input = upsertSchema.parse(json) satisfies UpsertAnnouncementInput;
 

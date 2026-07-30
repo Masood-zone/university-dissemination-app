@@ -1,9 +1,12 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { phoneNumber } from "better-auth/plugins";
 import { NotificationType } from "@prisma/client";
 import { prisma } from "./prisma";
 import { emailService } from "./email-service";
 import { notificationService } from "./notification-service";
+import { smsService } from "./sms-service";
+import { normalizeGhanaPhone } from "./phone";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -22,6 +25,27 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     resetPasswordTokenExpiresIn: 15 * 60,
+    revokeSessionsOnPasswordReset: true,
+    onPasswordReset: async ({ user }) => {
+      await Promise.allSettled([
+        emailService.sendPasswordResetConfirmationEmail({
+          userEmail: user.email,
+          userName: user.name || undefined,
+        }),
+        prisma.user
+          .findUnique({
+            where: { id: user.id },
+            select: { phoneNumber: true },
+          })
+          .then((found) =>
+            found?.phoneNumber
+              ? smsService.sendPasswordResetConfirmationSMS({
+                  to: found.phoneNumber,
+                })
+              : undefined,
+          ),
+      ]);
+    },
     sendResetPassword: async ({ user, url, token }) => {
       const baseMetadata = {
         channels: {
@@ -81,4 +105,16 @@ export const auth = betterAuth({
       }
     },
   },
+  plugins: [
+    phoneNumber({
+      otpLength: 6,
+      expiresIn: 5 * 60,
+      allowedAttempts: 3,
+      phoneNumberValidator: (value) => normalizeGhanaPhone(value) === value,
+      sendOTP: ({ phoneNumber: to, code }) =>
+        smsService.sendPhoneVerificationOTP({ to, code }),
+      sendPasswordResetOTP: ({ phoneNumber: to, code }) =>
+        smsService.sendPhoneVerificationOTP({ to, code }),
+    }),
+  ],
 });

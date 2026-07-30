@@ -73,6 +73,7 @@ export async function GET(
         viewCount: true,
         publishedAt: true,
         expiresAt: true,
+        audienceAll: true,
         createdAt: true,
         updatedAt: true,
         department: { select: { id: true, name: true } },
@@ -162,18 +163,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const session = await requireAdmin(request);
+    await requireAdmin(request);
     const { id } = await params;
-
-    const sessionUser = session.user as unknown as {
-      name?: string;
-      firstName?: string;
-      lastName?: string;
-    };
-    const publishedByName =
-      sessionUser.name ||
-      `${sessionUser.firstName || ""} ${sessionUser.lastName || ""}`.trim() ||
-      undefined;
 
     const json = (await request.json()) as unknown;
     const input = upsertSchema.parse(json) satisfies UpsertAnnouncementInput;

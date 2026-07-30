@@ -9,17 +9,9 @@ import { Markdown } from "@tiptap/markdown";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { sanitizeMarkdown } from "@/lib/markdown";
 
 const EMOJIS = ["😊", "👍", "🎓", "📌", "📚", "✅", "⚠️", "🎉"];
-
-export function sanitizeMarkdown(value: string): string {
-  return value
-    .replace(/<[^>]*>/g, "")
-    .replace(
-      /\]\(\s*(?:javascript|data|vbscript):[^)]*\)/gi,
-      "](about:blank)",
-    );
-}
 
 export function RichMarkdownEditor({
   value,
@@ -42,8 +34,10 @@ export function RichMarkdownEditor({
   const [showEmoji, setShowEmoji] = React.useState(false);
   const onChangeRef = React.useRef(onChange);
   const onSubmitRef = React.useRef(onSubmit);
-  onChangeRef.current = onChange;
-  onSubmitRef.current = onSubmit;
+  React.useEffect(() => {
+    onChangeRef.current = onChange;
+    onSubmitRef.current = onSubmit;
+  }, [onChange, onSubmit]);
 
   const editor = useEditor({
     immediatelyRender: false,

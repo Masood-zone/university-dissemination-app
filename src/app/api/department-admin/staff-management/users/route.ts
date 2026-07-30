@@ -6,6 +6,7 @@ import { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireDepartmentAdmin } from "@/lib/server";
 import { notifyDepartmentStaffWelcome } from "@/lib/department-staff-notifications";
+import { normalizeGhanaPhone } from "@/lib/phone";
 import type {
   ApiResponse,
   DepartmentAdminCreateStaffUserInput,
@@ -433,6 +434,7 @@ export async function POST(request: Request) {
           firstName,
           lastName,
           phone: input.phone?.trim() || null,
+          phoneNumber: normalizeGhanaPhone(input.phone),
           role,
           isActive: true,
           departmentId,

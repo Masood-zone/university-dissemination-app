@@ -10,7 +10,10 @@ import { toast } from "sonner";
 
 import { resetPasswordSchema } from "@/lib/validation";
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
-import { resetPassword } from "@/services/auth/user-auth";
+import {
+  resetPassword,
+  resetPasswordByPhone,
+} from "@/services/auth/user-auth";
 
 type ResetPasswordInput = {
   token: string;
@@ -24,8 +27,14 @@ export function ResetPasswordForm() {
 
   const tokenFromUrl = search.get("token") || "";
   const errorFromUrl = search.get("error") || "";
+  const channel = search.get("channel") === "phone" ? "phone" : "email";
 
   const [showPassword, setShowPassword] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState(() =>
+    typeof window !== "undefined" && channel === "phone"
+      ? sessionStorage.getItem("password-reset-phone") ?? ""
+      : "",
+  );
 
   const form = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema as never),
@@ -43,6 +52,25 @@ export function ResetPasswordForm() {
   }, [tokenFromUrl, form]);
 
   const onSubmit = async (data: ResetPasswordInput) => {
+    if (channel === "phone") {
+      try {
+        await resetPasswordByPhone({
+          phoneNumber,
+          otp: data.token,
+          newPassword: data.password,
+        });
+        sessionStorage.removeItem("password-reset-phone");
+        toast.success("Password updated. You can now log in.");
+        router.push("/login");
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "The code is invalid or expired.";
+        toast.error(message);
+        form.setError("root", { message });
+      }
+      return;
+    }
+
     const { error } = await resetPassword(data.password, data.token);
 
     if (error) {
@@ -91,9 +119,25 @@ export function ResetPasswordForm() {
             </div>
           )}
 
+          {channel === "phone" ? (
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="phoneNumber">
+                Phone number
+              </label>
+              <input
+                id="phoneNumber"
+                value={phoneNumber}
+                onChange={(event) => setPhoneNumber(event.target.value)}
+                className="block w-full px-3 py-2.5 border border-input rounded-md bg-background text-sm"
+                placeholder="024 000 0000"
+                autoComplete="tel"
+              />
+            </div>
+          ) : null}
+
           <div>
             <label className="block text-sm font-medium mb-1" htmlFor="token">
-              Token
+              {channel === "phone" ? "Six-digit SMS code" : "Token"}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
@@ -102,7 +146,7 @@ export function ResetPasswordForm() {
               <input
                 id="token"
                 className="block w-full pl-10 pr-3 py-2.5 border border-input rounded-md leading-5 bg-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:text-sm transition"
-                placeholder="Token from email"
+                placeholder={channel === "phone" ? "000000" : "Token from email"}
                 {...form.register("token")}
               />
             </div>

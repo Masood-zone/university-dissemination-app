@@ -9,6 +9,7 @@
     "db:seed": "tsx src/scripts/seed.ts",
     "db:seed:verify": "tsx src/scripts/verify-seed.ts",
     "test:student-import": "tsx --test src/lib/student-import-validation.test.ts",
+    "test:communication": "tsx --test src/lib/communication-upgrade.test.ts",
     "lint": "eslint"
   },
   "dependencies": {
