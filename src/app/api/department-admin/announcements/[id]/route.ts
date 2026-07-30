@@ -6,7 +6,8 @@ import {
 } from "@prisma/client";
 import { z } from "zod";
 
-import { notifyAnnouncementPublished } from "@/lib/announcement-notifications";
+import { replaceAnnouncementAudience } from "@/lib/announcement-audience";
+import { broadcastAnnouncement } from "@/lib/announcement-broadcast";
 import { prisma } from "@/lib/prisma";
 import {
   requireDepartmentAdmin,
@@ -272,17 +273,15 @@ export async function PATCH(
       },
       select: { id: true },
     });
+    await prisma.$transaction((tx) =>
+      replaceAnnouncementAudience(tx, id, {
+        audienceAll: false,
+        departmentIds: [dept.departmentId],
+      }),
+    );
 
     if (!wasPublishedNow && willBePublishedNow) {
-      notifyAnnouncementPublished({
-        announcementId: id,
-        title: input.title,
-        category: String(input.category),
-        excerpt,
-        departmentId: dept.departmentId,
-        authorId: before.authorId,
-        publishedByName,
-      }).catch(() => undefined);
+      void broadcastAnnouncement(id);
     }
 
     return NextResponse.json({

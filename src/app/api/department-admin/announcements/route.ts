@@ -6,7 +6,8 @@ import {
 } from "@prisma/client";
 import { z } from "zod";
 
-import { notifyAnnouncementPublished } from "@/lib/announcement-notifications";
+import { replaceAnnouncementAudience } from "@/lib/announcement-audience";
+import { broadcastAnnouncement, processDueAnnouncements } from "@/lib/announcement-broadcast";
 import { prisma } from "@/lib/prisma";
 import {
   requireDepartmentAdmin,
@@ -69,6 +70,7 @@ const upsertSchema = z.object({
 export async function GET(request: Request) {
   try {
     const session = await requireDepartmentAdmin(request);
+    void processDueAnnouncements(5);
     const userId = session.user?.id;
 
     if (!userId) {
@@ -350,17 +352,15 @@ export async function POST(request: Request) {
       },
       select: { id: true },
     });
+    await prisma.$transaction((tx) =>
+      replaceAnnouncementAudience(tx, created.id, {
+        audienceAll: false,
+        departmentIds: [dept.departmentId],
+      }),
+    );
 
     if (shouldNotifyNow) {
-      notifyAnnouncementPublished({
-        announcementId: created.id,
-        title: input.title,
-        category: String(input.category),
-        excerpt,
-        departmentId: dept.departmentId,
-        authorId,
-        publishedByName,
-      }).catch(() => undefined);
+      void broadcastAnnouncement(created.id);
     }
 
     return NextResponse.json({

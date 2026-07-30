@@ -1,238 +1,352 @@
 "use client";
 
-import Link from "next/link";
 import * as React from "react";
+import { toast } from "sonner";
 
-import { MaterialSymbol } from "@/components/common/MaterialSymbol";
+import { RichMarkdownEditor } from "@/components/common/RichMarkdownEditor";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
-import { getApiErrorLabel } from "@/lib/api-client-error";
-import { timeAgo } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import { useLecturerCourses } from "@/services/lecturer/courses/courses";
 import {
+  useArchiveLecturerAnnouncement,
   useCreateLecturerAnnouncement,
   useLecturerAnnouncements,
+  useUpdateLecturerAnnouncement,
 } from "@/services/lecturer/announcements/announcements";
+import type {
+  CreateLecturerAnnouncementInput,
+  LecturerAnnouncementRow,
+} from "@/app/api/lecturer/announcements/route";
+
+const TABS = ["ALL", "DRAFT", "SCHEDULED", "ACTIVE", "EXPIRED", "ARCHIVED"];
+
+function localDate(value: string | null) {
+  if (!value) return "";
+  const date = new Date(value);
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+const EMPTY: CreateLecturerAnnouncementInput = {
+  title: "",
+  content: "",
+  category: "ACADEMIC",
+  mode: "DRAFT",
+  target: "COURSES",
+  courseOfferingIds: [],
+  publishedAt: null,
+  expiresAt: null,
+};
 
 export default function LecturerAnnouncementsPage() {
-  const listQuery = useLecturerAnnouncements();
-  const createMutation = useCreateLecturerAnnouncement();
-  const coursesQuery = useLecturerCourses();
+  const [tab, setTab] = React.useState("ALL");
+  const [q, setQ] = React.useState("");
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [form, setForm] =
+    React.useState<CreateLecturerAnnouncementInput>(EMPTY);
+  const list = useLecturerAnnouncements({
+    q,
+    status: tab === "ALL" ? undefined : tab,
+  });
+  const courses = useLecturerCourses();
+  const create = useCreateLecturerAnnouncement();
+  const update = useUpdateLecturerAnnouncement();
+  const archive = useArchiveLecturerAnnouncement();
 
-  const [title, setTitle] = React.useState("");
-  const [content, setContent] = React.useState("");
-  const [targetOfferingId, setTargetOfferingId] = React.useState<string>("");
-  const [localError, setLocalError] = React.useState<string | null>(null);
-
-  const errorLabel = listQuery.error ? getApiErrorLabel(listQuery.error) : null;
-
-  const rows = listQuery.data?.rows ?? [];
-  const courseOptions = coursesQuery.data?.rows ?? [];
-
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLocalError(null);
-
-    if (!title.trim()) {
-      setLocalError("Title is required");
+  const save = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!form.title.trim() || !form.content.trim()) {
+      toast.error("Title and content are required");
       return;
     }
-
-    if (!content.trim()) {
-      setLocalError("Content is required");
+    if (
+      form.target === "COURSES" &&
+      !(form.courseOfferingIds?.length ?? 0)
+    ) {
+      toast.error("Select at least one assigned course");
       return;
     }
-
+    if (form.mode === "SCHEDULE" && !form.publishedAt) {
+      toast.error("Choose a publication date and time");
+      return;
+    }
     try {
-      await createMutation.mutateAsync({
-        title: title.trim(),
-        content: content.trim(),
-        courseOfferingId: targetOfferingId ? targetOfferingId : null,
-      });
-      setTitle("");
-      setContent("");
-      setTargetOfferingId("");
+      if (editingId) {
+        await update.mutateAsync({ id: editingId, input: form });
+        toast.success("Announcement updated");
+      } else {
+        await create.mutateAsync(form);
+        toast.success(
+          form.mode === "DRAFT"
+            ? "Draft saved"
+            : form.mode === "SCHEDULE"
+              ? "Announcement scheduled"
+              : "Announcement published",
+        );
+      }
+      setEditingId(null);
+      setForm(EMPTY);
     } catch (error) {
-      const label = getApiErrorLabel(error);
-      setLocalError(
-        label.code ? `${label.message} (${label.code})` : label.message,
-      );
+      toast.error(error instanceof Error ? error.message : "Unable to save");
     }
   };
 
+  const edit = (row: LecturerAnnouncementRow) => {
+    setEditingId(row.id);
+    setForm({
+      title: row.title,
+      content: row.content,
+      category: row.category,
+      target: row.courseOfferingIds.length ? "COURSES" : "DEPARTMENT",
+      courseOfferingIds: row.courseOfferingIds,
+      mode:
+        row.status === "DRAFT"
+          ? "DRAFT"
+          : row.publishedAt && new Date(row.publishedAt) > new Date()
+            ? "SCHEDULE"
+            : "PUBLISH_NOW",
+      publishedAt: localDate(row.publishedAt),
+      expiresAt: localDate(row.expiresAt),
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const toggleCourse = (id: string) =>
+    setForm((current) => {
+      const selected = current.courseOfferingIds ?? [];
+      return {
+        ...current,
+        courseOfferingIds: selected.includes(id)
+          ? selected.filter((value) => value !== id)
+          : [...selected, id],
+      };
+    });
+
   return (
     <div className="space-y-6">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Lecturer Portal
-          </p>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">
-            Announcements
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Inform students about class updates, rescheduling, and more.
-          </p>
-        </div>
-
-        <Button asChild variant="ghost">
-          <Link href="/lecturer">Back to overview</Link>
-        </Button>
+      <header>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Lecturer Portal
+        </p>
+        <h1 className="font-display text-2xl font-semibold">
+          Announcement management
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Draft, schedule and measure updates for your department and assigned courses.
+        </p>
       </header>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold">Post an announcement</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Publish an update to a specific course or all your courses.
-            </p>
-          </div>
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-muted/40">
-            <MaterialSymbol
-              icon="campaign"
-              className="text-[20px] text-muted-foreground"
-            />
-          </div>
+      <form onSubmit={save} className="space-y-4 rounded-2xl border bg-card p-5">
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold">
+            {editingId ? "Edit announcement" : "New announcement"}
+          </h2>
+          {editingId ? (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                setEditingId(null);
+                setForm(EMPTY);
+              }}
+            >
+              Cancel edit
+            </Button>
+          ) : null}
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          <Input
+            value={form.title}
+            onChange={(event) =>
+              setForm((current) => ({ ...current, title: event.target.value }))
+            }
+            placeholder="Announcement title"
+            className="md:col-span-2"
+          />
+          <select
+            value={form.category}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                category: event.target
+                  .value as CreateLecturerAnnouncementInput["category"],
+              }))
+            }
+            className="h-9 rounded-md border bg-background px-3 text-sm"
+          >
+            {["ACADEMIC", "DEPARTMENTAL", "EVENT", "MAINTENANCE", "OTHER"].map(
+              (category) => (
+                <option key={category} value={category}>
+                  {category.replaceAll("_", " ")}
+                </option>
+              ),
+            )}
+          </select>
         </div>
 
-        <form onSubmit={submit} className="mt-5 space-y-4">
-          {localError ? (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-              {localError}
+        <div className="rounded-xl border p-3">
+          <div className="flex gap-4 text-sm">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={form.target === "COURSES"}
+                onChange={() =>
+                  setForm((current) => ({ ...current, target: "COURSES" }))
+                }
+              />
+              Assigned courses
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                checked={form.target === "DEPARTMENT"}
+                onChange={() =>
+                  setForm((current) => ({ ...current, target: "DEPARTMENT" }))
+                }
+              />
+              All department students
+            </label>
+          </div>
+          {form.target === "COURSES" ? (
+            <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+              {(courses.data?.rows ?? []).map((course) => (
+                <label
+                  key={course.offeringId}
+                  className="flex items-center gap-2 rounded-lg border p-2 text-sm"
+                >
+                  <input
+                    type="checkbox"
+                    checked={(form.courseOfferingIds ?? []).includes(
+                      course.offeringId,
+                    )}
+                    onChange={() => toggleCourse(course.offeringId)}
+                  />
+                  {course.courseCode} — {course.courseTitle}
+                </label>
+              ))}
             </div>
           ) : null}
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div className="md:col-span-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Title
-              </label>
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="mt-2 h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
-                placeholder="e.g., Class rescheduled"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Target course
-              </label>
-              <div className="mt-2">
-                {coursesQuery.isPending ? (
-                  <Skeleton className="h-10 w-full rounded-xl" />
-                ) : (
-                  <Select
-                    value={targetOfferingId ? targetOfferingId : "__all"}
-                    onValueChange={(value) =>
-                      setTargetOfferingId(value === "__all" ? "" : value)
-                    }
-                  >
-                    <SelectTrigger
-                      className="w-full"
-                      aria-label="Target course"
-                    >
-                      <SelectValue placeholder="All my courses" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__all">All my courses</SelectItem>
-                      {courseOptions.map((c) => (
-                        <SelectItem key={c.offeringId} value={c.offeringId}>
-                          {c.courseCode} — {c.courseTitle}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Content
-            </label>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write the announcement..."
-              className="mt-2 min-h-32"
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-2">
-            <Button type="submit" disabled={createMutation.isPending}>
-              {createMutation.isPending ? "Publishing..." : "Publish"}
-            </Button>
-          </div>
-        </form>
-      </div>
-
-      {errorLabel ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-4">
-          <p className="text-sm font-semibold">Failed to load announcements</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {errorLabel.code
-              ? `${errorLabel.message} (${errorLabel.code})`
-              : errorLabel.message}
-          </p>
         </div>
-      ) : null}
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <p className="text-sm font-semibold">Announcement feed</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Announcements relevant to your assigned courses.
-        </p>
+        <RichMarkdownEditor
+          value={form.content}
+          onChange={(content) =>
+            setForm((current) => ({ ...current, content }))
+          }
+          placeholder="Explain the update clearly…"
+        />
 
-        <div className="mt-5">
-          {listQuery.isPending ? (
-            <div className="space-y-3">
-              <Skeleton className="h-16 w-full rounded-xl" />
-              <Skeleton className="h-16 w-full rounded-xl" />
-              <Skeleton className="h-16 w-full rounded-xl" />
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-              No announcements found.
-            </div>
-          ) : (
-            <ul className="space-y-3">
-              {rows.map((a) => (
-                <li
-                  key={a.id}
-                  className="rounded-xl border border-border bg-background p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate">
-                        {a.title}
-                      </p>
-                      <p className="mt-1 text-xs text-muted-foreground truncate">
-                        {a.courseCode ? `${a.courseCode} • ` : ""}
-                        {a.excerpt || "Announcement"}
-                      </p>
-                    </div>
-                    <p className="text-[11px] text-muted-foreground whitespace-nowrap">
-                      {timeAgo(a.publishedAt ?? a.createdAt)}
-                    </p>
+        <div className="grid gap-3 md:grid-cols-3">
+          <select
+            value={form.mode}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                mode: event.target.value as CreateLecturerAnnouncementInput["mode"],
+              }))
+            }
+            className="h-9 rounded-md border bg-background px-3 text-sm"
+          >
+            <option value="DRAFT">Save draft</option>
+            <option value="PUBLISH_NOW">Publish now</option>
+            <option value="SCHEDULE">Schedule</option>
+          </select>
+          <Input
+            type="datetime-local"
+            value={form.publishedAt ?? ""}
+            disabled={form.mode !== "SCHEDULE"}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                publishedAt: event.target.value
+                  ? new Date(event.target.value).toISOString()
+                  : null,
+              }))
+            }
+          />
+          <Input
+            type="datetime-local"
+            value={form.expiresAt ?? ""}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                expiresAt: event.target.value
+                  ? new Date(event.target.value).toISOString()
+                  : null,
+              }))
+            }
+          />
+        </div>
+        <div className="flex justify-end">
+          <Button type="submit" disabled={create.isPending || update.isPending}>
+            {create.isPending || update.isPending ? "Saving…" : "Save announcement"}
+          </Button>
+        </div>
+      </form>
+
+      <section className="rounded-2xl border bg-card">
+        <div className="space-y-3 border-b p-4">
+          <div className="flex flex-wrap gap-2">
+            {TABS.map((item) => (
+              <Button
+                key={item}
+                size="sm"
+                variant={tab === item ? "default" : "outline"}
+                onClick={() => setTab(item)}
+              >
+                {item}
+              </Button>
+            ))}
+          </div>
+          <Input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Search announcements" />
+        </div>
+        <div className="divide-y">
+          {list.isPending ? (
+            <p className="p-8 text-center text-sm text-muted-foreground">Loading…</p>
+          ) : list.data?.rows.length ? (
+            list.data.rows.map((row) => (
+              <article key={row.id} className="grid gap-3 p-4 lg:grid-cols-[1fr_auto]">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-semibold">{row.title}</h3>
+                    <span className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                      {row.status}
+                    </span>
                   </div>
-                </li>
-              ))}
-            </ul>
+                  <p className="mt-1 text-sm text-muted-foreground">{row.excerpt}</p>
+                  <div className="mt-3 flex flex-wrap gap-4 text-xs text-muted-foreground">
+                    <span>{row.recipientCount} recipients</span>
+                    <span>{row.uniqueViewers} unique viewers</span>
+                    <span>{row.totalViews} total opens</span>
+                    <span>{row.reachRate ?? 0}% reach</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => edit(row)}>
+                    Edit
+                  </Button>
+                  {row.status !== "ARCHIVED" ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        await archive.mutateAsync(row.id);
+                        toast.success("Announcement archived");
+                      }}
+                    >
+                      Archive
+                    </Button>
+                  ) : null}
+                </div>
+              </article>
+            ))
+          ) : (
+            <p className="p-8 text-center text-sm text-muted-foreground">
+              No announcements found.
+            </p>
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MaterialSymbol } from "@/components/common/MaterialSymbol";
 import { cn } from "@/lib/utils";
 import ImageUpload from "@/components/image-upload";
-import { useGetEnrollmentDepartments } from "@/services/enrollment/enrollment";
+import { useAnnouncementAudienceOptions } from "@/services/admin/announcements/announcements";
 import type { UpsertAnnouncementInput } from "@/types";
 
 import { AnnouncementMarkdownEditor } from "./AnnouncementMarkdown";
@@ -52,6 +52,10 @@ export type AnnouncementUpsertDraft = {
   priority: number;
   pinned: boolean;
   departmentId: string;
+  audienceAll: boolean;
+  audienceRoles: Array<"ADMIN" | "DEPARTMENT_ADMIN" | "LECTURER" | "STUDENT">;
+  audienceDepartmentIds: string[];
+  audienceCourseOfferingIds: string[];
   imageUrl: string;
   mode: UpsertAnnouncementInput["mode"];
   publishedAt: string;
@@ -66,6 +70,10 @@ const DEFAULT_DRAFT: AnnouncementUpsertDraft = {
   priority: 0,
   pinned: false,
   departmentId: "",
+  audienceAll: true,
+  audienceRoles: [],
+  audienceDepartmentIds: [],
+  audienceCourseOfferingIds: [],
   imageUrl: "",
   mode: "DRAFT",
   publishedAt: "",
@@ -83,7 +91,7 @@ export function AnnouncementUpsertForm({
   busy?: boolean;
   onSubmit: (payload: UpsertAnnouncementInput) => Promise<void> | void;
 }) {
-  const departmentsQuery = useGetEnrollmentDepartments();
+  const audienceQuery = useAnnouncementAudienceOptions();
 
   const mergedInitial = useMemo(
     () => ({ ...DEFAULT_DRAFT, ...initial }),
@@ -127,6 +135,10 @@ export function AnnouncementUpsertForm({
       priority: Number.isFinite(draft.priority) ? draft.priority : 0,
       pinned: draft.pinned,
       departmentId: draft.departmentId ? draft.departmentId : null,
+      audienceAll: draft.audienceAll,
+      audienceRoles: draft.audienceRoles,
+      audienceDepartmentIds: draft.audienceDepartmentIds,
+      audienceCourseOfferingIds: draft.audienceCourseOfferingIds,
       imageUrl: draft.imageUrl ? draft.imageUrl : null,
       mode: draft.mode,
       publishedAt: draft.publishedAt
@@ -196,26 +208,6 @@ export function AnnouncementUpsertForm({
         </div>
 
         <div className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Department (optional)
-            </label>
-            <select
-              value={draft.departmentId}
-              onChange={(e) =>
-                setDraft((p) => ({ ...p, departmentId: e.target.value }))
-              }
-              className="mt-2 h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
-            >
-              <option value="">All / Global</option>
-              {(departmentsQuery.data ?? []).map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2">
             <div>
               <p className="text-sm font-semibold">Pinned</p>
@@ -255,6 +247,116 @@ export function AnnouncementUpsertForm({
             />
           </div>
         </div>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold">Broadcast audience</p>
+            <p className="text-xs text-muted-foreground">
+              Selections are combined within a group and intersected across groups.
+            </p>
+          </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={draft.audienceAll}
+              onChange={(event) =>
+                setDraft((current) => ({
+                  ...current,
+                  audienceAll: event.target.checked,
+                }))
+              }
+            />
+            Everyone
+          </label>
+        </div>
+        {!draft.audienceAll ? (
+          <div className="mt-4 grid gap-4 lg:grid-cols-3">
+            <fieldset>
+              <legend className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Roles
+              </legend>
+              <div className="mt-2 grid gap-2">
+                {(["ADMIN", "DEPARTMENT_ADMIN", "LECTURER", "STUDENT"] as const).map(
+                  (role) => (
+                    <label key={role} className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={draft.audienceRoles.includes(role)}
+                        onChange={(event) =>
+                          setDraft((current) => ({
+                            ...current,
+                            audienceRoles: event.target.checked
+                              ? [...current.audienceRoles, role]
+                              : current.audienceRoles.filter((item) => item !== role),
+                          }))
+                        }
+                      />
+                      {role === "ADMIN"
+                        ? "Super Admin"
+                        : role.replaceAll("_", " ")}
+                    </label>
+                  ),
+                )}
+              </div>
+            </fieldset>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Departments
+              <select
+                multiple
+                value={draft.audienceDepartmentIds}
+                onChange={(event) => {
+                  const values = Array.from(
+                    event.target.selectedOptions,
+                    (option) => option.value,
+                  );
+                  setDraft((current) => ({
+                    ...current,
+                    audienceDepartmentIds: values,
+                    departmentId: values[0] ?? "",
+                  }));
+                }}
+                className="mt-2 min-h-32 w-full rounded-xl border bg-background p-2 text-sm normal-case"
+              >
+                {audienceQuery.data?.departments.map((department) => (
+                  <option key={department.id} value={department.id}>
+                    {department.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Course offerings
+              <select
+                multiple
+                value={draft.audienceCourseOfferingIds}
+                onChange={(event) =>
+                  setDraft((current) => ({
+                    ...current,
+                    audienceCourseOfferingIds: Array.from(
+                      event.target.selectedOptions,
+                      (option) => option.value,
+                    ),
+                  }))
+                }
+                className="mt-2 min-h-32 w-full rounded-xl border bg-background p-2 text-sm normal-case"
+              >
+                {audienceQuery.data?.offerings
+                  .filter(
+                    (offering) =>
+                      !draft.audienceDepartmentIds.length ||
+                      draft.audienceDepartmentIds.includes(offering.departmentId),
+                  )
+                  .map((offering) => (
+                    <option key={offering.id} value={offering.id}>
+                      {offering.label}
+                    </option>
+                  ))}
+              </select>
+            </label>
+          </div>
+        ) : null}
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-4">
@@ -376,6 +478,10 @@ export function adminDetailToFormInitial(detail: {
   publishedAt: string | null;
   expiresAt: string | null;
   status: string;
+  audienceAll?: boolean;
+  audienceRoles?: AnnouncementUpsertDraft["audienceRoles"];
+  audienceDepartmentIds?: string[];
+  audienceCourseOfferingIds?: string[];
 }): Partial<AnnouncementUpsertDraft> {
   const inferredMode: UpsertAnnouncementInput["mode"] =
     detail.status === "DRAFT"
@@ -394,6 +500,12 @@ export function adminDetailToFormInitial(detail: {
     priority: detail.priority,
     pinned: detail.pinned,
     departmentId: detail.department?.id ?? "",
+    audienceAll: detail.audienceAll ?? !detail.department,
+    audienceRoles: detail.audienceRoles ?? [],
+    audienceDepartmentIds:
+      detail.audienceDepartmentIds ??
+      (detail.department?.id ? [detail.department.id] : []),
+    audienceCourseOfferingIds: detail.audienceCourseOfferingIds ?? [],
     imageUrl: detail.imageUrl ?? "",
     mode: inferredMode,
     publishedAt: isoToDatetimeLocal(detail.publishedAt),

@@ -37,11 +37,13 @@ export async function notifyAnnouncementPublished(args: {
   departmentId?: string | null;
   authorId: string;
   publishedByName?: string;
+  recipientIds?: string[];
 }): Promise<void> {
   const recipients = await prisma.user.findMany({
     where: {
       isActive: true,
       id: { not: args.authorId },
+      ...(args.recipientIds ? { id: { in: args.recipientIds } } : {}),
       ...(args.departmentId
         ? {
             OR: [
@@ -111,6 +113,22 @@ export async function notifyAnnouncementPublished(args: {
       announcementId: args.announcementId,
       metadata,
     });
+    await prisma.announcementRecipient.upsert({
+      where: {
+        announcementId_userId: {
+          announcementId: args.announcementId,
+          userId: recipient.id,
+        },
+      },
+      create: {
+        announcementId: args.announcementId,
+        userId: recipient.id,
+        inAppNotifiedAt: new Date(),
+        emailStatus: metadata.channels.email?.status ?? null,
+        smsStatus: metadata.channels.sms?.status ?? null,
+      },
+      update: { inAppNotifiedAt: new Date() },
+    });
 
     if (metadata.channels.email) {
       try {
@@ -143,6 +161,18 @@ export async function notifyAnnouncementPublished(args: {
     }
 
     await notificationService.setMetadata(created.id, metadata);
+    await prisma.announcementRecipient.update({
+      where: {
+        announcementId_userId: {
+          announcementId: args.announcementId,
+          userId: recipient.id,
+        },
+      },
+      data: {
+        emailStatus: metadata.channels.email?.status ?? null,
+        smsStatus: metadata.channels.sms?.status ?? null,
+      },
+    });
   }
 
   // Best-effort, limited concurrency (avoid hammering SMTP/SMS providers)

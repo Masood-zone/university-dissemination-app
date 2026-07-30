@@ -1,12 +1,11 @@
+import { AnnouncementAnalyticsDashboard } from "@/components/analytics/AnnouncementAnalyticsDashboard";
+
 export default function DepartmentAdminAnalyticsPage() {
   return (
-    <section className="space-y-2">
-      <h1 className="font-display text-2xl font-semibold tracking-tight">
-        Analytics
-      </h1>
-      <p className="text-sm text-muted-foreground">
-        Coming soon — department reports and analytics.
-      </p>
-    </section>
+    <AnnouncementAnalyticsDashboard
+      endpoint="/department-admin/analytics"
+      title="Department announcement analytics"
+      description="Understand how frequently your department communicates and how students respond."
+    />
   );
 }

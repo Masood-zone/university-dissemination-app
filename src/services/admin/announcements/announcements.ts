@@ -22,7 +22,31 @@ const announcementKeys = {
   list: (params: AdminAnnouncementsListParams) =>
     ["admin", "announcements", "list", params] as const,
   detail: (id: string) => ["admin", "announcements", "detail", id] as const,
+  audience: ["admin", "announcements", "audience-options"] as const,
 };
+
+export function useAnnouncementAudienceOptions() {
+  return useQuery({
+    queryKey: announcementKeys.audience,
+    queryFn: async () => {
+      const response = await api.get<
+        ApiResponse<{
+          departments: Array<{ id: string; name: string; code: string }>;
+          offerings: Array<{
+            id: string;
+            departmentId: string;
+            label: string;
+          }>;
+        }>
+      >("/administrator/announcements/audience-options");
+      if (!response.data.success || !response.data.data) {
+        throw new Error(response.data.message || "Failed to load audiences");
+      }
+      return response.data.data;
+    },
+    staleTime: 60_000,
+  });
+}
 
 async function getAnnouncements(
   params: AdminAnnouncementsListParams,

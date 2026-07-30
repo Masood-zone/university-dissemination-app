@@ -3,10 +3,12 @@ import {
   AnnouncementCategory,
   AnnouncementStatus,
   Prisma,
+  Role,
 } from "@prisma/client";
 import { z } from "zod";
 
-import { notifyAnnouncementPublished } from "@/lib/announcement-notifications";
+import { replaceAnnouncementAudience } from "@/lib/announcement-audience";
+import { broadcastAnnouncement } from "@/lib/announcement-broadcast";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/server";
 import type {
@@ -42,6 +44,10 @@ const upsertSchema = z.object({
   mode: z.enum(["DRAFT", "PUBLISH_NOW", "SCHEDULE"]),
   publishedAt: z.string().nullable().optional(),
   expiresAt: z.string().nullable().optional(),
+  audienceAll: z.boolean().optional(),
+  audienceRoles: z.array(z.nativeEnum(Role)).optional(),
+  audienceDepartmentIds: z.array(z.string()).optional(),
+  audienceCourseOfferingIds: z.array(z.string()).optional(),
 });
 
 export async function GET(
@@ -73,6 +79,9 @@ export async function GET(
         author: {
           select: { id: true, firstName: true, lastName: true, avatar: true },
         },
+        audienceRoles: { select: { role: true } },
+        audienceDepartments: { select: { departmentId: true } },
+        audienceCourseOfferings: { select: { courseOfferingId: true } },
       },
     });
 
@@ -111,6 +120,14 @@ export async function GET(
         lastName: found.author.lastName,
         avatar: found.author.avatar ?? null,
       },
+      audienceAll: found.audienceAll,
+      audienceRoles: found.audienceRoles.map((row) => row.role),
+      audienceDepartmentIds: found.audienceDepartments.map(
+        (row) => row.departmentId,
+      ),
+      audienceCourseOfferingIds: found.audienceCourseOfferings.map(
+        (row) => row.courseOfferingId,
+      ),
     };
 
     return NextResponse.json({
@@ -203,34 +220,39 @@ export async function PATCH(
       status === AnnouncementStatus.PUBLISHED &&
       (!publishedAt || publishedAt.getTime() <= now.getTime());
 
-    await prisma.announcement.update({
-      where: { id },
-      data: {
-        title: input.title,
-        content: input.content,
-        excerpt,
-        category: input.category,
-        status,
-        departmentId: input.departmentId ?? null,
-        imageUrl: input.imageUrl ?? null,
-        pinned: Boolean(input.pinned),
-        priority: input.priority,
-        publishedAt,
-        expiresAt,
-      },
-      select: { id: true },
+    await prisma.$transaction(async (tx) => {
+      await tx.announcement.update({
+        where: { id },
+        data: {
+          title: input.title,
+          content: input.content,
+          excerpt,
+          category: input.category,
+          status,
+          departmentId: input.departmentId ?? null,
+          imageUrl: input.imageUrl ?? null,
+          pinned: Boolean(input.pinned),
+          priority: input.priority,
+          publishedAt,
+          expiresAt,
+          ...(willBePublishedNow && !wasPublishedNow
+            ? { broadcastClaimedAt: null, broadcastedAt: null }
+            : {}),
+        },
+        select: { id: true },
+      });
+      await replaceAnnouncementAudience(tx, id, {
+        audienceAll: input.audienceAll,
+        roles: input.audienceRoles,
+        departmentIds:
+          input.audienceDepartmentIds ??
+          (input.departmentId ? [input.departmentId] : []),
+        courseOfferingIds: input.audienceCourseOfferingIds,
+      });
     });
 
     if (!wasPublishedNow && willBePublishedNow) {
-      notifyAnnouncementPublished({
-        announcementId: id,
-        title: input.title,
-        category: String(input.category),
-        excerpt,
-        departmentId: input.departmentId ?? null,
-        authorId: before.authorId,
-        publishedByName,
-      }).catch(() => undefined);
+      void broadcastAnnouncement(id);
     }
 
     return NextResponse.json({

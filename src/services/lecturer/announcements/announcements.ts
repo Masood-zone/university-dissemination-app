@@ -11,12 +11,18 @@ import type {
 
 const announcementKeys = {
   all: ["lecturer", "announcements"] as const,
+  list: (params: { q?: string; status?: string }) =>
+    ["lecturer", "announcements", params] as const,
 };
 
-async function getLecturerAnnouncements(): Promise<LecturerAnnouncementsResponse> {
+async function getLecturerAnnouncements(params: {
+  q?: string;
+  status?: string;
+}): Promise<LecturerAnnouncementsResponse> {
   try {
     const res = await api.get<ApiResponse<LecturerAnnouncementsResponse>>(
       "/lecturer/announcements",
+      { params },
     );
 
     if (!res.data.success || !res.data.data) {
@@ -48,11 +54,54 @@ async function createLecturerAnnouncement(
   }
 }
 
-export function useLecturerAnnouncements() {
+export function useLecturerAnnouncements(params: {
+  q?: string;
+  status?: string;
+} = {}) {
   return useQuery({
-    queryKey: announcementKeys.all,
-    queryFn: getLecturerAnnouncements,
+    queryKey: announcementKeys.list(params),
+    queryFn: () => getLecturerAnnouncements(params),
     staleTime: 15 * 1000,
+  });
+}
+
+export function useUpdateLecturerAnnouncement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: CreateLecturerAnnouncementInput;
+    }) => {
+      const response = await api.patch<ApiResponse<{ id: string }>>(
+        `/lecturer/announcements/${id}`,
+        input,
+      );
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to update announcement");
+      }
+      return response.data.data;
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: announcementKeys.all }),
+  });
+}
+
+export function useArchiveLecturerAnnouncement() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const response = await api.delete<ApiResponse<{ id: string }>>(
+        `/lecturer/announcements/${id}`,
+      );
+      if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to archive announcement");
+      }
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: announcementKeys.all }),
   });
 }
 

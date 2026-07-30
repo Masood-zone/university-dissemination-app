@@ -944,6 +944,10 @@ export type AdminAnnouncementDetail = {
   pinned: boolean;
   imageUrl: string | null;
   department: { id: string; name: string } | null;
+  audienceAll?: boolean;
+  audienceRoles?: Role[];
+  audienceDepartmentIds?: string[];
+  audienceCourseOfferingIds?: string[];
   viewCount: number;
   publishedAt: string | null;
   expiresAt: string | null;
@@ -966,6 +970,10 @@ export type UpsertAnnouncementInput = {
   priority: number;
   pinned?: boolean;
   departmentId?: string | null;
+  audienceAll?: boolean;
+  audienceRoles?: Role[];
+  audienceDepartmentIds?: string[];
+  audienceCourseOfferingIds?: string[];
   imageUrl?: string | null;
   mode: "DRAFT" | "PUBLISH_NOW" | "SCHEDULE";
   publishedAt?: string | null;

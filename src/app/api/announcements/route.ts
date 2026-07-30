@@ -75,6 +75,7 @@ function labelForCategory(value: string): string {
 export async function GET(request: Request) {
   try {
     const session = await requireStudent(request);
+    const userId = session.user.id;
     const departmentId =
       (session.user as unknown as { departmentId?: string | null })
         .departmentId ?? null;
@@ -122,6 +123,7 @@ export async function GET(request: Request) {
         { OR: [{ publishedAt: null }, { publishedAt: { lte: now } }] },
         { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
         scopeWhere,
+        { recipients: { some: { userId } } },
       ],
     };
 

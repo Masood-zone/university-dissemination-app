@@ -188,11 +188,13 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!content) {
+    if (!content || content.length > 5000 || /<[^>]*>/.test(content)) {
       return NextResponse.json(
         {
           success: false,
-          message: "Message content is required",
+          message: !content
+            ? "Message content is required"
+            : "Messages must be safe Markdown under 5,000 characters",
           code: "VALIDATION_ERROR",
         } satisfies ApiResponse<never>,
         { status: 400 },

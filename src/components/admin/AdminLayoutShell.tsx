@@ -18,6 +18,11 @@ const mainAdminNavItems: NavItem[] = [
     icon: "groups",
   },
   {
+    label: "Users",
+    href: "/administrator/users",
+    icon: "manage_accounts",
+  },
+  {
     label: "Student Applications",
     href: "/administrator/student-applications",
     icon: "school",
@@ -36,6 +41,11 @@ const mainAdminNavItems: NavItem[] = [
     label: "Announcements",
     href: "/administrator/announcements",
     icon: "forum",
+  },
+  {
+    label: "Analytics",
+    href: "/administrator/analytics",
+    icon: "analytics",
   },
 ];
 

@@ -3,10 +3,12 @@ import {
   AnnouncementCategory,
   AnnouncementStatus,
   Prisma,
+  Role,
 } from "@prisma/client";
 import { z } from "zod";
 
-import { notifyAnnouncementPublished } from "@/lib/announcement-notifications";
+import { replaceAnnouncementAudience } from "@/lib/announcement-audience";
+import { broadcastAnnouncement, processDueAnnouncements } from "@/lib/announcement-broadcast";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/server";
 import type {
@@ -62,11 +64,16 @@ const upsertSchema = z.object({
   mode: z.enum(["DRAFT", "PUBLISH_NOW", "SCHEDULE"]),
   publishedAt: z.string().nullable().optional(),
   expiresAt: z.string().nullable().optional(),
+  audienceAll: z.boolean().optional(),
+  audienceRoles: z.array(z.nativeEnum(Role)).optional(),
+  audienceDepartmentIds: z.array(z.string()).optional(),
+  audienceCourseOfferingIds: z.array(z.string()).optional(),
 });
 
 export async function GET(request: Request) {
   try {
     await requireAdmin(request);
+    void processDueAnnouncements(5);
 
     const url = new URL(request.url);
     const q = url.searchParams.get("q")?.trim() || "";
@@ -292,34 +299,37 @@ export async function POST(request: Request) {
       status === AnnouncementStatus.PUBLISHED &&
       (!publishedAt || publishedAt.getTime() <= now.getTime());
 
-    const created = await prisma.announcement.create({
-      data: {
-        title: input.title,
-        content: input.content,
-        excerpt,
-        category: input.category,
-        status,
-        authorId,
-        departmentId: input.departmentId ?? null,
-        imageUrl: input.imageUrl ?? null,
-        pinned: Boolean(input.pinned),
-        priority: input.priority,
-        publishedAt,
-        expiresAt,
-      },
-      select: { id: true },
+    const created = await prisma.$transaction(async (tx) => {
+      const row = await tx.announcement.create({
+        data: {
+          title: input.title,
+          content: input.content,
+          excerpt,
+          category: input.category,
+          status,
+          authorId,
+          departmentId: input.departmentId ?? null,
+          imageUrl: input.imageUrl ?? null,
+          pinned: Boolean(input.pinned),
+          priority: input.priority,
+          publishedAt,
+          expiresAt,
+        },
+        select: { id: true },
+      });
+      await replaceAnnouncementAudience(tx, row.id, {
+        audienceAll: input.audienceAll,
+        roles: input.audienceRoles,
+        departmentIds:
+          input.audienceDepartmentIds ??
+          (input.departmentId ? [input.departmentId] : []),
+        courseOfferingIds: input.audienceCourseOfferingIds,
+      });
+      return row;
     });
 
     if (shouldNotifyNow) {
-      notifyAnnouncementPublished({
-        announcementId: created.id,
-        title: input.title,
-        category: String(input.category),
-        excerpt,
-        departmentId: input.departmentId ?? null,
-        authorId,
-        publishedByName,
-      }).catch(() => undefined);
+      void broadcastAnnouncement(created.id);
     }
 
     return NextResponse.json(

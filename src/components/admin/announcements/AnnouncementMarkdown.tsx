@@ -1,13 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { RichMarkdownEditor } from "@/components/common/RichMarkdownEditor";
 
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
-
-const MDEditor = dynamic(() => import("@uiw/react-md-editor"), {
-  ssr: false,
-});
 
 const MarkdownPreview = dynamic(() => import("@uiw/react-markdown-preview"), {
   ssr: false,
@@ -23,13 +20,8 @@ export function AnnouncementMarkdownEditor({
   height?: number;
 }) {
   return (
-    <div data-color-mode="light">
-      <MDEditor
-        value={value}
-        onChange={(next) => onChange(next ?? "")}
-        height={height}
-        preview="edit"
-      />
+    <div style={{ minHeight: height }}>
+      <RichMarkdownEditor value={value} onChange={onChange} />
     </div>
   );
 }

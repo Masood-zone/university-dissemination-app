@@ -1,10 +1,5 @@
-import AdminPagePlaceholder from "@/components/admin/AdminPagePlaceholder";
+import { redirect } from "next/navigation";
 
 export default function FacultyStaffDirectoryPage() {
-  return (
-    <AdminPagePlaceholder
-      title="Faculty & Staff Directory"
-      description="Staff listing, filtering, and management tools will be implemented here."
-    />
-  );
+  redirect("/administrator/users");
 }

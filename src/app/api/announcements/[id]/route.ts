@@ -3,6 +3,7 @@ import { AnnouncementStatus, Prisma } from "@prisma/client";
 
 import { prisma } from "@/lib/prisma";
 import { requireStudent } from "@/lib/server";
+import { recordAnnouncementView } from "@/lib/announcement-audience";
 import type { ApiResponse, StudentAnnouncementDetailResult } from "@/types";
 
 function toIso(value: Date | null | undefined): string | null {
@@ -15,6 +16,7 @@ export async function GET(
 ) {
   try {
     const session = await requireStudent(request);
+    const userId = session.user.id;
     const departmentId =
       (session.user as unknown as { departmentId?: string | null })
         .departmentId ?? null;
@@ -39,6 +41,7 @@ export async function GET(
         { OR: [{ publishedAt: null }, { publishedAt: { lte: now } }] },
         { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] },
         departmentId ? { OR: [{ departmentId }, { departmentId: null }] } : {},
+        { recipients: { some: { userId } } },
       ],
     };
 
@@ -75,12 +78,10 @@ export async function GET(
     }
 
     // Increment view count but don't block response if it fails.
-    prisma.announcement
-      .update({
-        where: { id: announcement.id },
-        data: { viewCount: { increment: 1 } },
-      })
-      .catch(() => undefined);
+    void recordAnnouncementView({
+      announcementId: announcement.id,
+      userId,
+    });
 
     const relatedWhere: Prisma.AnnouncementWhereInput = {
       status: AnnouncementStatus.PUBLISHED,
@@ -90,6 +91,7 @@ export async function GET(
         { NOT: { id: announcement.id } },
         { category: announcement.category },
         departmentId ? { OR: [{ departmentId }, { departmentId: null }] } : {},
+        { recipients: { some: { userId } } },
       ],
     };
 

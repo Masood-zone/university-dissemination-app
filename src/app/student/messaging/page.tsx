@@ -161,6 +161,7 @@ export default function StudentMessagingPage() {
           onChange={setMessage}
           onSend={handleSend}
           disabled={!activeLecturerId || sendMessage.isPending}
+          rich
           placeholder={
             activeLecturerId
               ? "Type your message..."
