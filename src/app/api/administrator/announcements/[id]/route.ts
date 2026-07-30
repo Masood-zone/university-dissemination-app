@@ -21,6 +21,10 @@ function toIso(value: Date | null | undefined): string | null {
   return value ? value.toISOString() : null;
 }
 
+function getAudienceAll(value: object): boolean {
+  return "audienceAll" in value ? value.audienceAll === true : true;
+}
+
 function excerptFromContent(markdown: string): string {
   const text = markdown
     .replace(/```[\s\S]*?```/g, " ")
@@ -121,7 +125,10 @@ export async function GET(
         lastName: found.author.lastName,
         avatar: found.author.avatar ?? null,
       },
-      audienceAll: found.audienceAll,
+      // Keep this response resilient to stale generated Prisma payload types in
+      // restored deployment caches. The field is selected above and defaults to
+      // true for announcements created before audience targeting was introduced.
+      audienceAll: getAudienceAll(found),
       audienceRoles: found.audienceRoles.map((row) => row.role),
       audienceDepartmentIds: found.audienceDepartments.map(
         (row) => row.departmentId,
