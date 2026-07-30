@@ -90,36 +90,39 @@ model User {
   updatedAt     DateTime @updatedAt
 
   // App user fields
-  firstName    String
-  lastName     String
-  phone        String?
-  role         Role    @default(STUDENT)
-  isActive     Boolean @default(true)
-  department   Department? @relation(fields: [departmentId], references: [id])
-  departmentId String?
-  avatar       String?
-  lastLogin    DateTime?
+  firstName           String
+  lastName            String
+  phone               String?
+  phoneNumber         String?     @unique
+  phoneNumberVerified Boolean     @default(false)
+  role                Role        @default(STUDENT)
+  isActive            Boolean     @default(true)
+  department          Department? @relation(fields: [departmentId], references: [id])
+  departmentId        String?
+  avatar              String?
+  lastLogin           DateTime?
 
   // Auth relations
   sessions Session[]
   accounts Account[]
 
   // App relations
-  studentProfile         StudentProfile?
-  lecturerProfile        LecturerProfile?
-  departmentAdminProfile DepartmentAdminProfile?
-  announcements          Announcement[]   @relation("CreatedBy")
-  messages               Message[]        @relation("Sender")
-  receivedMessages       Message[]        @relation("Recipient")
-  notifications          Notification[]
-  permissions            Permission[]
-  lecturerAssignments    CourseAssignment[] @relation("LecturerAssignments")
-  enrollments            Enrollment[]
-  applications           Application[] @relation("Applicant")
+  studentProfile           StudentProfile?
+  lecturerProfile          LecturerProfile?
+  departmentAdminProfile   DepartmentAdminProfile?
+  announcements            Announcement[]             @relation("CreatedBy")
+  messages                 Message[]                  @relation("Sender")
+  receivedMessages         Message[]                  @relation("Recipient")
+  notifications            Notification[]
+  permissions              Permission[]
+  lecturerAssignments      CourseAssignment[]         @relation("LecturerAssignments")
+  enrollments              Enrollment[]
+  applications             Application[]              @relation("Applicant")
   applicationStatusChanges ApplicationStatusHistory[] @relation("StatusChangedBy")
-  roleTemplateAssignments UserRoleTemplate[]
-  auditLogs              AuditLog[] @relation("AuditActor")
-  mediaAssets            MediaAsset[]
+  roleTemplateAssignments  UserRoleTemplate[]
+  auditLogs                AuditLog[]                 @relation("AuditActor")
+  mediaAssets              MediaAsset[]
+  announcementRecipients   AnnouncementRecipient[]
 
   @@unique([email])
   @@index([departmentId])
@@ -163,11 +166,11 @@ model Session {
 }
 
 model Account {
-  id                    String   @id
+  id                    String    @id
   accountId             String
   providerId            String
   userId                String
-  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -175,8 +178,8 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@index([userId])
   @@map("account")
@@ -251,30 +254,31 @@ model Department {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  users           User[]
-  programmes      Programme[]
-  announcements   Announcement[]
-  courses         Course[]
-  courseOfferings CourseOffering[]
-  applications    Application[]
+  users                 User[]
+  programmes            Programme[]
+  announcements         Announcement[]
+  announcementAudiences AnnouncementAudienceDepartment[]
+  courses               Course[]
+  courseOfferings       CourseOffering[]
+  applications          Application[]
 
   @@index([code])
 }
 
 model Programme {
-  id            String   @id @default(cuid())
-  name          String
-  code          String
-  description   String?
-  awardType     ProgrammeAwardType @default(UNDERGRADUATE)
-  durationYears Int?
+  id             String             @id @default(cuid())
+  name           String
+  code           String
+  description    String?
+  awardType      ProgrammeAwardType @default(UNDERGRADUATE)
+  durationYears  Int?
   totalSemesters Int?
-  minCredits    Int?
-  isActive      Boolean  @default(true)
-  department    Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-  departmentId  String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  minCredits     Int?
+  isActive       Boolean            @default(true)
+  department     Department         @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  departmentId   String
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   courses      Course[]
   applications Application[]
@@ -289,31 +293,31 @@ model Programme {
 // ============================================================================
 
 model AcademicSession {
-  id        String   @id @default(cuid())
-  name      String   @unique
-  startDate DateTime?
-  endDate   DateTime?
-  isActive  Boolean  @default(false)
+  id              String        @id @default(cuid())
+  name            String        @unique
+  startDate       DateTime?
+  endDate         DateTime?
+  isActive        Boolean       @default(false)
   currentSemester SemesterName?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
-  semesters Semester[]
-  offerings CourseOffering[]
+  semesters    Semester[]
+  offerings    CourseOffering[]
   applications Application[]
 
   @@index([isActive])
 }
 
 model Semester {
-  id        String        @id @default(cuid())
+  id        String          @id @default(cuid())
   name      SemesterName
   session   AcademicSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   sessionId String
   startDate DateTime?
   endDate   DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   offerings CourseOffering[]
 
@@ -326,28 +330,35 @@ model Semester {
 // ============================================================================
 
 model Announcement {
-  id               String               @id @default(cuid())
-  title            String
-  content          String
-  excerpt          String?
-  category         AnnouncementCategory
-  status           AnnouncementStatus   @default(PUBLISHED)
-  author           User                 @relation("CreatedBy", fields: [authorId], references: [id])
-  authorId         String
-  department       Department?          @relation(fields: [departmentId], references: [id])
-  departmentId     String?
-  courseOffering   CourseOffering?      @relation(fields: [courseOfferingId], references: [id], onDelete: SetNull)
-  courseOfferingId String?
-  imageUrl         String?
-  priority         Int                  @default(0)
-  viewCount        Int                  @default(0)
-  pinned           Boolean              @default(false)
-  publishedAt      DateTime?
-  expiresAt        DateTime?
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
+  id                 String               @id @default(cuid())
+  title              String
+  content            String
+  excerpt            String?
+  category           AnnouncementCategory
+  status             AnnouncementStatus   @default(PUBLISHED)
+  author             User                 @relation("CreatedBy", fields: [authorId], references: [id])
+  authorId           String
+  department         Department?          @relation(fields: [departmentId], references: [id])
+  departmentId       String?
+  courseOffering     CourseOffering?      @relation(fields: [courseOfferingId], references: [id], onDelete: SetNull)
+  courseOfferingId   String?
+  audienceAll        Boolean              @default(true)
+  imageUrl           String?
+  priority           Int                  @default(0)
+  viewCount          Int                  @default(0)
+  pinned             Boolean              @default(false)
+  publishedAt        DateTime?
+  expiresAt          DateTime?
+  broadcastClaimedAt DateTime?
+  broadcastedAt      DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
-  notifications Notification[]
+  notifications           Notification[]
+  audienceRoles           AnnouncementAudienceRole[]
+  audienceDepartments     AnnouncementAudienceDepartment[]
+  audienceCourseOfferings AnnouncementAudienceCourseOffering[]
+  recipients              AnnouncementRecipient[]
 
   @@index([authorId])
   @@index([departmentId])
@@ -355,6 +366,55 @@ model Announcement {
   @@index([category])
   @@index([status])
   @@index([publishedAt])
+  @@index([broadcastedAt])
+}
+
+model AnnouncementAudienceRole {
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  announcementId String
+  role           Role
+
+  @@id([announcementId, role])
+  @@index([role])
+}
+
+model AnnouncementAudienceDepartment {
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  announcementId String
+  department     Department   @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  departmentId   String
+
+  @@id([announcementId, departmentId])
+  @@index([departmentId])
+}
+
+model AnnouncementAudienceCourseOffering {
+  announcement     Announcement   @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  announcementId   String
+  courseOffering   CourseOffering @relation(fields: [courseOfferingId], references: [id], onDelete: Cascade)
+  courseOfferingId String
+
+  @@id([announcementId, courseOfferingId])
+  @@index([courseOfferingId])
+}
+
+model AnnouncementRecipient {
+  announcement    Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  announcementId  String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String
+  inAppNotifiedAt DateTime?
+  emailStatus     String?
+  smsStatus       String?
+  firstViewedAt   DateTime?
+  lastViewedAt    DateTime?
+  viewCount       Int          @default(0)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@id([announcementId, userId])
+  @@index([userId])
+  @@index([firstViewedAt])
 }
 
 // ============================================================================
@@ -375,8 +435,8 @@ model Course {
   capacity      Int?
   level         Int?
   prerequisites String[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 
   offerings CourseOffering[]
 
@@ -424,19 +484,19 @@ model Application {
 }
 
 model ApplicationDocument {
-  id          String                  @id @default(cuid())
-  application Application             @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  id            String                  @id @default(cuid())
+  application   Application             @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   applicationId String
-  type        ApplicationDocumentType
-  fileName    String
-  fileUrl     String
-  mimeType    String?
-  sizeBytes   Int?
-  isVerified  Boolean                 @default(false)
-  verifiedAt  DateTime?
-  uploadedAt  DateTime                @default(now())
-  createdAt   DateTime                @default(now())
-  updatedAt   DateTime                @updatedAt
+  type          ApplicationDocumentType
+  fileName      String
+  fileUrl       String
+  mimeType      String?
+  sizeBytes     Int?
+  isVerified    Boolean                 @default(false)
+  verifiedAt    DateTime?
+  uploadedAt    DateTime                @default(now())
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
 
   @@index([applicationId])
   @@index([type])
@@ -444,15 +504,15 @@ model ApplicationDocument {
 }
 
 model ApplicationStatusHistory {
-  id          String            @id @default(cuid())
-  application Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  id            String             @id @default(cuid())
+  application   Application        @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   applicationId String
-  fromStatus  ApplicationStatus?
-  toStatus    ApplicationStatus
-  changedBy   User?             @relation("StatusChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
-  changedById String?
-  note        String?
-  createdAt   DateTime          @default(now())
+  fromStatus    ApplicationStatus?
+  toStatus      ApplicationStatus
+  changedBy     User?              @relation("StatusChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+  changedById   String?
+  note          String?
+  createdAt     DateTime           @default(now())
 
   @@index([applicationId])
   @@index([changedById])
@@ -471,14 +531,15 @@ model CourseOffering {
   semesterId   String
   isActive     Boolean         @default(true)
   capacity     Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
-  assignments      CourseAssignment[]
-  enrollments      Enrollment[]
-  timetableEntries Timetable[]
-  exams            Exam[]
-  announcements    Announcement[]
+  assignments           CourseAssignment[]
+  enrollments           Enrollment[]
+  timetableEntries      Timetable[]
+  exams                 Exam[]
+  announcements         Announcement[]
+  announcementAudiences AnnouncementAudienceCourseOffering[]
 
   @@unique([courseId, sessionId, semesterId])
   @@index([courseId])
@@ -493,8 +554,8 @@ model CourseAssignment {
   offeringId String
   lecturer   User           @relation("LecturerAssignments", fields: [lecturerId], references: [id], onDelete: Cascade)
   lecturerId String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
   timetableEntries Timetable[]
 
@@ -509,8 +570,8 @@ model Enrollment {
   offeringId String
   student    User           @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentId  String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
   @@unique([offeringId, studentId])
   @@index([offeringId])
@@ -518,8 +579,8 @@ model Enrollment {
 }
 
 model Timetable {
-  id           String           @id @default(cuid())
-  offering     CourseOffering?  @relation(fields: [offeringId], references: [id], onDelete: Cascade)
+  id           String            @id @default(cuid())
+  offering     CourseOffering?   @relation(fields: [offeringId], references: [id], onDelete: Cascade)
   offeringId   String?
   assignment   CourseAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
   assignmentId String?
@@ -528,8 +589,8 @@ model Timetable {
   endTime      String
   location     String
   lecturer     String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@index([offeringId])
   @@index([assignmentId])
@@ -546,8 +607,8 @@ model Exam {
   location   String
   totalMarks Int
   duration   Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
   @@index([offeringId])
   @@index([examDate])
@@ -581,8 +642,8 @@ model Message {
   content     String
   status      MessageStatus @default(SENT)
   attachments String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@index([senderId])
   @@index([recipientId])
@@ -600,8 +661,8 @@ model Notification {
   announcement   Announcement?    @relation(fields: [announcementId], references: [id], onDelete: SetNull)
   announcementId String?
   metadata       String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   @@index([userId])
   @@index([isRead])
@@ -646,12 +707,12 @@ model RoleTemplate {
 }
 
 model RoleTemplatePermission {
-  id          String       @id @default(cuid())
-  template    RoleTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  templateId  String
-  action      String
-  resource    String
-  granted     Boolean      @default(true)
+  id         String       @id @default(cuid())
+  template   RoleTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId String
+  action     String
+  resource   String
+  granted    Boolean      @default(true)
 
   @@unique([templateId, action, resource])
   @@index([templateId])

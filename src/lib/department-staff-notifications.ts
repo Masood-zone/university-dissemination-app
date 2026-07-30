@@ -13,12 +13,19 @@ function getAppUrl(): string {
 export async function notifyDepartmentStaffWelcome(args: {
   recipientName: string;
   departmentName: string;
-  role: "LECTURER" | "STUDENT";
+  role: "ADMIN" | "DEPARTMENT_ADMIN" | "LECTURER" | "STUDENT";
   email: string;
   phone: string;
   password: string;
 }): Promise<void> {
-  const roleLabel = args.role === "LECTURER" ? "Lecturer" : "Student";
+  const roleLabel =
+    args.role === "ADMIN"
+      ? "Super Admin"
+      : args.role === "DEPARTMENT_ADMIN"
+        ? "Department Administrator"
+        : args.role === "LECTURER"
+          ? "Lecturer"
+          : "Student";
   const loginUrl = `${getAppUrl()}/login`;
   const phone = smsService.formatPhoneNumber(args.phone);
 

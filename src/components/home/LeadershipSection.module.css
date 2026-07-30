@@ -7,7 +7,7 @@
   display: flex;
   width: max-content;
   will-change: transform;
-  animation: leadership-marquee 42s linear infinite;
+  animation: leadership-marquee 23s linear infinite;
 }
 
 .group {
